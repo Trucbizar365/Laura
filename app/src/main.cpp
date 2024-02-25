@@ -6,7 +6,12 @@
 #include <GLFW/glfw3.h> // Include GLFW for windowing and input
 #include <iostream>
 
+#include <testcore.h>
+
 int main() {
+    helloworld();
+    readtxtfile();
+
     // Initialize GLFW
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
