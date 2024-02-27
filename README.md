@@ -1,20 +1,8 @@
-# OpenGL Template Repository
+# Ray Tracing from scratch in C++
+* Version 1.0.0
 
-This template repository is designed to **get your OpenGL projects off the ground quickly**, with essential graphics programming libraries pre-included:
+![alt text](images/ray-tracer-preview.gif "Optional title")
 
-* **GLFW:**  Window creation and input management
-* **GLEW:** OpenGL extension loading
-* **GLM:** Mathematics for graphics
-* **ImGui (with docking branch):** User interface creation
-* **stb_image:** Loading image files
-* **stb_truetype:** Loading TrueType fonts
-
-## Operating System Support
-
-This project is tailored for:
-
-* **Windows** using Visual Studio
-* **Linux** using VS Code (or other compatible IDE)
 
 ## Project Structure
 
@@ -34,25 +22,6 @@ This separation keeps your project organized and promotes code reusability.
 4. Create a Release configuration by clicking the x64-Debug dropdown and adding x64-Release.
 5. Choose your desired executable from the box on the right and hit the run button.
 
-### Linux
-
-1. Create a build directory: `mkdir build`
-2. Navigate to the build directory: `cd build`
-3. Generate build files: `cmake ..`
-4. Build the project: `cmake --build .`
-5. Run the executable: `./cmakeMain`
-
-**Linux Troubleshooting:** If you encounter OpenGL errors, try the following:
-   `sudo apt-get install libgl1-mesa-dev libegl1-mesa-dev`
-
-### Visual Studio Code Intellisense
-
-To resolve Intellisense squiggles:
-
-1. Press Ctrl + Shift + P
-2. Choose "C/C++: Edit Configurations (UI)"
-3. Ensure your compiler path and IntelliSense mode are set correctly (e.g., "g++-11")
-
 ## Project Structure and CMake
 
 This project uses a slightly more advanced CMake setup to promote code organization and reusability:
@@ -69,4 +38,3 @@ This project uses a slightly more advanced CMake setup to promote code organizat
 * **Code Reusability:** The `core` library can potentially be used in other OpenGL projects without modification.
 * **Clean Separation:** There's a clear distinction between reusable rendering logic (`core`) and the application-specific code (`app`).
 
-*This project is derived from https://github.com/meemknight/openglConfiguration*
