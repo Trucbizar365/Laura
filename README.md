@@ -1,5 +1,5 @@
 # Ray Tracing from scratch in C++
-* Version 1.0.0
+* Version 1.1.0
 
 ![alt text](images/ray-tracer-preview.gif "Optional title")
 ![alt text](images/knight.png "Optional title")
@@ -13,7 +13,7 @@
 
 This separation keeps your project organized and promotes code reusability.
 
-## Building Your Project
+## Building The Project
 
 ### Windows (Visual Studio)
 
@@ -21,7 +21,7 @@ This separation keeps your project organized and promotes code reusability.
 2. Right-click the cloned folder and select "Open with Visual Studio," or open Visual Studio and navigate to File -> Open -> CMake... and choose the root CMakeLists.txt.
 3. Run the Debug build.
 4. Create a Release configuration by clicking the x64-Debug dropdown and adding x64-Release.
-5. Choose your desired executable from the box on the right and hit the run button.
+5. Choose raytracing.exe from the box on the right and hit the run button.
 
 ## Project Structure and CMake
 
