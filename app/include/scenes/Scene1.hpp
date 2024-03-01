@@ -26,41 +26,41 @@ SceneData getSceneData() {
     Sphere* spheres = new Sphere[4];
 
     Sphere sphere1;
-    sphere1.position = glm::vec3(0.0f, -10.0f, 5.0f);
-    sphere1.radius = 9.0f;
-    sphere1.material.color = glm::vec3(0.807f, 0.2588f, 0.2588f); // Red color
-    sphere1.material.emissionColor = glm::vec3(0.0f, 0.0f, 0.0f);
-    sphere1.material.emissionStrength = 0.0f;
+    //sphere1.position = glm::vec3(0.0f, -10.0f, 5.0f);
+    //sphere1.radius = 9.0f;
+    //sphere1.material.color = glm::vec3(0.807f, 0.2588f, 0.2588f); // Red color
+    //sphere1.material.emissionColor = glm::vec3(0.0f, 0.0f, 0.0f);
+    //sphere1.material.emissionStrength = 0.0f;
 
     Sphere sphere2;
     sphere2.position = glm::vec3(300.0f, 500.0f, 1000.0f);
     sphere2.radius = 200.0f;
     sphere2.material.color = glm::vec3(0.0f, 0.0f, 0.0f); 
-    sphere2.material.emissionColor = glm::vec3(1.0f, 1.0f, 1.0f);
-    sphere2.material.emissionStrength = 50.0f;
-
-    Sphere sphere3;
-    sphere3.position = glm::vec3(0.3f, 2.0f, 10.0f);
-    sphere3.radius = 0.7f;
-    sphere3.material.color = glm::vec3(1.0f, 1.0f, 0.9f); // skin color
-    sphere3.material.emissionColor = glm::vec3(0.0f, 0.0f, 0.0f);
-    sphere3.material.emissionStrength = 0.0f;
-
-    Sphere sphere4;
-    sphere4.position = glm::vec3(-3.0f, -0.9f, 5.0f);
-    sphere4.radius = 0.8f;
-    sphere4.material.color = glm::vec3(0.0f, 0.0f, 0.0f); // Yellow color
-    sphere4.material.emissionColor = glm::vec3(1.0f, 1.0f, 1.0f);
-    sphere4.material.emissionStrength = 4.0f;
+    sphere2.material.emissionColor = glm::vec3(1.0f, 0.9f, 1.0f);
+    sphere2.material.emissionStrength = 10.0f;
+    //
+    //Sphere sphere3;
+    //sphere3.position = glm::vec3(0.3f, 2.0f, 10.0f);
+    //sphere3.radius = 0.7f;
+    //sphere3.material.color = glm::vec3(1.0f, 1.0f, 0.9f); // skin color
+    //sphere3.material.emissionColor = glm::vec3(0.0f, 0.0f, 0.0f);
+    //sphere3.material.emissionStrength = 0.0f;
+    //
+    //Sphere sphere4;
+    //sphere4.position = glm::vec3(-3.0f, -0.9f, 5.0f);
+    //sphere4.radius = 0.8f;
+    //sphere4.material.color = glm::vec3(0.0f, 0.0f, 0.0f); // Yellow color
+    //sphere4.material.emissionColor = glm::vec3(1.0f, 1.0f, 1.0f);
+    //sphere4.material.emissionStrength = 4.0f;
     
-    spheres[0] = sphere1;
-    spheres[1] = sphere2;
-    spheres[2] = sphere3;
-    spheres[3] = sphere4;
+    //spheres[0] = sphere1;
+    spheres[0] = sphere2;
+    //spheres[2] = sphere3;
+    //spheres[3] = sphere4;
 
     SceneData sceneData;
     sceneData.sceneObjects = spheres;
-    sceneData.numberOfObjects = 4;
+    sceneData.numberOfObjects = 1;
     sceneData.size = sceneData.numberOfObjects * sizeof(Sphere);
 
 	return sceneData;

@@ -151,6 +151,8 @@ void Renderer::configure_TrisMesh_SSBO_block()
 {
 	GLCall(glGenBuffers(1, &tris_SSBO_ID));
 	GLCall(glBindBuffer(GL_SHADER_STORAGE_BUFFER, tris_SSBO_ID));
+	std::cout << "sizeof(Triangle): " << sizeof(Triangle) << std::endl;
+	std::cout << "BVH_of_mesh.TRIANGLES_size: " << BVH_of_mesh.TRIANGLES_size << std::endl;
 	GLCall(glBufferData(GL_SHADER_STORAGE_BUFFER, sizeof(Triangle) * BVH_of_mesh.TRIANGLES_size, nullptr, GL_STATIC_DRAW));
 	GLCall(glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, tris_SSBO_ID));
 }
@@ -158,7 +160,7 @@ void Renderer::configure_TrisMesh_SSBO_block()
 void Renderer::update_TrisMesh_SSBO_block()
 {
 	GLCall(glBindBuffer(GL_SHADER_STORAGE_BUFFER, tris_SSBO_ID));
-	GLCall(glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, sizeof(Triangle) * BVH_of_mesh.TRIANGLES_size, BVH_of_mesh.TRIANGLES))
+	GLCall(glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, sizeof(Triangle) * BVH_of_mesh.TRIANGLES_size, BVH_of_mesh.TRIANGLES.data()))
 	GLCall(glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0)); // unbind
 }
 
@@ -168,13 +170,17 @@ void Renderer::configure_BVH_SSBO_block()
 	GLCall(glBindBuffer(GL_SHADER_STORAGE_BUFFER, BVH_SSBO_ID));
 	std::cout << "BVH_size: " << BVH_of_mesh.BVH_size << std::endl;
 	std::cout << "sizeof(BVH::Node): " << sizeof(BVH::Node) << std::endl;
-	GLCall(glBufferData(GL_SHADER_STORAGE_BUFFER, sizeof(BVH::Node)*2 * (BVH_of_mesh.BVH_size + 1), nullptr, GL_STATIC_DRAW));
+
+	GLCall(glBufferData(GL_SHADER_STORAGE_BUFFER, sizeof(BVH::Node) * BVH_of_mesh.BVH_size, nullptr, GL_STATIC_DRAW));
 	GLCall(glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 4, BVH_SSBO_ID));
 }
 
 void Renderer::update_BVH_SSBO_block()
 {
 	GLCall(glBindBuffer(GL_SHADER_STORAGE_BUFFER, BVH_SSBO_ID));
-	GLCall(glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, sizeof(BVH::Node)*2 * (BVH_of_mesh.BVH_size + 1), BVH_of_mesh.BVH));
+	for (size_t i = 0; i < 3; i++) {
+		std::cout << BVH_of_mesh.BVH[i] << std::endl;
+	}
+	GLCall(glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, sizeof(BVH::Node) * BVH_of_mesh.BVH_size, BVH_of_mesh.BVH.data()));
 	GLCall(glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0)); // unbind
 }

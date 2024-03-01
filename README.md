@@ -2,6 +2,7 @@
 * Version 1.0.0
 
 ![alt text](images/ray-tracer-preview.gif "Optional title")
+![alt text](images/knight.png "Optional title")
 
 
 ## Project Structure

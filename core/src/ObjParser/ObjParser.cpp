@@ -13,15 +13,7 @@ std::ostream& operator<<(std::ostream& os, const Triangle& triangle)
     return os;
 }
 
-/** @brief Loads a 3D mesh from an OBJ file.
- *
- * This function reads an OBJ file and extracts the vertex, vertex normal, and face information to construct a mesh of triangles.
- * The mesh and the number of triangles are returned via reference parameters.
- *
- * @param filePath The path to the OBJ file.
- * @param mesh A reference to a vector of Triangles that will be filled with the triangles from the OBJ file.
- * @param numTriangles A reference to an unsigned int that will be set to the number of triangles in the mesh.
- */
+
 void loadMesh(std::string filePath, std::vector<Triangle>& mesh, unsigned int& numTriangles)
 {
     // Open the OBJ file
@@ -72,11 +64,11 @@ void loadMesh(std::string filePath, std::vector<Triangle>& mesh, unsigned int& n
             char slash;
             char space;
                 
-            /* Alternative obj face definition(if there are no texture coordinates)
-            iss >>  v1 >> slash  >> slash >> vn1 >>
-                    v2 >> slash  >> slash >> vn2 >>
-                    v3 >> slash  >> slash >> vn3;
-            */  
+            // Alternative obj face definition(if there are no texture coordinates)
+            //iss >>  v1 >> slash  >> slash >> vn1 >>
+            //        v2 >> slash  >> slash >> vn2 >>
+            //        v3 >> slash  >> slash >> vn3;
+              
 
             // Parse the face definition
             iss >> v1 >> slash >> vt1 >> slash >> vn1 >>
@@ -118,29 +110,37 @@ void loadMesh(std::string filePath, std::vector<Triangle>& mesh, unsigned int& n
     file.close();
 }
 
-// constructor
+// Constructor for the BVH Node
 BVH::Node::Node(glm::vec3 minVec, glm::vec3 maxVec)
     : minVec(minVec), maxVec(maxVec), child1_idx(-1), child2_idx(-1)
 {
+    //leaf_primitive_indices = new int[AABB_primitives_limit]; 
+    // Initialize the leaf_primitive_indices vector with -1
     // populate the leaf_primitive_indices with -1 
     for (unsigned int i = 0; i < AABB_primitives_limit; i++)
     {
-        leaf_primitive_indices[i] = -1;
+        leaf_primitive_indices[i].data = -1;
     }
 }
 
+// Overloading the << operator for the BVH Node
 namespace BVH {
     std::ostream& operator<<(std::ostream& os, const Node& node) {
+        // AABB min and max vectors - output for python visualisation sc
         os <<
             "{ \"minVec\": (" << node.minVec.x << ", " << node.minVec.y << ", " << node.minVec.z << ")," <<
             " \"maxVec\": (" << node.maxVec.x << ", " << node.maxVec.y << ", " << node.maxVec.z << ") },";
-        
-        // additional info - can be commented out
-        os << "child1_idx: " << node.child1_idx << " child2_idx: " << node.child2_idx << " leaf nodes: " 
-            << node.leaf_primitive_indices[0] << ", " << node.leaf_primitive_indices[1] << ", " << node.leaf_primitive_indices[2] << ", " << node.leaf_primitive_indices[3];
+       
+        // additional info (child indices and leaf primitive indices) can be commented out
+        os << "child1_idx: " << node.child1_idx << " child2_idx: " << node.child2_idx <<
+            " leaf nodes: ";
+        for (int i = 0; i < AABB_primitives_limit; ++i) {
+			os << node.leaf_primitive_indices[i].data << ", ";
+		}
         return os;
     }
 }
+
 // Function to compute the minimum corner of an AABB given the current minimum corner and a vertex
 glm::vec3 BVH::minCorner(const glm::vec3& current_min, const glm::vec3& vertex) {
     return glm::vec3(std::min(current_min.x, vertex.x), std::min(current_min.y, vertex.y), std::min(current_min.z, vertex.z));
@@ -151,16 +151,6 @@ glm::vec3 BVH::maxCorner(const glm::vec3& current_max, const glm::vec3& vertex) 
     return glm::vec3(std::max(current_max.x, vertex.x), std::max(current_max.y, vertex.y), std::max(current_max.z, vertex.z));
 }
 
-/**
- * @brief Computes the Axis-Aligned Bounding Box (AABB) for a set of triangles.
- *
- * This function iterates over a set of triangles, represented by their indices, and computes the minimum and maximum corners of the AABB that encloses them. The minimum and maximum corners are updated for each vertex of each triangle.
- *
- * @param triangle_indices The indices of the triangles for which to compute the AABB.
- * @param triangle_mesh The mesh containing the triangles.
- * @param minVec A reference to a vector that will be set to the minimum corner of the AABB.
- * @param maxVec A reference to a vector that will be set to the maximum corner of the AABB.
- */
 void BVH::computeAABB(const std::vector<unsigned int>& triangle_indices, const std::vector<Triangle>& triangle_mesh, glm::vec3& minVec, glm::vec3& maxVec)
 {
     minVec = glm::vec3(std::numeric_limits<float>::infinity());
@@ -369,7 +359,7 @@ BVH::BVH_data BVH::construct(std::string path, const Heuristic heuristic) {
         if (output.LIsLeaf) {
             for (unsigned int i = 0; i < output.LTris.size(); i++) {
                 if (i <= BVH::AABB_primitives_limit - 1) { // protection if somehow there are more cell primitives than 4 in a leaf cell which is unlikely but still
-                    Lnode.leaf_primitive_indices[i] = output.LTris[i];
+                    Lnode.leaf_primitive_indices[i].data = output.LTris[i];
                 }
             }
         }
@@ -386,7 +376,7 @@ BVH::BVH_data BVH::construct(std::string path, const Heuristic heuristic) {
         if (output.RIsLeaf) {
             for (unsigned int i = 0; i < output.RTris.size(); i++) {
                 if (i <= BVH::AABB_primitives_limit - 1) { // protection if somehow there are more cell primitives than 4 in a leaf cell which is unlikely but still
-                    Rnode.leaf_primitive_indices[i] = output.RTris[i];
+                    Rnode.leaf_primitive_indices[i].data = output.RTris[i];
                 }
                 else {
                     std::cout << "Was overflow" << std::endl;
@@ -403,17 +393,19 @@ BVH::BVH_data BVH::construct(std::string path, const Heuristic heuristic) {
     }
 
     // converting from std::vector to a c++ array
-    Triangle* TRIANGLES_array = new Triangle[num_triangles];
-    std::copy(triangles.begin(), triangles.end(), TRIANGLES_array);
+    //Triangle* TRIANGLES_array = new Triangle[num_triangles];
+    //std::copy(triangles.begin(), triangles.end(), TRIANGLES_array);
 
-    BVH::Node* BVH_array = new BVH::Node[BVH.size()];
-    std::copy(BVH.begin(), BVH.end(), BVH_array);
+    //BVH::Node* BVH_array = new BVH::Node[BVH.size()];
+    //std::copy(BVH.begin(), BVH.end(), BVH_array);
 
     BVH_data bvh_data;
 
-    bvh_data.BVH = BVH_array;
+    //bvh_data.BVH = BVH_array;
+    bvh_data.BVH = BVH;
     bvh_data.BVH_size = BVH.size();
-    bvh_data.TRIANGLES = TRIANGLES_array;
+    //bvh_data.TRIANGLES = TRIANGLES_array;
+    bvh_data.TRIANGLES = triangles;
     bvh_data.TRIANGLES_size = num_triangles;
 
     return  bvh_data;

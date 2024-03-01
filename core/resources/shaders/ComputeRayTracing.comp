@@ -8,7 +8,7 @@ This is a compute shader responsible for the Ray Tracing
 
 
 // CONSTANTS
-#define AABB_primitives_limit 4
+#define AABB_primitives_limit 2
 #define MAX_STACK_SIZE 9
 
 // work group sizes
@@ -16,7 +16,7 @@ This is a compute shader responsible for the Ray Tracing
 #define LOCAL_GROUP_Y 4
 #define LOCAL_GROUP_Z 1
 
-#define NUM_SPHERES 4
+#define NUM_SPHERES 1
 
 #define PI 3.1415926
 #define EPSILON 1.0e-10 // Small value to avoid division by zero
@@ -72,12 +72,13 @@ bool stack_empty(in Stack s)
 
 struct BVHNode
 {
-    int leaf_primitive_indices[AABB_primitives_limit];     // offset 0 // alignment 4 // total 4 bytes
+    // each integer is treated as 16 bytes
+    int leaf_primitive_indices[AABB_primitives_limit];     // offset 0 // alignment 64 // size 64 // total 64 bytes
 
-    vec3 minVec;        // offset 4  // alignment 16 // total 20 bytes
-    int child1_idx;     // offset 20 // alignment 4  // total 24 bytes
-    vec3 maxVec;        // offset 24 // alignment 16 // total 40 bytes
-    int child2_idx;     // offset 40 // alignment 4  // total 44 bytes
+    vec3 minVec;        // offset 64  // alignment 64  // size 60  // total 76 bytes
+    int child1_idx;     // offset 80  // alignment 52  // size 52  // total 80 bytes
+    vec3 maxVec;        // offset 80  // alignment 64  // size 60  // total 92 bytes
+    int child2_idx;     // offset 92  // alignment 52  // size 52  // total 96 bytes
 };
 
 struct RaytracingMaterial
@@ -385,7 +386,7 @@ bool BVH_traverse(Ray ray, inout HitInfo closestHit)
                     // The function retrieves the triangle associated with the current primitive.
                     Triangle tri = MESH[triangle_idx];
 
-                    tri.material.color = vec3(1.0f, 0.0f, 0.0f);
+                    tri.material.color = vec3(225.0f/255f, 204.0f/255f, 154.0f/255f);
                     tri.material.emissionColor = vec3(0.0f, 0.0f, 0.0f);
                     tri.material.emissionStrength = 0.0f;
                                   
@@ -397,7 +398,6 @@ bool BVH_traverse(Ray ray, inout HitInfo closestHit)
                     {
                         closestHit = triHitInfo;
                         closestHit.material = tri.material;
-                        return true;
                     }
                 }
 
@@ -411,7 +411,7 @@ bool BVH_traverse(Ray ray, inout HitInfo closestHit)
             }
         }
     }
-    return false;
+    return true;
 }
 
 // This function checks if a ray intersects any of the objects in the scene.
@@ -425,14 +425,14 @@ HitInfo CheckRayCollision(Ray ray, inout bool mydebug)
     for (int i = 0; i < NUM_SPHERES; i++)
     {
         Sphere sphere = u_Spheres[i];
-
+    
         HitInfo hitInfo = RaySphereIntersection(ray, sphere.position, sphere.radius);
         if (hitInfo.didCollide && hitInfo.dst < closestHit.dst)
         {
             closestHit = hitInfo;
             closestHit.material = sphere.material;
         }
-    }    
+    }   
     
     // The function traverses the BVH to find the closest intersection of the ray with the objects in the scene.
     mydebug = BVH_traverse(ray, closestHit); // traversing all the triangles
@@ -469,7 +469,7 @@ vec3 TraceRay(Ray ray, inout uint state, inout bool mydebug)
     }
     return incomingLight;
 }
-
+ 
 void main()
 {
     ivec2 texelCoords = ivec2(gl_GlobalInvocationID.xy);

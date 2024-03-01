@@ -2,5 +2,7 @@
 bin/
 build/
 /.vs
+html
+latex
 .idea/
 CMakeSettings.json
