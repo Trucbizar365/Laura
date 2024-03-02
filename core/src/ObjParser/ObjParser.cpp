@@ -1,4 +1,7 @@
 #include "ObjParser/ObjParser.h"
+#include <assimp/cimport.h>
+#include <assimp/scene.h>
+#include <assimp/postprocess.h>
 
 // Setting up custom std::cout of the triangle
 std::ostream& operator<<(std::ostream& os, const Triangle& triangle)
@@ -16,98 +19,57 @@ std::ostream& operator<<(std::ostream& os, const Triangle& triangle)
 
 void loadMesh(std::string filePath, std::vector<Triangle>& mesh, unsigned int& numTriangles)
 {
-    // Open the OBJ file
-    std::ifstream file(filePath);
-    if (!file) {
-        std::cerr << "File " << filePath << " does not exist or could not be opened." << std::endl;
-        return;
-    }
 
-    std::string line;
-    // Vectors to store the vertices and vertex normals from the OBJ file
-    std::vector<glm::vec3> vertices;
-    std::vector<glm::vec3> vertexNormals;
+    numTriangles = 0;
+    
+    const aiScene* scene = aiImportFile(filePath.c_str(), aiProcessPreset_TargetRealtime_MaxQuality);
 
-    // Read the OBJ file line by line
+    if (!scene) {
+		std::cerr << "Error loading the model: " << filePath << std::endl;
+		return;
+	}
 
-    while (std::getline(file, line))
-    {
-        std::istringstream iss(line);
-        std::string identificator;
+    for (unsigned int i = 0; i < scene->mNumMeshes; ++i) {
+        const aiMesh* currentMesh = scene->mMeshes[i];
+        for (unsigned int i = 0; i < currentMesh->mNumFaces; ++i) {
+            const aiFace& face = currentMesh->mFaces[i];
 
-        // loading the line identificator (v, vn, f)
-        if (!(iss >> identificator)) {
-            std::cerr << "Error reading line: " << line << std::endl;
-            continue;
-        }
-
-        // If the line starts with "v", it's a vertex definition
-        if (identificator == "v")
-        {
-            glm::vec3 vertex;
-            iss >> vertex.x >> vertex.y >> vertex.z;
-            vertices.push_back(vertex);
-        }
-        // If the line starts with "vn", it's a vertex normal definition
-        else if (identificator == "vn")
-        {
-            glm::vec3 vertexNormal;
-            iss >> vertexNormal.x >> vertexNormal.y >> vertexNormal.z;
-            vertexNormals.push_back(vertexNormal);
-        }
-        // If the line starts with "f", it's a face definition
-        else if (identificator == "f")
-        {
-            int v1, v2, v3;
-            int vt1, vt2, vt3;
-            int vn1, vn2, vn3;
-            char slash;
-            char space;
-                
-            // Alternative obj face definition(if there are no texture coordinates)
-            //iss >>  v1 >> slash  >> slash >> vn1 >>
-            //        v2 >> slash  >> slash >> vn2 >>
-            //        v3 >> slash  >> slash >> vn3;
-              
-
-            // Parse the face definition
-            iss >> v1 >> slash >> vt1 >> slash >> vn1 >>
-                    v2 >> slash >> vt2 >> slash >> vn2 >>
-                    v3 >> slash >> vt3 >> slash >> vn3;
-
-                
-            // Check that the indices are valid
-            if (v1 < 1 || v1 > vertices.size() ||
-                v2 < 1 || v2 > vertices.size() ||
-                v3 < 1 || v3 > vertices.size() ||
-                vn1 < 1 || vn1 > vertexNormals.size() ||
-                vn2 < 1 || vn2 > vertexNormals.size() ||
-                vn3 < 1 || vn3 > vertexNormals.size()) {
-                std::cerr << "Invalid vertex or vertex normal index in line: " << line << std::endl;
-                continue;
+            // Ensure the face is a triangle 
+            if (face.mNumIndices != 3) {
+                continue; // Skip non-triangle faces
             }
 
-            // indexing in obj file starts from 1 and vertices array starts from index 0
-            // therefore we need to subtract 1 from the indices
             Triangle triangle;
-            triangle.v1 = vertices[v1 - 1];
-            triangle.v2 = vertices[v2 - 1];
-            triangle.v3 = vertices[v3 - 1];
+            triangle.v1 = glm::vec3(currentMesh->mVertices[face.mIndices[0]].x,
+                                    currentMesh->mVertices[face.mIndices[0]].y,
+                                    currentMesh->mVertices[face.mIndices[0]].z);
 
-            triangle.NA = vertexNormals[vn1 - 1];
-            triangle.NB = vertexNormals[vn2 - 1];
-            triangle.NC = vertexNormals[vn3 - 1];
+            triangle.v2 = glm::vec3(currentMesh->mVertices[face.mIndices[1]].x,
+                					currentMesh->mVertices[face.mIndices[1]].y,
+                					currentMesh->mVertices[face.mIndices[1]].z);
 
-            // Compute the centroid of the triangle (average of all 3 vertices)
-            triangle.centroid = (triangle.v1 + triangle.v2 + triangle.v3) / 3.0f; 
+            triangle.v3 = glm::vec3(currentMesh->mVertices[face.mIndices[2]].x,
+                					currentMesh->mVertices[face.mIndices[2]].y,
+                					currentMesh->mVertices[face.mIndices[2]].z);
 
-            // Add the triangle to the mesh
+            triangle.NA = glm::vec3(currentMesh->mNormals[face.mIndices[0]].x,
+                                    currentMesh->mNormals[face.mIndices[0]].y,
+                                    currentMesh->mNormals[face.mIndices[0]].z);
+
+            triangle.NB = glm::vec3(currentMesh->mNormals[face.mIndices[1]].x,
+                					currentMesh->mNormals[face.mIndices[1]].y,
+                					currentMesh->mNormals[face.mIndices[1]].z);
+
+            triangle.NC = glm::vec3(currentMesh->mNormals[face.mIndices[2]].x,
+                					currentMesh->mNormals[face.mIndices[2]].y,
+                					currentMesh->mNormals[face.mIndices[2]].z);
+
+            // Calculate centroid 
+            triangle.centroid = (triangle.v1 + triangle.v2 + triangle.v3) / 3.0f;
             mesh.push_back(triangle);
             numTriangles++;
         }
     }
-
-    file.close();
 }
 
 // Constructor for the BVH Node

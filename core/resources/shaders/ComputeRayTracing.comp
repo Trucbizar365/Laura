@@ -9,7 +9,7 @@ This is a compute shader responsible for the Ray Tracing
 
 // CONSTANTS
 #define AABB_primitives_limit 2
-#define MAX_STACK_SIZE 9
+#define MAX_STACK_SIZE 14
 
 // work group sizes
 #define LOCAL_GROUP_X 8
@@ -72,7 +72,7 @@ bool stack_empty(in Stack s)
 
 struct BVHNode
 {
-    // each integer is treated as 16 bytes
+    // Each integer is treated as 16 bytes.
     int leaf_primitive_indices[AABB_primitives_limit];     // offset 0 // alignment 64 // size 64 // total 64 bytes
 
     vec3 minVec;        // offset 64  // alignment 64  // size 60  // total 76 bytes
@@ -119,7 +119,8 @@ struct Triangle
     RaytracingMaterial material;    // offset 112 // alignment 16 // size 32 bytes // total 148 bytes
 };
 
-// These actually don't need to be padded (not sent by the CPU)
+
+// used only by the shader (no need for padding)
 struct Ray
 {
     vec3 origin;
@@ -159,12 +160,14 @@ layout (std140, binding = 0) uniform uniformParameters {
     bool u_WasInput;                // offset 144 // alignment 4 // total 148 bytes
 };
 
+
 layout (std140, binding = 1) uniform sceneBuffer
 {
     Sphere u_Spheres[NUM_SPHERES];
 };
 
 // SSBOs
+// scene
 layout (std140, binding = 3) buffer MESH_buffer
 {
     Triangle MESH[];
