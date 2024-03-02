@@ -20,10 +20,15 @@ This is a compute shader responsible for the Ray Tracing
 
 #define PI 3.1415926
 #define EPSILON 1.0e-10 // Small value to avoid division by zero
+#define INF 1.0 / 0.0;
 
 // struct alignments: Thanks to https://learnopengl.com/Advanced-OpenGL/Advanced-GLSL
 
-//////////// STACK IMPLEMENTATION ////////////
+/*
+ * Stack is a data structure that follows the LIFO (Last In First Out) principle.
+ * It is used in the BVH (Bounding Volume Hierarchy) traversal algorithm in the ray tracing shader.
+ * The stack stores indices of BVH nodes that need to be checked for ray-triangle intersection.
+ */
 struct Stack
 {
     int elements[MAX_STACK_SIZE];
@@ -67,7 +72,6 @@ bool stack_empty(in Stack s)
     }
     return false;
 }
-//////////// END OF STACK IMPLEMENTATION ////////////
 
 
 struct BVHNode
@@ -213,6 +217,7 @@ vec3 RandomDirection(inout uint state)
     return normalize(vec3(x, y, z));
 }
 
+// cosine-weighted distribution
 vec3 RandomDirectionInHemisphere(vec3 normalVector, inout uint state)
 {
     vec3 randomDirectionVector = RandomDirection(state);
@@ -240,41 +245,19 @@ vec3 GainSkyboxLight(Ray ray)
 
 bool RayAABBIntersection(Ray ray, vec3 minVec, vec3 maxVec)
 {
-    float tMin = 0.0; // Start at zero to ignore intersections behind the origin
-    float tMax = 1.0e20; // Large positive value
+    // Fast, Branchless Ray/Bounding Box Intersections
+    // https://tavianator.com/fast-branchless-raybounding-box-intersections/
 
-    for (int i = 0; i < 3; ++i) // 3 dimentions
-    {
-        if (abs(ray.dir[i]) < 1.0e-8)
-        {
-            // Ray is parallel to the slab. No hit if origin not within slab
-            if (ray.origin[i] < minVec[i] || ray.origin[i] > maxVec[i]) 
-                return false;
-        }
-        else
-        {
-            float inverse_rayDir_component = 1 / ray.dir[i];
-            float t1 = (minVec[i] - ray.origin[i]) * inverse_rayDir_component;
-            float t2 = (maxVec[i] - ray.origin[i]) * inverse_rayDir_component;
+    vec3 t1 = (minVec - ray.origin) / ray.dir;
+    vec3 t2 = (maxVec - ray.origin) / ray.dir;
 
-            // Make t1 be intersection with near plane, t2 with far plane
-            if (t1 > t2)
-            {
-                float temp = t1;
-                t1 = t2;
-                t2 = temp;
-            }
+    vec3 tMin = min(t1, t2);
+    vec3 tMax = max(t1, t2);
 
-            // Compute the intersection of slab intersection intervals
-            tMin = max(tMin, t1);
-            tMax = min(tMax, t2);
+    float largest_tMin = max(max(tMin.x, tMin.y), tMin.z);
+    float smallest_tMax = min(min(tMax.x, tMax.y), tMax.z);
 
-            // Exit with no collision as soon as slab intersection becomes empty or if intersection is behind the ray's origin
-            if (tMin > tMax || tMax < 0.0) 
-                return false;
-        }
-    }
-    return tMin <= tMax;
+    return smallest_tMax >= largest_tMin && smallest_tMax >= 0.0;
 }
 
 // Sebastian Lague - https://youtu.be/Qz0KTGYJtUk?t=321
@@ -307,9 +290,11 @@ HitInfo RaySphereIntersection(Ray ray, vec3 spherePosition, float sphereRadius)
     return hitInfo;
 }
 
-// https://stackoverflow.com/questions/42740765/intersection-between-line-and-triangle-in-3d/42752998#42752998
+
 HitInfo RayTriangleIntersection(Ray ray, Triangle tri)
 {
+    // https://stackoverflow.com/questions/42740765/intersection-between-line-and-triangle-in-3d/42752998#42752998
+
     vec3 E1 = tri.v2 - tri.v1;
     vec3 E2 = tri.v3 - tri.v1;
     vec3 triNormal = cross(E1, E2);
@@ -352,7 +337,7 @@ HitInfo RayTriangleIntersection(Ray ray, Triangle tri)
 
 // This function traverses the Bounding Volume Hierarchy (BVH) to find 
 // the closest intersection of a ray with the objects in the scene.
-bool BVH_traverse(Ray ray, inout HitInfo closestHit)
+void BVH_traverse(Ray ray, inout HitInfo closestHit)
 {
     // A stack is initialized to keep track of the BVH nodes that need to be checked.
     Stack stack;
@@ -389,9 +374,7 @@ bool BVH_traverse(Ray ray, inout HitInfo closestHit)
                     // The function retrieves the triangle associated with the current primitive.
                     Triangle tri = MESH[triangle_idx];
 
-                    tri.material.color = vec3(225.0f/255f, 204.0f/255f, 154.0f/255f);
-                    tri.material.emissionColor = vec3(0.0f, 0.0f, 0.0f);
-                    tri.material.emissionStrength = 0.0f;
+                    tri.material.color = vec3(0.8);
                                   
                     HitInfo triHitInfo = RayTriangleIntersection(ray, tri);
                     
@@ -401,9 +384,9 @@ bool BVH_traverse(Ray ray, inout HitInfo closestHit)
                     {
                         closestHit = triHitInfo;
                         closestHit.material = tri.material;
+                        break;
                     }
                 }
-
             }
             else
             {
@@ -413,16 +396,15 @@ bool BVH_traverse(Ray ray, inout HitInfo closestHit)
                 stack_push(stack, current_node.child2_idx);
             }
         }
-    }
-    return true;
+    } 
 }
 
 // This function checks if a ray intersects any of the objects in the scene.
-HitInfo CheckRayCollision(Ray ray, inout bool mydebug)
+HitInfo CheckRayCollision(Ray ray)
 {
     HitInfo closestHit;
     closestHit.didCollide = false;
-    closestHit.dst = 1.0 / 0.0; // infinity
+    closestHit.dst =  INF; // infinity
 
     // The function iterates over each sphere in the scene and checks for intersections.
     for (int i = 0; i < NUM_SPHERES; i++)
@@ -438,20 +420,20 @@ HitInfo CheckRayCollision(Ray ray, inout bool mydebug)
     }   
     
     // The function traverses the BVH to find the closest intersection of the ray with the objects in the scene.
-    mydebug = BVH_traverse(ray, closestHit); // traversing all the triangles
+    BVH_traverse(ray, closestHit); // traversing all the triangles
     
     return closestHit;
 }
 
 // This function traces a ray through the scene and returns the color of the pixel that the ray equates to.
-vec3 TraceRay(Ray ray, inout uint state, inout bool mydebug)
+vec3 TraceRay(Ray ray, inout uint state)
 {
     vec3 rayColor = vec3(1.0);
     vec3 incomingLight = vec3(0.0);
     
     for (int i = 0; i <= RAY_BOUNCE_COUNT; i++)
     {
-        HitInfo hitInfo = CheckRayCollision(ray, mydebug);
+        HitInfo hitInfo = CheckRayCollision(ray);
         if (hitInfo.didCollide)
         {
             ray.origin = hitInfo.hitPoint;
@@ -475,6 +457,7 @@ vec3 TraceRay(Ray ray, inout uint state, inout bool mydebug)
  
 void main()
 {
+    // getting the coordinates of the current texel (pixel color texture coordinates)
     ivec2 texelCoords = ivec2(gl_GlobalInvocationID.xy);
     ivec2 dims = imageSize(rayTracingTexture);
     float x = (float(texelCoords.x * 2 - dims.x) / dims.x); // transforms to [-1.0, 1.0]
@@ -482,16 +465,17 @@ void main()
     
     uint state = getCurrentState(texelCoords, dims.x);
     
+    // applying transformation (camera rotation)
     Ray ray;
     ray.dir = normalize(vec3(x, y, u_FocalLength));
     ray.dir = (u_ModelMatrix * vec4(ray.dir, 1.0f)).rgb; // apply the rotation transformation of the camera
     ray.origin = u_CameraPos.xyz;
-    bool mydebug;
+
     // The actual tracing of the ray
     vec3 tracingResult = vec3(0.0);
     for (int i = 0; i < RAYS_PER_PIXEL_COUNT; i++)
     {
-        tracingResult += TraceRay(ray, state, mydebug);
+        tracingResult += TraceRay(ray, state);
     }
 
     // averaging the current frame accumulated pixel color
@@ -502,12 +486,6 @@ void main()
     float weight = 1.0f / (u_numAccumulatedFrames + 1);
     vec3 outputColor = accumulatedColor.rgb * (1 - weight) + tracingResult * weight;
     
-    // setting the texel coords (pixel color texture coordinates)
+    // outputing texel coords (pixel color texture coordinates)
     imageStore(rayTracingTexture, texelCoords, vec4(outputColor, 1.0f));
-    
-    //if (!mydebug)
-    //{
-    //    imageStore(rayTracingTexture, texelCoords, vec4(1.0f, 0.0f, 0.0f, 1.0f));
-    //}
-    
 };

@@ -66,6 +66,11 @@ void loadMesh(std::string filePath, std::vector<Triangle>& mesh, unsigned int& n
 
             // Calculate centroid 
             triangle.centroid = (triangle.v1 + triangle.v2 + triangle.v3) / 3.0f;
+
+            triangle.material.color = glm::vec3(0.5f, 0.5f, 0.5f);
+            triangle.material.emissionColor = glm::vec3(0.0f, 0.0f, 0.0f);
+            triangle.material.emissionStrength = 0.0f;
+
             mesh.push_back(triangle);
             numTriangles++;
         }

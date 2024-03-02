@@ -73,10 +73,9 @@ int main() {
 
 		Camera camera = Camera(fov, ASPECT, deltaTime);
 		CameraHandler cameraHandler(camera);
-
 		SceneData sceneData = getSceneData();
 		
-		BVH::BVH_data knight_BVH = BVH::construct(APP_RESOURCES_PATH "models/stanford_dragon_pbr.glb", BVH::Heuristic::OBJECT_MEDIAN_SPLIT);
+		BVH::BVH_data knight_BVH = BVH::construct(APP_RESOURCES_PATH "models/stanford_dragon_pbr.glb", BVH::Heuristic::SPATIAL_MIDDLE_SPLIT);
 
 		/*std::cout << "----Traingle mesh-----" << std::endl;
 		std::cout << "Num Tris: " << knight_BVH.TRIANGLES_size << std::endl;
@@ -111,8 +110,6 @@ int main() {
 
 		ImGui_ImplGlfw_InitForOpenGL(window, true);
 		ImGui_ImplOpenGL3_Init("#version 460");
-		
-
 
 		//////////////////////////
 		// ImGui widgets variables
@@ -133,6 +130,8 @@ int main() {
 		ImVec2 prevViewportWindowSize = ImVec2(0.0f, 0.0f);
 		ImVec2 prevViewportWindowPos = ImVec2(0.0f, 0.0f);
 		ImVec2 viewportSize, topLeftTextureCoords, bottomLeftTextureCoords;
+
+		camera.posVec = glm::vec3(3.027f, 46.893f, -134.682f); // set the initial camera position
 
 		while (!glfwWindowShouldClose(window)) {
 			deltaTime.update();
