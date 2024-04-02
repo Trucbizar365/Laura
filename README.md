@@ -17,7 +17,12 @@ This separation keeps your project organized and promotes code reusability.
 
 ### Windows (Visual Studio)
 
-1. Clone this repository.
+1. Clone this repository:
+```
+git clone --recursive https://github.com/jakubg05/ray-tracing.git your-project-name
+cd your-project-name
+git submodule update --init --recursive 
+```
 2. Right-click the cloned folder and select "Open with Visual Studio," or open Visual Studio and navigate to File -> Open -> CMake... and choose the root CMakeLists.txt.
 3. Run the Debug build.
 4. Create a Release configuration by clicking the x64-Debug dropdown and adding x64-Release.
