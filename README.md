@@ -1,20 +1,8 @@
 # Ray Tracing from scratch in C++
-* Version 1.1.0
 
-![alt text](images/ray-tracer-preview.gif "Optional title")
-![alt text](images/knight.png "Optional title")
-
-
-## Project Structure
-
-* **core:**  Write common, reusable rendering code here.
-* **app:**  Create code for specific scenes or applications.
-* **thirdparty:** Houses all third-party libraries.
-
-This separation keeps your project organized and promotes code reusability.
+![image](https://raw.githubusercontent.com/jakubg05/images/main/RayTracing.png)
 
 ## Building The Project
-
 ### Windows (Visual Studio)
 
 1. Clone this repository:
@@ -30,8 +18,6 @@ git submodule update --init --recursive
 
 ## Project Structure and CMake
 
-This project uses a slightly more advanced CMake setup to promote code organization and reusability:
-
 * **Core as a Static Library:** The `core` directory contains its own CMakeLists.txt file and is configured to be built as a static library. This means the compiled code from the `core` directory is packaged into a single `.lib` (Windows) or `.a` (Linux) file.
 
 * **Application Linking:** The `app` directory doesn't have its own CMakeLists.txt. Instead, the root CMakeLists.txt handles:
@@ -39,4 +25,4 @@ This project uses a slightly more advanced CMake setup to promote code organizat
 * Linking the application's executable against the `core` static library
 * Linking the application's executable against the third-party libraries (GLFW, GLEW, etc.)
 
-![alt text](images/dependency-graph-version-1_0_0.png "Optional title")
+![alt text](https://raw.githubusercontent.com/jakubg05/images/main/RayTracingDepGraph.png)
