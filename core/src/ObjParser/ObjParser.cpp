@@ -71,7 +71,7 @@ void loadMesh(std::string filePath, std::vector<Triangle>& mesh, unsigned int& n
             // Set the material properties
             //triangle.material.color = glm::vec3(144.0f/255.0f, 50.0f/255.0f, 220.0f/255.0f); // purple
             //triangle.material.color = glm::vec3(0.1f, 0.1f, 0.1f); // black
-            triangle.material.color = glm::vec3(0.7f, 0.7f, 0.7f); // white
+            triangle.material.color = glm::vec3(0.7f, 0.7f, 0.7f); // yellow white
             triangle.material.emissionColor = glm::vec3(0.0f, 0.0f, 0.0f);
             triangle.material.emissionStrength = 0.0f;
 

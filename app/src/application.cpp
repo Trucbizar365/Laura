@@ -74,21 +74,24 @@ int main() {
 
 		Camera camera = Camera(fov, ASPECT, deltaTime);
 		CameraHandler cameraHandler(camera);
-		SceneData sceneData = sponza_lights_scene();
+		SceneData sceneData = emptyScene();
 		
 		// set the active heuristic (SURFACE_AREA_HEURISTIC_BUCKETS, SURFACE_AREA_HEURISTIC, SPATIAL_MIDDLE_SPLIT, OBJECT_MEDIAN_SPLIT)
 		BVH::Heuristic active_heuristic = BVH::Heuristic::SURFACE_AREA_HEURISTIC_BUCKETS;
 
 		//BVH::BVH_data scene_BVH = BVH::construct(APP_RESOURCES_PATH "models/suzanne_high_poly_rotated.glb", active_heuristic);
 		BVH::BVH_data scene_BVH = BVH::construct(APP_RESOURCES_PATH "models/stanford_dragon_pbr.glb", active_heuristic);
-		//BVH::BVH_data scene_BVH = BVH::construct(APP_RESOURCES_PATH "models/sponza.obj", active_heuristic);
+		//BVH::BVH_data scene_BVH = BVH::construct(APP_RESOURCES_PATH "models/tiny_house.glb", active_heuristic);
+		//BVH::BVH_data scene_BVH = BVH::construct(APP_RESOURCES_PATH "models/sponza_scene.glb", active_heuristic);
 		//BVH::BVH_data scene_BVH = BVH::construct(APP_RESOURCES_PATH "models/stanford_bunny.obj", active_heuristic);
 		std::cout << "BVH height: " << scene_BVH.BVH_tree_depth << std::endl;
 		
 		//camera.posVec = glm::vec3(3.027f, 46.893f, -134.682f); // set the initial camera position for stanford dragon
 		//camera.posVec = glm::vec3(-116.479f, 84.908f, 86.822f);
+		camera.speed = 150.0f;
 		camera.posVec = glm::vec3(1.0f, 0.0f, 0.0f);
-		Renderer renderer(sceneData, scene_BVH);
+		std::string skyboxFilePath = "None";
+		Renderer renderer(sceneData, scene_BVH, skyboxFilePath);
 		
 		// Setup Dear ImGui context
 		IMGUI_CHECKVERSION();
@@ -120,7 +123,7 @@ int main() {
 		
 		//skybox
 		bool show_skybox = true;
-
+		bool reloadSkybox = false;
 		glm::vec3 SkyGroundColor  = glm::vec3(0.6392156862f, 0.5803921f, 0.6392156862f);
 		glm::vec3 SkyColorHorizon = glm::vec3(1.0f, 1.0f, 1.0f);
 		glm::vec3 SkyColorZenith  = glm::vec3(0.486274509f, 0.71372549f, 234.0f / 255.0f);
@@ -166,9 +169,8 @@ int main() {
 			genDockspace();
 			genInspector(cameraHandler.CameraControllMode);
 			component_cameraGUI(camera, was_ImGui_Input, cameraHandler.CameraControllMode, shouldAccumulate, shouldPostProcess, raysPerPixel, bouncesPerRay);
-			genSkyboxGUI(SkyGroundColor, SkyColorHorizon, SkyColorZenith, show_skybox, was_ImGui_Input, cameraHandler.CameraControllMode);
+			genSkyboxGUI(SkyGroundColor, SkyColorHorizon, SkyColorZenith, show_skybox, was_ImGui_Input, skyboxFilePath, reloadSkybox, cameraHandler.CameraControllMode);
 			BVH_settings_GUI(display_BVH, active_heuristic, scene_BVH.BVH_tree_depth, heatmap_color_limit, showPixelData, was_ImGui_Input, cameraHandler.CameraControllMode);
-
 
 
 			ImGui::ShowDemoWindow(&show_demo_window);
@@ -266,7 +268,11 @@ int main() {
 			renderer.rtx_uniform_parameters.show_skybox = show_skybox;
 			renderer.rtx_uniform_parameters.heatmap_color_limit = heatmap_color_limit;
 			renderer.rtx_uniform_parameters.pixelGlobalInvocationID = glm::vec3(viewport_mouseX, inverted_viewport_mouseY, 1.0f); // invocations start from bottom left
-
+			
+			if (reloadSkybox) {
+				renderer.setSkyboxFilePath(skyboxFilePath);
+				reloadSkybox = false;
+			}
 
 			ComputeTexture* outputTexture = renderer.RenderComputeRtxStage();
 			

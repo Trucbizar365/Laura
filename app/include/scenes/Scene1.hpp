@@ -34,7 +34,7 @@ SceneData defaultScene() {
 
     Sphere sphere2;
     sphere2.position = glm::vec3(-476.0f, 513.0f, 0.0f);
-    sphere2.radius = 50.0f;
+    sphere2.radius = 5.0f;
     sphere2.material.color = glm::vec3(0.0f, 0.0f, 0.0f);
     sphere2.material.emissionColor = glm::vec3(1.0f, 0.9f, 1.0f);
     sphere2.material.emissionStrength = 3.0f;
@@ -130,11 +130,11 @@ SceneData sponza_lights_scene() {
     Sphere* spheres = new Sphere[4];
 
     Sphere light_sphere;
-    light_sphere.position = glm::vec3(1000.0f, 50.0f, 0.0f);
-    light_sphere.radius = 30.0f;
+    light_sphere.position = glm::vec3(1600.0f, 1900.0f, -50.0f);
+    light_sphere.radius = 400.0f;
     light_sphere.material.color = glm::vec3(0.0f, 0.0f, 0.0f);
-    light_sphere.material.emissionColor = glm::vec3(1.0f, 1.0f, 1.0f);
-    light_sphere.material.emissionStrength = 8.0f;
+    light_sphere.material.emissionColor = glm::vec3(1.0f, 0.98f, 0.90f);
+    light_sphere.material.emissionStrength = 100.0f;
 
     spheres[0] = light_sphere;
 
@@ -144,4 +144,12 @@ SceneData sponza_lights_scene() {
     sceneData.size = sceneData.numberOfObjects * sizeof(Sphere);
 
     return sceneData;
+}
+
+SceneData emptyScene() {
+	SceneData sceneData;
+    sceneData.sceneObjects = nullptr;
+    sceneData.numberOfObjects = 0;
+    sceneData.size = 0;
+	return sceneData;
 }

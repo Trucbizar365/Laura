@@ -116,7 +116,7 @@ layout (local_size_x = LOCAL_GROUP_X,
         local_size_z = LOCAL_GROUP_Z) in;
 
 layout (rgba32f, binding = 0) uniform image2D rayTracingTexture;
-layout (rgba32f, binding = 10) uniform image2D skyboxTexture;
+layout (binding = 2) uniform sampler2D skyboxTexture;
 
 //UBOs
 layout (std140, binding = 0) uniform uniformParameters {
@@ -139,7 +139,7 @@ layout (std140, binding = 0) uniform uniformParameters {
     bool u_displayMultipleBVHlayers;    // offset 168 // alignment 4 // total 172 bytes
     uint u_BVHlayerToDisplay;           // offset 172 // alignment 4 // total 176 bytes
     uint u_BVHTreeDepth;                // offset 176 // alignment 4 // total 180 bytes
-    bool u_show_skybox;                 // offset 180 // alignment 4 // total 184 bytes
+    bool u_use_custom_skybox_gradient;  // offset 180 // alignment 4 // total 184 bytes
     uint u_heatmap_color_limit; 	    // offset 184 // alignment 4 // total 188 bytes
 };
 
@@ -240,16 +240,21 @@ vec3 RandomDirectionInHemisphere(vec3 normalVector, inout uint state)
 vec3 GainSkyboxLight(const Ray ray)
 {
     // Environment Settings
-    if (!u_show_skybox)
+    if (u_use_custom_skybox_gradient)
     {
-        return vec3(0.0);
+        float skyGradientT = pow(smoothstep(0.0, 0.4, ray.dir.y), 0.35);
+        float groundToSkyT = smoothstep(-0.01, 0.0, ray.dir.y);
+        vec3 skyGradient = mix(u_skyboxHorizonColor.rgb, u_skyboxZenithColor.rgb, skyGradientT);
+        skyGradient = mix(u_skyboxGroundColor.rgb, skyGradient, groundToSkyT);
+        return skyGradient;
     }
-    float skyGradientT = pow(smoothstep(0.0, 0.4, ray.dir.y), 0.35);
-    float groundToSkyT = smoothstep(-0.01, 0.0, ray.dir.y);
-    vec3 skyGradient = mix(u_skyboxHorizonColor.rgb, u_skyboxZenithColor.rgb, skyGradientT);
-    skyGradient = mix(u_skyboxGroundColor.rgb, skyGradient, groundToSkyT);
-    vec4 texelColor = imageLoad(skyboxTexture, ivec2(0, 0));
-    return skyGradient;
+    else 
+    {
+        float u = 0.5f + atan(ray.dir.z, ray.dir.x) / (2.0f * PI);
+        float v = 0.5f + asin(ray.dir.y) / PI;
+        vec3 texelColor = texture(skyboxTexture, vec2(u, v)).rgb;
+        return texelColor;
+    }
 }
 
 /** The complexityToRGB function converts a complexity value to an RGB color using a rainbow color map.

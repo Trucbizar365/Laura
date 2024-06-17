@@ -102,11 +102,11 @@ private:
 	void read_PixelData_SSBO_block();
 
 public:
-	Renderer(SceneData& scene, BVH::BVH_data BVH_of_mesh);
+	Renderer(SceneData& scene, BVH::BVH_data BVH_of_mesh, std::string& skyboxFilePath);
 	~Renderer();
 
 	void setViewportSize(glm::vec2 viewportSize);
-	void setSkyboxTexture(std::string skyboxTexturePath);
+	void setSkyboxTexture();
 
 	void BeginComputeRtxStage();
 	ComputeTexture* RenderComputeRtxStage();
@@ -117,6 +117,7 @@ public:
 	void BeginComputePostProcStage();
 	ComputeTexture* RenderComputePostProcStage();
 	postProcessing_parameters_uniform_struct postProcessing_uniform_parameters;
+	void setSkyboxFilePath(std::string skyboxFilePath);
 
 private:
 	// compute rtx stage
@@ -128,4 +129,5 @@ private:
 	ComputeShader* computePostProcShader;
 
 	BVH::BVH_data BVH_of_mesh;
+	std::string skyboxFilePath;
 };
