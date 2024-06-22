@@ -17,11 +17,15 @@
 * @brief The SceneData struct
 * This struct is used to pass the scene data to the renderer
 * */
+
+#ifndef SCENEDATA
+#define SCENEDATA
 struct SceneData {
 	const void* sceneObjects;
 	size_t size;
 	int numberOfObjects;
 };
+#endif
 
 struct PixelData {
 	glm::vec4 pixelColor; // .xyz = color, .w = TRI_intersect_count

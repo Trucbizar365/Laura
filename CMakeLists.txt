@@ -17,7 +17,7 @@ add_subdirectory(thirdparty/stb_image)			#loading immaged
 add_subdirectory(thirdparty/stb_truetype)		#loading ttf files
 add_subdirectory(thirdparty/glm)				#math
 add_subdirectory(thirdparty/imgui-docking)		#ui
-add_subdirectory(thirdparty/delta_lib)			#delta time
+add_subdirectory(thirdparty/delta-lib)			#delta time
 add_subdirectory(thirdparty/assimp)				#3d model loaders
 
 add_subdirectory(core)
@@ -30,8 +30,6 @@ set(EXECUTABLE_NAME "raytracing") # the name of the final executable
 add_executable("${EXECUTABLE_NAME}")
 
 set_property(TARGET "${EXECUTABLE_NAME}" PROPERTY CXX_STANDARD 17)
-
-target_sources("${EXECUTABLE_NAME}" PRIVATE ${APP_SOURCES} )
 
 
 if(MSVC) # If using the VS compiler...
@@ -54,5 +52,5 @@ target_include_directories("${EXECUTABLE_NAME}" PUBLIC "${CMAKE_CURRENT_SOURCE_D
 
 
 target_link_libraries("${EXECUTABLE_NAME}" PUBLIC glm glfw libglew_static
-	stb_image stb_truetype imgui delta_lib core)
+	stb_image stb_truetype imgui deltaLib core)
 

@@ -8,7 +8,7 @@
 #include "core/gl_util/OpenGLdebugFuncs.h"
 
 ComputeShader::ComputeShader(const std::string& filepath)
- : m_Filepath(filepath), m_RendererID(0)
+	: m_Filepath(filepath), m_RendererID(0)
 {
 	m_RendererID = CreateShader();
 }
@@ -58,7 +58,7 @@ unsigned int ComputeShader::CreateShader()
 	std::string computeShaderSource = ParseShader(m_Filepath);
 	const char* src = &computeShaderSource[0];
 	GLuint computeShaderID = glCreateShader(GL_COMPUTE_SHADER);
-	
+
 	GLCall(glShaderSource(computeShaderID, 1, &src, NULL));
 	GLCall(glCompileShader(computeShaderID));
 

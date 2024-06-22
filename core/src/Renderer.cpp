@@ -6,11 +6,11 @@ struct SceneData;
 Renderer::Renderer(SceneData& scene, BVH::BVH_data BVH_of_mesh, std::string& skyboxFilePath)
 	: m_Scene(scene),
 
-	computeRtxShader(nullptr),
-	computeRtxTexture(nullptr),
+	computeRtxShader(0),
+	computeRtxTexture(0),
 
-	computePostProcShader(nullptr),
-	computePostProcTexture(nullptr),
+	computePostProcShader(0),
+	computePostProcTexture(0),
 
 	BVH_of_mesh(BVH_of_mesh),
 	skyboxFilePath(skyboxFilePath)
