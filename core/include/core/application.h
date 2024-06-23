@@ -2,7 +2,6 @@
 #define APPLICATION_H
 
 #include <GL/glew.h>
-#include <GLFW/glfw3.h>
 
 #include <imgui.h>
 #include "deltaLib/deltaLib.h"
@@ -17,6 +16,12 @@ class Application
 public:
 	const int SCREEN_WIDTH, SCREEN_HEIGHT;
 private:
+
+    enum struct EngineState {
+        RUNTIME_MODE,
+        EDITOR_MODE
+    };
+
 	GLFWwindow* m_Window;
     DeltaTime deltaTime;
     Camera camera;

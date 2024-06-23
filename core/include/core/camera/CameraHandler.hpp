@@ -24,7 +24,6 @@ public:
 
     void mouseCursorPositionCallback(GLFWwindow* window, double xpos, double ypos);
 	void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
-
 private:
     Camera& camera;
 

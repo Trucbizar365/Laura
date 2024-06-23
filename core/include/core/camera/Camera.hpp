@@ -38,6 +38,18 @@ private:
     glm::vec3 defaultUpVec = glm::vec3(0.0f, 1.0f, 0.0f);
     glm::vec3 defaultRtVec = glm::cross(defaultFwdVec, defaultUpVec);
 
+    glm::vec3 fwdVec = defaultFwdVec;
+    glm::vec3 upVec = defaultUpVec;
+    glm::vec3 rtVec = defaultRtVec;
+
+    int sWidth;
+    int sHeight;
+
+    float Aspect;
+    float FOV_rad;
+
+    glm::mat3 u_ModelMatrix;
+
 public:
     Camera(float FOV_deg, float ASPECT, DeltaTime& deltaTime);
 
@@ -74,9 +86,9 @@ public:
     glm::vec3 posVec;
     float focalLength;
 
-    float rotAroundZ; // roll - around center
-    float rotAroundY; // yaw - left right
-    float rotAroundX; // pitch - up down
+    float rotAroundZ = 0; // roll - around center
+    float rotAroundY = 0; // yaw - left right
+    float rotAroundX = 0; // pitch - up down
 
     bool FORWARD_KEY_ACTIVE    = false;
     bool BACKWARD_KEY_ACTIVE   = false;
@@ -110,17 +122,4 @@ public:
     float speed = 7.0f;
     DeltaTime& deltaTime;
     float FOV_deg;
-
-private:
-    int sWidth;
-    int sHeight;
-
-    glm::vec3 fwdVec;
-    glm::vec3 upVec;
-    glm::vec3 rtVec;
-    
-    float Aspect;
-    float FOV_rad;
-
-    glm::mat3 u_ModelMatrix;
 };

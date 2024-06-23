@@ -18,16 +18,8 @@ Camera::Camera( float FOV_deg, float Aspect, DeltaTime& deltaTime)
     :sWidth(-1), sHeight(-1), FOV_deg(FOV_deg), Aspect(Aspect), deltaTime(deltaTime)
 {
     FOV_rad = glm::radians(FOV_deg);
-    
-    fwdVec = glm::vec3(0.0f, 0.0f, 1.0f);
-    upVec = glm::vec3(0.0f, 1.0f, 0.0f);
-    rtVec = glm::cross(fwdVec, upVec);  // (-1.0f, 0.0f, 0.0f) 
 
-    posVec = glm::vec3(0.0f, 0.0f, 0.0f);
-
-    rotAroundX = 0;
-    rotAroundY = 0;
-    rotAroundZ = 0;
+    posVec = glm::vec3(1.0f, 0.0f, 0.0f);
 
     // since we transform the size of the screen in the compute shader to "normalized device coordinates" or NDC for short (-1, 1) 
     // half of the screen width is 1. Therefore (screen width / 2) / tan(FOV in radians / 2) can be simplified to 1 / tan(FOV_rad / 2)
@@ -84,7 +76,6 @@ void Camera::updateRotation()
         if (ROLL_RIGHT_KEY_ACTIVE) { rotAroundZ -= (static_cast<float>(deltaTime.getDelta()) * 3 * sensitivity); }
         if (ROLL_LEFT_KEY_ACTIVE) { rotAroundZ += (static_cast<float>(deltaTime.getDelta()) * 3 * sensitivity); }
     }
-
 
     // yaw
     temp = glm::rotate(glm::mat4(1.0f), glm::radians(rotAroundY), tempUp);

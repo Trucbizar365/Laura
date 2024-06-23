@@ -1,7 +1,7 @@
 #include "core/application.h"
 
 #include <iostream>
-
+#include <GLFW/glfw3.h>
 #include "core/gl_util/OpenGLdebugFuncs.h"
 
 #include "imgui_impl_glfw.h"
@@ -132,7 +132,6 @@ void Application::init()
 	ImGui_ImplGlfw_InitForOpenGL(m_Window, true);
 	ImGui_ImplOpenGL3_Init("#version 460");
 
-	camera.posVec = glm::vec3(1.0f, 0.0f, 0.0f);
 	renderer = new Renderer(sceneData, scene_BVH, skyboxFilePath);
 	
 }
