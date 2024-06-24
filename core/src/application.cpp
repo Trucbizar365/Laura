@@ -119,7 +119,7 @@ void Application::init()
 	glfwSetKeyCallback(m_Window, CameraHandler::GLFWKeyCallback);
 	glfwSetCursorPosCallback(m_Window, CameraHandler::GLFWMousePositionCallback);
 
-	eventDispatcher = new EventDispatcher(m_Window);
+	eventDispatcher = new EventDispatcher();
 
 	ImGuiIO& io = ImGui::GetIO(); (void)io;
 	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls

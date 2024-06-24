@@ -10,6 +10,8 @@
 #include "core/Renderer.h"
 #include "core/events.h"
 
+#define PLATFORM_WINDOWS
+
 class Application
 {
 

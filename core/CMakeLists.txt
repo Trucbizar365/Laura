@@ -5,7 +5,8 @@ project(rayTracingCore)
 add_library(core STATIC)
 
 file(GLOB_RECURSE CORE_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp")
-target_sources(core PRIVATE ${CORE_SOURCES})
+file(GLOB_RECURSE PLATFORM_SOURCES "${CMAKE_SOURCE_DIR}/platform*.cpp")
+target_sources(core PRIVATE ${CORE_SOURCES} ${PLATFORM_SOURCES})
 
 
 target_compile_definitions(core PUBLIC CORE_RESOURCES_PATH="${CMAKE_SOURCE_DIR}/core/resources/") # This is useful to get an ASSETS_PATH in your IDE during development but you should comment this if you compile a release version and uncomment the next line
@@ -16,7 +17,8 @@ target_compile_definitions(core PUBLIC APP_RESOURCES_PATH="${CMAKE_SOURCE_DIR}/a
 
 
 target_include_directories(core PUBLIC "${CMAKE_SOURCE_DIR}/core/include"
-									   "${CMAKE_SOURCE_DIR}/app/include")
+									   "${CMAKE_SOURCE_DIR}/app/include"
+									   "${CMAKE_SOURCE_DIR}")
 
 target_link_libraries(core PUBLIC glfw libglew_static imgui glm deltaLib assimp stb_image)
 

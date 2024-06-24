@@ -12,40 +12,38 @@ enum struct EventType
 {
 	KEY_PRESS_EVENT,
 	KEY_RELEASE_EVENT,
+	KEY_REPEAT_EVENT,
 	MOUSE_MOVE_EVENT,
 	MOUSE_BUTTON_PRESS_EVENT,
 	MOUSE_BUTTON_RELEASE_EVENT,
 	MOUSE_SCROLL_EVENT
 };
 
-
-/**
-* @brief Event is a struct that represents an input event. It contains the type of the event
- * and additional data depending on the type of the event.
- */
-struct Event {
+struct Event
+{
 	EventType type;
-	union {
-		struct {
-			int key;
-			int scancode;
-			int action;
-			int mods;
-		} keyEvent;
-		struct {
-			double xpos;
-			double ypos;
-		} mouseMoveEvent;
-		struct {
-			int button;
-			int action;
-			int mods;
-		} mouseButtonEvent;
-		struct {
-			double xoffset;
-			double yoffset;
-		} scrollEvent;
-	};
+};
+
+struct KeyEvent : public Event
+{
+	int key;
+};
+
+struct MouseMoveEvent : public Event
+{
+	double xpos;
+	double ypos;
+};
+
+struct MouseButtonEvent : public Event
+{
+	int button;
+};
+
+struct MouseScrollEvent : public Event
+{
+	double xoffset;
+	double yoffset;
 };
 
 
@@ -58,7 +56,7 @@ struct Event {
 class EventListener
 {
 public:
-	virtual void onEvent(Event event) = 0;
+	virtual void onEvent(Event* event) = 0;
 };
 
 /**
@@ -68,24 +66,14 @@ public:
 class EventDispatcher
 {
 public:
-	EventDispatcher(GLFWwindow* window);
+	EventDispatcher() = default;
 
 	void addListener(EventListener* listener);
 	void removeListener(EventListener* listener);
+	void notifyListeners(Event* event);
 
 private:
-	GLFWwindow* m_Window;
 	std::set <EventListener*> m_Listeners;
-
-	/// These are callback methods called by GLFW when an event occurs.
-	/// They are static methods because GLFW requires them to be static. The method gets the EventDispatcher
-	/// object of the current instance (self) from the GLFW window user pointer to perform actions as if the function was not static.
-	static void GLFWKeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
-	static void GLFWMousePositionCallback(GLFWwindow* window, double xpos, double ypos);
-	static void GLFWMouseButtonCallback(GLFWwindow* window, int button, int action, int mods);
-	static void GLFWScrollCallback(GLFWwindow* window, double xoffset, double yoffset);
-
-	void notifyListeners(Event event);
 };
 
 #endif // EVENTS_H
