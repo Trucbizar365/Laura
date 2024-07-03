@@ -4,7 +4,7 @@
 #include <string>
 #include <functional>
 
-#include "core/events.h"
+#include "core/Events.h"
 
 #include "core/KeyCodes.h"
 #include "core/MouseCodes.h"

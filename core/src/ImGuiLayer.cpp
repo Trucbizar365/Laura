@@ -4,7 +4,7 @@
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
 #include "core/events.h"
-#include "iostream"
+#include <iostream>
 
 ImGuiLayer::ImGuiLayer(IWindow* window)
     : ILayer(window), m_Window(window)
@@ -64,6 +64,7 @@ void ImGuiLayer::Begin()
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
+    ImGui::DockSpaceOverViewport(0, ImGui::GetMainViewport());
 }
 
 void ImGuiLayer::End()
