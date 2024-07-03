@@ -2,9 +2,10 @@
 #define EVENTS_H
 
 #include <GLFW/glfw3.h>
-#include <set>
 #include <vector>
 #include <ostream>
+#include <functional>
+#include "core/KeyCodes.h"
 
 /**
 * @brief EventType is an enum struct that represents the type of an event.
@@ -29,7 +30,7 @@ struct Event
 struct KeyEvent : public Event
 {
 	virtual ~KeyEvent() = default;
-	int key;
+	KeyCode key;
 	bool keyCtrl;
 	bool keyShift;
 	bool keyAlt;
@@ -61,32 +62,5 @@ struct MouseScrollEvent : public Event
 };
 
 void logEvent(Event* event);
-
-/**
-* @brief EventListener is an interface for classes that want to listen to events.
- * The idea is that the EventDispatcher will call the onEvent method of all the listeners
- * when an event occurs. This way, the listeners can implement their own logic for handling
- * input events.
- */
-class EventListener
-{
-public:
-	virtual void onEvent(Event* event) = 0;
-};
-
-/**
-* @brief EventDispatcher is a class that listens to GLFW events and dispatches them to
- * all the listeners that are registered to it.
- */
-class EventDispatcher
-{
-public:
-	void addListener(EventListener* listener);
-	void removeListener(EventListener* listener);
-	void notifyListeners(Event* event);
-
-private:
-	std::set <EventListener*> m_Listeners;
-};
 
 #endif // EVENTS_H

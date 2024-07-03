@@ -20,5 +20,5 @@ target_include_directories(core PUBLIC "${CMAKE_SOURCE_DIR}/core/include"
 									   "${CMAKE_SOURCE_DIR}/app/include"
 									   "${CMAKE_SOURCE_DIR}")
 
-target_link_libraries(core PUBLIC glfw libglew_static imgui glm deltaLib assimp stb_image)
+target_link_libraries(core PUBLIC glfw libglew_static imgui glm deltaLib assimp stb_image spdlog::spdlog)
 

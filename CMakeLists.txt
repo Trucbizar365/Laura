@@ -19,6 +19,7 @@ add_subdirectory(thirdparty/glm)				#math
 add_subdirectory(thirdparty/imgui-docking)		#ui
 add_subdirectory(thirdparty/delta-lib)			#delta time
 add_subdirectory(thirdparty/assimp)				#3d model loaders
+add_subdirectory(thirdparty/spdlog)				#logging
 
 add_subdirectory(core)
 
@@ -54,5 +55,5 @@ target_include_directories("${EXECUTABLE_NAME}" PUBLIC "${CMAKE_CURRENT_SOURCE_D
 
 
 target_link_libraries("${EXECUTABLE_NAME}" PUBLIC glm glfw libglew_static
-	stb_image stb_truetype imgui deltaLib core)
+	stb_image stb_truetype imgui deltaLib core spdlog::spdlog)
 

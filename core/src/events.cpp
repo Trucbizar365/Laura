@@ -2,18 +2,6 @@
 #include <iostream>
 #include <GLFW/glfw3.h>
 
-
-void EventDispatcher::addListener(EventListener* listener)
-{
-    m_Listeners.insert(listener);
-}
-
-
-void EventDispatcher::removeListener(EventListener* listener)
-{
-    m_Listeners.erase(listener);
-}
-
 void logEvent(Event* event)
 {
 	switch (event->type)
@@ -33,16 +21,6 @@ void logEvent(Event* event)
 	case EventType::MOUSE_SCROLL_EVENT:
 		std::cout << *dynamic_cast<MouseScrollEvent*>(event) << std::endl;
 		return;
-	}
-}
-
-
-void EventDispatcher::notifyListeners(Event* event)
-{
-	logEvent(event);
-	for (EventListener* listener : m_Listeners) 
-    {
-        listener->onEvent(event);
 	}
 }
 
