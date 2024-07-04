@@ -61,17 +61,23 @@ Application::~Application(){}
 void Application::run()
 {
 	init();
-	while (m_Window->isRunning)
+	while (!m_Window->shouldClose())
 	{
+		
 		update();
 		m_ImGuiLayer->Begin();
+		GLCall(glClear(GL_COLOR_BUFFER_BIT));
+		GLCall(glClearColor(0.0f, 0.0f, 0.0f, 1.0f));
 
+		
+		
+
+		/// need a refactoring
 		deltaTime.update();
+
 		totalFrames += 1;
 		was_ImGui_Input = false;
 		
-		GLCall(glClear(GL_COLOR_BUFFER_BIT));
-		GLCall(glClearColor(0.0f, 0.0f, 0.0f, 1.0f));
 		
 		// Widget windows
 		
@@ -232,6 +238,8 @@ void Application::run()
 		camera.ResetFlags();
 
 		m_ImGuiLayer->End();
+
+
 		render();
 	}
 	shutdown();

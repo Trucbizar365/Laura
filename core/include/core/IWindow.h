@@ -28,8 +28,6 @@ struct WindowProps
 class IWindow
 {
 public:
-	bool isRunning;
-
 	virtual ~IWindow() = default;
 
 	virtual void onUpdate() = 0;
@@ -41,9 +39,11 @@ public:
 	virtual void setVSync(bool enabled) = 0;
 	virtual bool isVSync() const = 0;
 
+	/// input polling
 	virtual bool isKeyPressed(KeyCode key) = 0;
 	virtual bool isMouseButtonPressed(MouseCode) = 0;
 	virtual std::pair<float, float> getMousePosition() = 0;
+	virtual bool shouldClose() = 0;
 
 	// expects a function that takes an Event* as a parameter and returns void
 	virtual void setEventCallback(const std::function<void(Event*)>& callback) = 0;

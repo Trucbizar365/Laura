@@ -1,36 +1,29 @@
-#include <GL/glew.h>
+#include "GLFWWindow.h"
 #include "platform/windows/GLFWWindow.h"
 #include <iostream>
 #include "core/KeyCodes.h"
+#include "core/Log.h"
 
 GLFWWindowIMPL::GLFWWindowIMPL(const WindowProps& windowProps)
 	: m_WindowProps(windowProps)
 {
 	if (!glfwInit())
 	{
-		glfwTerminate();
+		CORE_CRITICAL("Failed to initialize GLFW!");
 	}
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
-	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+
+	OpenGLContext::setWindowHints();
+
 	m_NativeWindow = glfwCreateWindow(m_WindowProps.width, m_WindowProps.height, (m_WindowProps.title).c_str(), NULL, NULL);
 	if (!m_NativeWindow)
 	{
-		glfwTerminate();
-	}
-	glfwMakeContextCurrent(m_NativeWindow);
-	std::cout << glGetString(GL_VERSION) << std::endl;
-	glfwSwapInterval(m_WindowProps.VSync);
-	if (glewInit() != GLEW_OK)
-	{
-		if (!m_NativeWindow)
-		{
-			glfwDestroyWindow(m_NativeWindow);
-			glfwTerminate();
-		}
+		CORE_CRITICAL("Failed to generate GLFW window!");
 	}
 
-	isRunning = true;
+	m_Context = new OpenGLContext(m_NativeWindow);
+	m_Context->init();
+	
+	glfwSwapInterval(m_WindowProps.VSync);
 
 	glfwSetWindowUserPointer(m_NativeWindow, this);
 	glfwSetKeyCallback(m_NativeWindow, GLFWKeyCallback);
@@ -67,12 +60,8 @@ void GLFWWindowIMPL::setVSync(bool enabled)
 
 void GLFWWindowIMPL::onUpdate()
 {
-	if (glfwWindowShouldClose(m_NativeWindow))
-	{
-		isRunning = false;
-	}
 	glfwPollEvents();
-	glfwSwapBuffers(m_NativeWindow);
+	m_Context->swapBuffers();
 }
 
 void* GLFWWindowIMPL::getNativeWindow() const
@@ -160,4 +149,10 @@ std::pair<float, float> GLFWWindowIMPL::getMousePosition()
 	double xpos, ypos;
 	glfwGetCursorPos(m_NativeWindow, &xpos, &ypos);
 	return { (float)xpos, (float)ypos };
+}
+
+bool GLFWWindowIMPL::shouldClose()
+{
+	if (glfwWindowShouldClose(m_NativeWindow))
+		return true;
 }

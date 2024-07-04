@@ -3,6 +3,7 @@
 
 #include "core/IWindow.h"
 #include <GLFW/glfw3.h>
+#include "platform/OpenGL/OpenGLContext.h"
 
 
 class GLFWWindowIMPL : public IWindow
@@ -19,17 +20,22 @@ public:
 
 	void setVSync(bool enabled) override;
 	void* getNativeWindow() const override;
+	
 
+	///  input polling
 	bool isKeyPressed(KeyCode key) override;
 	bool isMouseButtonPressed(MouseCode) override;
 	std::pair<float, float> getMousePosition() override;
+	bool shouldClose() override;
 	
+
 	void setEventCallback(const std::function<void(Event*)>& callback) override;
 
 
 
 private:
 	GLFWwindow* m_NativeWindow;
+	OpenGLContext* m_Context;
 	WindowProps m_WindowProps;
 	std::function<void(Event*)> notifyDispatcher;
 
