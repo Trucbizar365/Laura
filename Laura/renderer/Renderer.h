@@ -16,6 +16,7 @@
 
 //new stuff
 #include "renderer/IComputeShader.h"
+#include "renderer/ITexture.h"
 
 enum class RenderingAPI
 {
@@ -147,6 +148,8 @@ private:
 	// compute post processing stage
 	ComputeTexture* computePostProcTexture;
 	std::shared_ptr<IComputeShader> computePostProcShader;
+
+	std::shared_ptr<ITexture> skyboxTexture;
 
 	BVH::BVH_data BVH_of_mesh;
 	std::string skyboxFilePath;

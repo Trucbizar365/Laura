@@ -54,7 +54,7 @@ void Renderer::setSkyboxTexture()
 	stbi_set_flip_vertically_on_load(1);
 	unsigned char* skyboxTex = stbi_load(skyboxFilePath.c_str(), &m_Width, &m_Height, &channels, 4);
 	if (!skyboxTex) {
-		std::cout << ("Failed to load skybox texture " + skyboxFilePath).c_str() << std::endl;
+		std::cout << ("stbi_load() failed to generate a texture. (Did you pass the correct path?): " + skyboxFilePath).c_str() << std::endl;
 		return;
 	}
 
