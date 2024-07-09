@@ -66,7 +66,7 @@ namespace Key
 		TAB =				258,
 		BACKSPACE =			259,
 		INSERT =			260,
-		DELETE =			261,
+		DELETE_KEY =		261,
 		RIGHT =				262,
 		LEFT =				263,
 		DOWN =				264,
@@ -149,7 +149,7 @@ inline ImGuiKey KeyCodeToImGuiKey(KeyCode code)
 	case Key::HOME: return ImGuiKey_Home;
 	case Key::END: return ImGuiKey_End;
 	case Key::INSERT: return ImGuiKey_Insert;
-	case Key::DELETE: return ImGuiKey_Delete;
+	case Key::DELETE_KEY: return ImGuiKey_Delete;
 	case Key::BACKSPACE: return ImGuiKey_Backspace;
 	case Key::SPACE: return ImGuiKey_Space;
 	case Key::ENTER: return ImGuiKey_Enter;

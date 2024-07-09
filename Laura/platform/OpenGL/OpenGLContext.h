@@ -1,4 +1,4 @@
-#include "core/IRenderingContext.h"
+#include "renderer/IRenderingContext.h"
 #include "core/IWindow.h"
 
 class OpenGLContext : public IRenderingContext

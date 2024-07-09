@@ -2,6 +2,8 @@
 
 struct SceneData;
 
+RenderingAPI Renderer::s_API = RenderingAPI::OpenGL; // super temporary stuff here - this whole file needs a refactor
+
 Renderer::Renderer(SceneData& scene, BVH::BVH_data BVH_of_mesh, std::string& skyboxFilePath)
 	: m_Scene(scene),
 
@@ -20,10 +22,7 @@ Renderer::Renderer(SceneData& scene, BVH::BVH_data BVH_of_mesh, std::string& sky
 
 Renderer::~Renderer()
 {
-	delete computeRtxShader;
 	delete computeRtxTexture;
-
-	delete computePostProcShader;
 	delete computePostProcTexture;
 
 	glDeleteBuffers(1, &rtx_parameters_UBO_ID);
@@ -76,7 +75,7 @@ void Renderer::initComputeRtxStage()
 {	
 	// we would typically set the texture here but we dont know the texture size yet so we do it in setSize
 	//computeRtxUBO = new UniformBuffer(sizeof(ComputeRtxUniforms), 0);
-	computeRtxShader = new ComputeShader(CORE_RESOURCES_PATH "shaders/ComputeRayTracing.comp");
+	computeRtxShader = IComputeShader::Create(CORE_RESOURCES_PATH "shaders/ComputeRayTracing.comp", glm::uvec3(1));
 	computeRtxShader->Bind();
 	configure_rtx_parameters_UBO_block();
 	configure_sphereBuffer_UBO_block();
@@ -96,7 +95,8 @@ ComputeTexture* Renderer::RenderComputeRtxStage()
 {
 	update_rtx_parameters_UBO_block();
 	update_TrisMesh_SSBO_block();
-	computeRtxShader->DrawCall(ceil(m_ViewportSize.x / 8), ceil(m_ViewportSize.y / 4), 1); // work_groups size
+	computeRtxShader->setWorkGroupSizes(glm::uvec3(ceil(m_ViewportSize.x / 8), ceil(m_ViewportSize.y / 4), 1));
+	computeRtxShader->Dispatch();
 
 	read_PixelData_SSBO_block();
 
@@ -106,7 +106,7 @@ ComputeTexture* Renderer::RenderComputeRtxStage()
 
 void Renderer::initComputePostProcStage()
 {
-	computePostProcShader = new ComputeShader(CORE_RESOURCES_PATH "shaders/ComputePostProcessing.comp");
+	computePostProcShader = IComputeShader::Create(CORE_RESOURCES_PATH "shaders/ComputePostProcessing.comp", glm::uvec3(1));
 	computePostProcShader->Bind();
 	configure_postProcessing_parameters_UBO_block();
 }
@@ -119,7 +119,8 @@ void Renderer::BeginComputePostProcStage()
 ComputeTexture* Renderer::RenderComputePostProcStage()
 {
 	update_postProcessing_parameters_UBO_block();
-	computePostProcShader->DrawCall(ceil(m_ViewportSize.x / 8), ceil(m_ViewportSize.y / 4), 1);
+	computePostProcShader->setWorkGroupSizes(glm::uvec3(ceil(m_ViewportSize.x / 8), ceil(m_ViewportSize.y / 4), 1));
+	computePostProcShader->Dispatch();
 	return computePostProcTexture;
 }
 

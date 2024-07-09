@@ -22,11 +22,11 @@ void OpenGLContext::init()
 	
 	if (glewInit() != GLEW_OK)
 	{
-		CORE_CRITICAL("Failed to initialize GLEW!");
+		LR_CORE_CRITICAL("Failed to initialize GLEW!");
 	}
 
-	CORE_INFO("Using OpenGL - Version: {}", reinterpret_cast<const char*>(glGetString(GL_VERSION)));
-	CORE_INFO("Successfully initialized OpenGL context and GLEW!");
+	LR_CORE_INFO("Using OpenGL - Version: {}", reinterpret_cast<const char*>(glGetString(GL_VERSION)));
+	LR_CORE_INFO("Successfully initialized OpenGL context and GLEW!");
 }
 
 void OpenGLContext::swapBuffers()

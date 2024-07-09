@@ -263,7 +263,7 @@ void Application::update()
 	m_Window->onUpdate();
 	m_LayerStack->onUpdate();
 	//Logging test:
-	//CORE_TRACE(m_Window->isKeyPressed(Key::W));
+	//LR_CORE_TRACE(m_Window->isKeyPressed(Key::W));
 }
 
 void Application::render()

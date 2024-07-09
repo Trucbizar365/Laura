@@ -3,6 +3,7 @@
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 
+
 // Setting up custom std::cout of the triangle
 std::ostream& operator<<(std::ostream& os, const Triangle& triangle)
 {

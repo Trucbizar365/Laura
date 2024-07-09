@@ -1,16 +1,12 @@
+#include "lrpch.h"
 // standard
+#include <algorithm>
 #include <iostream>
 #include <fstream>
 #include <sstream>
 #include <vector>
 #include <string>
-#include <algorithm>
 #include <queue>
-
-// third-party
-#define GLM_ENABLE_EXPERIMENTAL
-#include <glm/glm.hpp>
-#include <glm/gtx/string_cast.hpp>
 
 
 #ifndef RTX_MATERIAL

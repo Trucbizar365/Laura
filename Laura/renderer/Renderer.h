@@ -3,7 +3,7 @@
 
 #include "lrpch.h"
 
-#include "platform/OpenGL/ComputeShader.h"
+#include "platform/OpenGL/shaders/OpenGLComputeShader.h"
 #include "platform/OpenGL/ComputeTexture.h"
 
 #include "imgui.h"
@@ -13,6 +13,16 @@
 #include "camera/Camera.h"
 #include "ObjParser/ObjParser.h"
 
+
+//new stuff
+#include "renderer/IComputeShader.h"
+
+enum class RenderingAPI
+{
+	None = 0, 
+	OpenGL = 1,
+	//Vulkan = 2, // !!! Not IMPLEMENTED YET !!!
+};
 
 /**
 * @brief The SceneData struct
@@ -78,6 +88,11 @@ struct postProcessing_parameters_uniform_struct {
 class Renderer
 {
 private:
+	static RenderingAPI s_API;
+public:
+	inline static RenderingAPI GetAPI() { return s_API; }
+
+private:
 	SceneData m_Scene;
 
 	glm::vec2 m_ViewportSize;
@@ -127,11 +142,11 @@ public:
 private:
 	// compute rtx stage
 	ComputeTexture* computeRtxTexture;
-	ComputeShader* computeRtxShader;
+	std::shared_ptr<IComputeShader> computeRtxShader;
 
 	// compute post processing stage
 	ComputeTexture* computePostProcTexture;
-	ComputeShader* computePostProcShader;
+	std::shared_ptr<IComputeShader> computePostProcShader;
 
 	BVH::BVH_data BVH_of_mesh;
 	std::string skyboxFilePath;

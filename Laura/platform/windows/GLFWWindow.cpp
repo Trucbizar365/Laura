@@ -10,7 +10,7 @@ GLFWWindowIMPL::GLFWWindowIMPL(const WindowProps& windowProps)
 {
 	if (!glfwInit())
 	{
-		CORE_CRITICAL("Failed to initialize GLFW!");
+		LR_CORE_CRITICAL("Failed to initialize GLFW!");
 	}
 
 	OpenGLContext::setWindowHints();
@@ -18,7 +18,7 @@ GLFWWindowIMPL::GLFWWindowIMPL(const WindowProps& windowProps)
 	m_NativeWindow = glfwCreateWindow(m_WindowProps.width, m_WindowProps.height, (m_WindowProps.title).c_str(), NULL, NULL);
 	if (!m_NativeWindow)
 	{
-		CORE_CRITICAL("Failed to generate GLFW window!");
+		LR_CORE_CRITICAL("Failed to generate GLFW window!");
 	}
 
 	m_Context = new OpenGLContext(m_NativeWindow);
