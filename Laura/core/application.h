@@ -7,7 +7,7 @@
 #include "deltaLib/deltaLib.h"
 #include "camera/CameraHandler.h" // also includes Camera.hpp
 #include "scenes/Scene1.hpp"
-#include "renderer/Renderer.h"
+#include "renderer/RendererOld.h"
 
 
 #include "core/IWindow.h"
@@ -48,8 +48,8 @@ private:
     bool show_demo_window;
     int totalFrames;
     double prevCamAspect;
-    ImVec2 prevViewportWindowSize;
-    ImVec2 prevViewportWindowPos;
+    glm::vec2 prevViewportWindowSize;
+    glm::vec2 prevViewportWindowPos;
     ImVec2 viewportSize;
     ImVec2 topLeftTextureCoords;
     ImVec2 bottomLeftTextureCoords;

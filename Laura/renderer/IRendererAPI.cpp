@@ -2,10 +2,7 @@
 
 #include "platform/opengl/OpenGLRendererAPI.h"
 
-////////////////////////////
-/// SET THE RENDERER API ///
-////////////////////////////
-IRendererAPI::API IRendererAPI::s_API = IRendererAPI::API::OpenGL;
+IRendererAPI::API IRendererAPI::s_API = IRendererAPI::API::OpenGL; // OpenGL by default
 
 std::shared_ptr<IRendererAPI> IRendererAPI::Create()
 {

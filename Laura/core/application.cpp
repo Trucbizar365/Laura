@@ -41,8 +41,8 @@ Application::Application() :
 	show_demo_window			(true),
 	totalFrames					(0),
 	prevCamAspect				(0),
-	prevViewportWindowSize		(ImVec2(0.0f, 0.0f)),
-	prevViewportWindowPos		(ImVec2(0.0f, 0.0f)),
+	prevViewportWindowSize		(glm::vec2(0.0f, 0.0f)),
+	prevViewportWindowPos		(glm::vec2(0.0f, 0.0f)),
 	display_BVH					(false),
 	showPixelData				(true),
 	displayed_layer				(1),
@@ -95,10 +95,10 @@ void Application::run()
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0, 0 });
 		ImGui::Begin("Viewport", nullptr, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse);
 		
-		ImVec2 viewportWindowSize = ImGui::GetContentRegionAvail();
+		glm::vec2 viewportWindowSize = glm::vec2(ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y);
 		
 		// check if the viewport size or aspect ratio changed
-		if (viewportWindowSize.x != prevViewportWindowSize.x || viewportWindowSize.y != prevViewportWindowSize.y || camera.getAspect() != prevCamAspect)
+		if (viewportWindowSize != prevViewportWindowSize || camera.getAspect() != prevCamAspect)
 		{
 			prevViewportWindowSize = viewportWindowSize;
 			prevCamAspect = camera.getAspect();
@@ -134,8 +134,8 @@ void Application::run()
 		
 		
 		// check if the viewport window position changed
-		ImVec2 viewportWindowPos = ImGui::GetWindowPos();
-		if (viewportWindowPos.x != prevViewportWindowPos.x || viewportWindowPos.y != prevViewportWindowPos.y)
+		glm::vec2 viewportWindowPos = glm::vec2(ImGui::GetWindowPos().x, ImGui::GetWindowPos().y);
+		if (viewportWindowPos != prevViewportWindowPos)
 		{
 			prevViewportWindowPos = viewportWindowPos;
 		

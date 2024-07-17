@@ -1,5 +1,5 @@
 #include "renderer/ITexture.h"
-#include "renderer/Renderer.h"
+#include "renderer/RendererOld.h"
 
 #include "platform/OpenGL/OpenGLTexture.h"
 
