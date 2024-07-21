@@ -1,0 +1,29 @@
+#ifndef OPENGL_SHADER_STORAGE_BUFFER_H
+#define OPENGL_SHADER_STORAGE_BUFFER_H
+
+#include "lrpch.h"
+#include "renderer/IShaderStorageBuffer.h"
+
+namespace Laura
+{
+
+	class OpenGLShaderStorageBuffer : public IShaderStorageBuffer
+	{
+	public:
+		OpenGLShaderStorageBuffer(uint32_t size, uint32_t bindingPoint, BufferUsageType type);
+
+		virtual void Bind() override;
+		virtual void Unbind() override;
+
+		virtual void AddData(uint32_t offset, uint32_t dataSize, const void* data) override;
+
+		virtual void SetBindingPoint(uint32_t bindingPoint) override;
+
+	private:
+		uint32_t m_ID, m_Size, m_BindingPoint;
+		BufferUsageType m_UsageType;
+	};
+
+}
+
+#endif // OPENGL_SHADER_STORAGE_BUFFER_H
