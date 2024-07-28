@@ -30,6 +30,8 @@ namespace Laura
 		virtual void SetBindingPoint(uint32_t bindingPoint) = 0;
 
 		virtual void AddData(uint32_t offset, uint32_t dataSize, const void* data) = 0;
+
+		virtual void* ReadData(uint32_t offset, uint32_t dataSize) = 0;
 	};
 
 }

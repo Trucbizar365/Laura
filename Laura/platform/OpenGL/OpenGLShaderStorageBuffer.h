@@ -19,6 +19,8 @@ namespace Laura
 
 		virtual void SetBindingPoint(uint32_t bindingPoint) override;
 
+		virtual void* ReadData(uint32_t offset, uint32_t dataSize) override;
+
 	private:
 		uint32_t m_ID, m_Size, m_BindingPoint;
 		BufferUsageType m_UsageType;

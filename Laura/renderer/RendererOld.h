@@ -5,7 +5,7 @@
 #include <GL/glew.h>
 #include "platform/OpenGL/OpenGLdebugFuncs.h"
 
-#include "camera/CameraOld.h"
+#include "CameraOld/CameraOld.h"
 #include "ObjParser/ObjParser.h"
 
 //new stuff
@@ -88,11 +88,6 @@ namespace Laura {
 	private:
 		void initComputeRtxStage();
 		void initComputePostProcStage();
-
-		/// SSBO STUFF /// (needs a refactor)
-		unsigned int pixelData_SSBO_ID;
-		void configure_PixelData_SSBO_block();
-		void read_PixelData_SSBO_block();
 
 	private:
 		SceneData m_Scene;

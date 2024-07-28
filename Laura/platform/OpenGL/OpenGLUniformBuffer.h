@@ -17,7 +17,7 @@ namespace Laura
 
 		virtual void AddData(uint32_t offset, uint32_t dataSize, const void* data) override;
 
-		virtual void SetBindingPoint(uint32_t bindingPoint) override;
+		virtual void SetBindingPoint(uint32_t bindingPoint) override;		
 
 	private:
 		uint32_t m_ID, m_Size, m_BindingPoint;

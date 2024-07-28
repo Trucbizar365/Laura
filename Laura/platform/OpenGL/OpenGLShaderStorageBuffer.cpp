@@ -35,4 +35,27 @@ namespace Laura
 		GLCall(glBindBufferBase(GL_SHADER_STORAGE_BUFFER, m_BindingPoint, m_ID));
 	}
 
+	void* OpenGLShaderStorageBuffer::ReadData(uint32_t offset, uint32_t dataSize)
+	{
+		Bind();
+		glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT); // make sure all data has been written before proceeding
+
+		void* dataPtr = (void*)glMapBufferRange(GL_SHADER_STORAGE_BUFFER, offset, dataSize, GL_MAP_READ_BIT);
+
+		if (dataPtr == nullptr) 
+		{
+			LR_CORE_CRITICAL("[ERROR] reading SSBO Buffer");
+			ASSERT(false);
+			return nullptr;
+		}
+		else
+		{
+			GLCall(glUnmapBuffer(GL_SHADER_STORAGE_BUFFER));
+		}
+
+		GLCall(glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0));
+		
+		return dataPtr;		
+	}
+
 }

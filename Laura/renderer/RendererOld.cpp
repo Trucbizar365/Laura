@@ -1,4 +1,5 @@
 #include "renderer/RendererOld.h"
+#include "Renderer.h"
 
 struct SceneData;
 
@@ -7,8 +8,6 @@ namespace Laura
 
 	Renderer::Renderer(SceneData& scene, BVH::BVH_data BVH_of_mesh, std::string& skyboxFilePath)
 		: m_Scene(scene),
-		computeRtxShader(0),
-		computePostProcShader(0),
 		BVH_of_mesh(BVH_of_mesh),
 		skyboxFilePath(skyboxFilePath)
 	{
@@ -36,6 +35,8 @@ namespace Laura
 		m_SkyboxTexture = ITexture::Create(skyboxFilePath, 0);
 	}
 
+
+
 	/////////////////////////
 	/// RAY TRACING STAGE ///
 	void Renderer::initComputeRtxStage()
@@ -60,7 +61,7 @@ namespace Laura
 		m_BVH_SSBO->AddData(0, sizeof(BVH::Node) * BVH_of_mesh.BVH_size, BVH_of_mesh.BVH.data());
 		m_BVH_SSBO->Unbind();
 
-		configure_PixelData_SSBO_block();
+		m_pixelData_SSBO = IShaderStorageBuffer::Create(20, 5, BufferUsageType::DYNAMIC_DRAW);
 	}
 
 	std::shared_ptr<ITexture> Renderer::RenderComputeRtxStage()
@@ -88,10 +89,16 @@ namespace Laura
 		computeRtxShader->Bind();
 		computeRtxShader->setWorkGroupSizes(glm::uvec3(ceil(m_ViewportSize.x / 8), ceil(m_ViewportSize.y / 4), 1));
 		computeRtxShader->Dispatch();
-		read_PixelData_SSBO_block();
+		
+		PixelData* SSBO_pixelData_ptr = (PixelData*)m_pixelData_SSBO->ReadData(0, 20);
+		pixelData.pixelColor = SSBO_pixelData_ptr->pixelColor;
+		pixelData.AABB_intersect_count = SSBO_pixelData_ptr->AABB_intersect_count;
+
 		return m_TracingTexture;
 	}
 	/////////////////////////////
+
+
 
 	/////////////////////////////
 	/// POST PROCESSING STAGE ///
@@ -113,35 +120,4 @@ namespace Laura
 		return m_PostProcTexture;
 	}
 	/////////////////////////////
-
-	void Renderer::configure_PixelData_SSBO_block()
-	{
-		GLCall(glGenBuffers(1, &pixelData_SSBO_ID));
-		GLCall(glBindBuffer(GL_SHADER_STORAGE_BUFFER, pixelData_SSBO_ID));
-		GLCall(glBufferData(GL_SHADER_STORAGE_BUFFER, 20, nullptr, GL_DYNAMIC_READ));
-		GLCall(glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 5, pixelData_SSBO_ID));
-	}
-
-	void Renderer::read_PixelData_SSBO_block() {
-		GLCall(glBindBuffer(GL_SHADER_STORAGE_BUFFER, pixelData_SSBO_ID));
-
-		glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
-
-		PixelData* SSBO_pixelData_ptr = (PixelData*)glMapBufferRange(GL_SHADER_STORAGE_BUFFER, 0, 20, GL_MAP_READ_BIT);
-
-		if (SSBO_pixelData_ptr != nullptr) 
-		{
-			pixelData.pixelColor = SSBO_pixelData_ptr->pixelColor;
-			pixelData.AABB_intersect_count = SSBO_pixelData_ptr->AABB_intersect_count;
-
-			GLCall(glUnmapBuffer(GL_SHADER_STORAGE_BUFFER));
-		}
-		else 
-		{
-			std::cout << "Error mapping buffer" << std::endl; 
-		}
-
-		GLCall(glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0));
-	}
-
 }

@@ -5,7 +5,7 @@
 #include <imgui.h>
 
 #include "deltaLib/deltaLib.h"
-#include "camera/CameraHandler.h" // also includes Camera.hpp
+#include "CameraOld/CameraHandler.h" // also includes Camera.hpp
 #include "scenes/Scene1.hpp"
 #include "renderer/RendererOld.h"
 

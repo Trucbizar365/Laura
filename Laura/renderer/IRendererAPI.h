@@ -2,7 +2,6 @@
 #define IRENDERER_API_H
 
 #include "lrpch.h"
-#include <glm/glm.hpp>
 
 #include "renderer/IComputeShader.h"
 
