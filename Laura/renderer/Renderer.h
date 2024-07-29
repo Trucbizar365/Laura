@@ -1,7 +1,3 @@
-////////////////////////
-/// WORK IN PROGRESS ///
-////////////////////////
-
 //#ifndef RENDERER_H
 //#define RENDERER_H
 //
@@ -52,15 +48,16 @@
 //		// 2. based on searching the data structure set flag genBottomLevelBVH = true/false - of course if this flag is false then the following flag will have to be false as well
 //		// 3. if the transform has changed set flag genTopLevelBVH = true/false
 //		// (not gonna be called every frame, only when the mesh is added)
-//		void SubmitMesh(Mesh& mesh, uint32_t meshID);
-//
+//		void SubmitMesh(const MeshComponent& mesh, uint32_t meshID);
 //		// removes the mesh from the data structure and subsequently sets the genTLBVH=true
 //		// (also not gonna be called every frame, only when the mesh is removed)
 //		void RemoveMesh(uint32_t meshID);
 //
-//		// 1. updates the mesh data structure and sets the genTLBVH=true
-//		// (predominantly called when the mesh transform has changed)
-//		void UpdateMesh(uint32_t meshID);
+//		void SubmitSphere(const SphereComponent& sphere, uint32_t sphereID);
+//		void RemoveSphere(uint32_t sphereID);
+//
+//		void SubmitPlane(const PlaneComponent& plane, uint32_t planeID);
+//		void RemovePlane(uint32_t planeID);
 //
 //		// 1. with each ID will be associated the mesh and the BVH flags
 //		// 2. loop over the data structure and for each mesh that has genBLBVH=true generate the BLBVH

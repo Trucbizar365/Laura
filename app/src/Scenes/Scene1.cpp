@@ -2,30 +2,30 @@
 
 SceneData defaultScene() {
 
-    Sphere* spheres = new Sphere[4];
+    Laura::Sphere* spheres = new Laura::Sphere[4];
 
-    Sphere sphere1;
+    Laura::Sphere sphere1;
     sphere1.position = glm::vec3(0.0f, -10.0f, 5.0f);
     sphere1.radius = 9.0f;
     sphere1.material.color = glm::vec3(0.807f, 0.2588f, 0.2588f); // Red color
     sphere1.material.emissionColor = glm::vec3(0.0f, 0.0f, 0.0f);
     sphere1.material.emissionStrength = 0.0f;
 
-    Sphere sphere2;
+    Laura::Sphere sphere2;
     sphere2.position = glm::vec3(-476.0f, 513.0f, 0.0f);
     sphere2.radius = 5.0f;
     sphere2.material.color = glm::vec3(0.0f, 0.0f, 0.0f);
     sphere2.material.emissionColor = glm::vec3(1.0f, 0.9f, 1.0f);
     sphere2.material.emissionStrength = 3.0f;
 
-    Sphere sphere3;
+    Laura::Sphere sphere3;
     sphere3.position = glm::vec3(0.3f, 2.0f, 10.0f);
     sphere3.radius = 0.7f;
     sphere3.material.color = glm::vec3(1.0f, 1.0f, 0.9f); // skin color
     sphere3.material.emissionColor = glm::vec3(0.0f, 0.0f, 0.0f);
     sphere3.material.emissionStrength = 0.0f;
 
-    Sphere sphere4;
+    Laura::Sphere sphere4;
     sphere4.position = glm::vec3(-3.0f, -0.9f, 5.0f);
     sphere4.radius = 0.8f;
     sphere4.material.color = glm::vec3(0.0f, 0.0f, 0.0f); // Yellow color
@@ -40,23 +40,23 @@ SceneData defaultScene() {
     SceneData sceneData;
     sceneData.sceneObjects = spheres;
     sceneData.numberOfObjects = 4;
-    sceneData.size = sceneData.numberOfObjects * sizeof(Sphere);
+    sceneData.size = sceneData.numberOfObjects * sizeof(Laura::Sphere);
 
     return sceneData;
 }
 
 SceneData stanford_dragon_scene() {
 
-    Sphere* spheres = new Sphere[4];
+    Laura::Sphere* spheres = new Laura::Sphere[4];
 
-    Sphere ground_sphere;
+    Laura::Sphere ground_sphere;
     ground_sphere.position = glm::vec3(0.0f, -999.95f, 5.0f);
     ground_sphere.radius = 1000.0f;
     ground_sphere.material.color = glm::vec3(0.807f, 0.2588f, 0.2588f); // Red color
     ground_sphere.material.emissionColor = glm::vec3(0.0f, 0.0f, 0.0f);
     ground_sphere.material.emissionStrength = 0.0f;
 
-    Sphere light_sphere;
+    Laura::Sphere light_sphere;
     light_sphere.position = glm::vec3(0.0f, 700.0f, 0.0f);
     light_sphere.radius = 500.0f;
     light_sphere.material.color = glm::vec3(0.0f, 0.0f, 0.0f);
@@ -69,23 +69,23 @@ SceneData stanford_dragon_scene() {
     SceneData sceneData;
     sceneData.sceneObjects = spheres;
     sceneData.numberOfObjects = 2;
-    sceneData.size = sceneData.numberOfObjects * sizeof(Sphere);
+    sceneData.size = sceneData.numberOfObjects * sizeof(Laura::Sphere);
 
     return sceneData;
 }
 
 SceneData stanford_bunny_scene() {
 
-    Sphere* spheres = new Sphere[4];
+    Laura::Sphere* spheres = new Laura::Sphere[4];
 
-    Sphere ground_sphere;
+    Laura::Sphere ground_sphere;
     ground_sphere.position = glm::vec3(0.0f, -999.95f, 5.0f);
     ground_sphere.radius = 1000.0f;
     ground_sphere.material.color = glm::vec3(0.807f, 0.2588f, 0.2588f); // Red color
     ground_sphere.material.emissionColor = glm::vec3(0.0f, 0.0f, 0.0f);
     ground_sphere.material.emissionStrength = 0.0f;
 
-    Sphere light_sphere;
+    Laura::Sphere light_sphere;
     light_sphere.position = glm::vec3(0.0f, 700.0f, 500.0f);
     light_sphere.radius = 500.0f;
     light_sphere.material.color = glm::vec3(0.0f, 0.0f, 0.0f);
@@ -98,7 +98,7 @@ SceneData stanford_bunny_scene() {
     SceneData sceneData;
     sceneData.sceneObjects = spheres;
     sceneData.numberOfObjects = 2;
-    sceneData.size = sceneData.numberOfObjects * sizeof(Sphere);
+    sceneData.size = sceneData.numberOfObjects * sizeof(Laura::Sphere);
 
     return sceneData;
 }
@@ -106,9 +106,9 @@ SceneData stanford_bunny_scene() {
 
 SceneData sponza_lights_scene() {
 
-    Sphere* spheres = new Sphere[4];
+    Laura::Sphere* spheres = new Laura::Sphere[4];
 
-    Sphere light_sphere;
+    Laura::Sphere light_sphere;
     light_sphere.position = glm::vec3(1600.0f, 1900.0f, -50.0f);
     light_sphere.radius = 400.0f;
     light_sphere.material.color = glm::vec3(0.0f, 0.0f, 0.0f);
@@ -120,7 +120,7 @@ SceneData sponza_lights_scene() {
     SceneData sceneData;
     sceneData.sceneObjects = spheres;
     sceneData.numberOfObjects = 1;
-    sceneData.size = sceneData.numberOfObjects * sizeof(Sphere);
+    sceneData.size = sceneData.numberOfObjects * sizeof(Laura::Sphere);
 
     return sceneData;
 }

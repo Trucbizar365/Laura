@@ -16,6 +16,7 @@
 //		
 //		m_Texture = ITexture::Create(renderSettings.viewportDimensions.x, renderSettings.viewportDimensions.y, 4, 0);
 //		m_Shader = IComputeShader::Create(CORE_RESOURCES_PATH "shaders/ComputeRayTracing.comp", glm::uvec3(1));
+//		// could potentially split the BVH rendering mode to another shader altogether
 //		m_Shader->Bind();
 //
 //		// Pixel Picking (we will see)
@@ -58,15 +59,27 @@
 //		m_RenderSettingsUBO->Unbind();
 //	}
 //
-//	void Renderer::SubmitMesh(Mesh& mesh, uint32_t meshID)
+//	void Renderer::SubmitMesh(const MeshComponent& mesh, uint32_t meshID)
 //	{
 //	}
 //
 //	void Renderer::RemoveMesh(uint32_t meshID)
 //	{
 //	}
+//	
+//	void Renderer::SubmitSphere(const SphereComponent& sphere, uint32_t sphereID)
+//	{
+//	}
 //
-//	void Renderer::UpdateMesh(uint32_t meshID)
+//	void Renderer::RemoveSphere(uint32_t sphereID)
+//	{
+//	}
+//
+//	void Renderer::SubmitPlane(const PlaneComponent& plane, uint32_t planeID)
+//	{
+//	}
+//
+//	void Renderer::RemovePlane(uint32_t planeID)
 //	{
 //	}
 //
