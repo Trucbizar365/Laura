@@ -9,7 +9,8 @@
 
 #include "Renderer/IRendererAPI.h"
 #include "Renderer/IComputeShader.h"
-#include "Renderer/ITexture.h"
+#include "Renderer/ITexture2D.h"
+#include "Renderer/IImage2D.h"
 #include "Renderer/IUniformBuffer.h"
 #include "Renderer/IShaderStorageBuffer.h"
 
@@ -70,7 +71,7 @@ namespace Laura {
 		// 3. if any of the meshes have genTLBVH=true, generate the TLBVH as well
 		// 4. send the BVH and meshes to the default RayTracing shader to predetermined binding points
 		// 5. dispatch the shader and return the rendered frame
-		std::shared_ptr<ITexture> RenderScene();
+		std::shared_ptr<IImage2D> RenderScene();
 
 		// 1. delete the camera, environment and renderSettings UBOs
 		// 2. delete the default shader
@@ -80,7 +81,10 @@ namespace Laura {
 
 	private:
 		std::shared_ptr<IComputeShader> m_Shader;
-		std::shared_ptr<ITexture> m_FrameTexture, m_SkyboxTexture;
+
+		std::shared_ptr<ITexture2D> m_SkyboxTexture;
+		std::shared_ptr<IImage2D> m_FrameTexture;
+
 		std::shared_ptr<IUniformBuffer> m_CameraUBO, m_RenderSettingsUBO, m_EnvironmentUBO;
 		std::shared_ptr<IShaderStorageBuffer> m_TriangleMeshSSBO, m_BVHSSBO;
 

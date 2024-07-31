@@ -30,9 +30,9 @@ namespace Laura {
         IWindow* m_Window;
         LayerStack* m_LayerStack;
         ImGuiLayer* m_ImGuiLayer;
-
         Renderer* renderer;
 
+        // should move to sandbox
         Camera m_Camera;
         EnvironmentEntity m_Environment;
 

@@ -1,4 +1,5 @@
 #include "renderer/Renderer.h"
+#include "Assets/TextureLoader.h"
 #include "Renderer/BVH/BVHBuilder.h"
 
 namespace Laura 
@@ -14,9 +15,12 @@ namespace Laura
 
 	void Renderer::BeginScene(const Camera& camera, const EnvironmentEntity& environment)
 	{
-		m_FrameTexture = ITexture::Create(renderSettings.viewportDimensions.x, renderSettings.viewportDimensions.y, 4, 0);
-		//m_SkyboxTexture = ITexture::Create(environment.skybox.getTexturePath(), 1);
-		m_SkyboxTexture = ITexture::Create(std::string(APP_RESOURCES_PATH "skyboxes/metro_noord_4k.hdr"), 1);
+		m_FrameTexture = IImage2D::Create(nullptr, renderSettings.viewportDimensions.x, renderSettings.viewportDimensions.y, 0, Image2DType::LR_READ_WRITE);
+
+		LoadedTexture tex = TextureLoader::loadTexture(std::string(APP_RESOURCES_PATH "skyboxes/metro_noord_4k.hdr"), 4);
+		m_SkyboxTexture = ITexture2D::Create(tex.data, tex.width, tex.height, 1);
+		TextureLoader::freeTexture(tex);
+
 		m_CameraUBO = IUniformBuffer::Create(80, 0, BufferUsageType::DYNAMIC_DRAW);
 		m_EnvironmentUBO = IUniformBuffer::Create(64, 1, BufferUsageType::DYNAMIC_DRAW);
 		m_RenderSettingsUBO = IUniformBuffer::Create(32, 2, BufferUsageType::DYNAMIC_DRAW);
@@ -97,7 +101,7 @@ namespace Laura
 	//{
 	//}
 
-	std::shared_ptr<ITexture> Renderer::RenderScene()
+	std::shared_ptr<IImage2D> Renderer::RenderScene()
 	{
 		m_Shader->Bind();
 		m_Shader->setWorkGroupSizes(glm::uvec3(ceil(renderSettings.viewportDimensions.x / 8),

@@ -3,7 +3,7 @@
 
 
 #include "Core/Log.h"
-#include "renderer/ITexture.h"
+#include "renderer/ITexture2D.h"
 #include "Assets/MeshLoader.h"
 
 namespace Laura {
@@ -89,7 +89,7 @@ namespace Laura {
 				bottomLeftTextureCoords.y = topLeftTextureCoords.y + viewportSize.y;
 			}
 		
-			std::shared_ptr<ITexture> RenderedFrame = renderer->RenderScene();
+			std::shared_ptr<IImage2D> RenderedFrame = renderer->RenderScene();
 		
 			ImDrawList* drawList = ImGui::GetWindowDrawList();
 			drawList->AddImage((ImTextureID)RenderedFrame->GetID(), topLeftTextureCoords, bottomLeftTextureCoords, { 0, 1 }, { 1, 0 });
@@ -99,7 +99,7 @@ namespace Laura {
 
 			m_ImGuiLayer->End();
 
-			render(); // Does nothing for some reason?
+			render();
 		}
 		shutdown();
 	}
@@ -125,7 +125,7 @@ namespace Laura {
 		m_Environment.skybox.changeType(SkyboxType::SKYBOX_TEXTURE);
 		m_Environment.skybox.setTexturePath(std::string(CORE_RESOURCES_PATH "Skyboxes/Metro_default.hdr"));
 		
-		renderer->renderSettings.viewportDimensions = glm::vec2(1280, 720);
+		renderer->renderSettings.viewportDimensions = glm::vec2(300, 100);
 		renderer->renderSettings.raysPerPixel = 1;
 		renderer->renderSettings.bouncesPerRay = 5;
 		renderer->renderSettings.maxAABBIntersections = 10000;
@@ -133,11 +133,11 @@ namespace Laura {
 
 		renderer->BeginScene(m_Camera, m_Environment);
 
-		MeshComponent model3D = loadMesh(std::string(APP_RESOURCES_PATH "models/stanford_dragon_pbr.glb"));
-		//MeshComponent model3D = loadMesh(std::string(APP_RESOURCES_PATH "models/suzanne_high_poly_rotated.glb")),
-		//MeshComponent model3D = loadMesh(std::string(APP_RESOURCES_PATH "models/tiny_house.glb")),
-		//MeshComponent model3D = loadMesh(std::string(APP_RESOURCES_PATH "models/sponza_scene.glb")),
-		//MeshComponent model3D = loadMesh(std::string(APP_RESOURCES_PATH "models/stanford_bunny.obj")),
+		MeshComponent model3D = MeshLoader::loadMesh(std::string(APP_RESOURCES_PATH "models/stanford_dragon_pbr.glb"));
+		//MeshComponent model3D = MeshLoader::loadMesh(std::string(APP_RESOURCES_PATH "models/suzanne_high_poly_rotated.glb"));
+		//MeshComponent model3D = MeshLoader::loadMesh(std::string(APP_RESOURCES_PATH "models/tiny_house.glb"));
+		//MeshComponent model3D = MeshLoader::loadMesh(std::string(APP_RESOURCES_PATH "models/sponza.obj"));
+		//MeshComponent model3D = MeshLoader::loadMesh(std::string(APP_RESOURCES_PATH "models/stanford_bunny.obj"));
 		renderer->SubmitMesh(model3D);
 	}
 
@@ -163,4 +163,4 @@ namespace Laura {
 	{
 		return new Application();
 	}
-} // namespace Laura
+}
