@@ -1,9 +1,9 @@
-[submodule "thirdparty/glew-cmake"]
-	path = thirdparty/glew-cmake
+[submodule "Laura/Thirdparty/glew-cmake"]
+	path = Laura/Thirdparty/glew-cmake
 	url = https://github.com/Perlmint/glew-cmake.git
-[submodule "thirdparty/assimp"]
-	path = thirdparty/assimp
+[submodule "Laura/Thirdparty/assimp"]
+	path = Laura/Thirdparty/assimp
 	url = https://github.com/assimp/assimp.git
-[submodule "thirdparty/spdlog"]
-	path = thirdparty/spdlog
+[submodule "Laura/Thirdparty/spdlog"]
+	path = Laura/Thirdparty/spdlog
 	url = https://github.com/gabime/spdlog.git

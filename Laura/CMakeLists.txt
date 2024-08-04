@@ -1,43 +1,73 @@
 cmake_minimum_required(VERSION 3.16)
+set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+project(LauraEngine VERSION 1.1.0)
 
-project(LauraEngine)
-
-add_library(LauraEngine STATIC)
-
-file(GLOB_RECURSE LAURA_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
-target_sources(LauraEngine PRIVATE ${LAURA_SOURCES} ${LAURA_PLATFORM_SOURCES})
-
-
-target_compile_definitions(LauraEngine PUBLIC CORE_RESOURCES_PATH="${CMAKE_CURRENT_SOURCE_DIR}/Resources/") # This is useful to get an ASSETS_PATH in your IDE during development but you should comment this if you compile a release version and uncomment the next line
-#target_compile_definitions(LauraEngine PUBLIC CORE_RESOURCES_PATH="./resources/") # Uncomment this line to setup the ASSETS_PATH macro to the final assets directory when you share the game and move the resources to the build folder
-
-target_compile_definitions(LauraEngine PUBLIC APP_RESOURCES_PATH="${CMAKE_SOURCE_DIR}/app/resources/") # This is useful to get an ASSETS_PATH in your IDE during development but you should comment this if you compile a release version and uncomment the next line
-#target_compile_definitions(LauraEngine PUBLIC APP_RESOURCES_PATH="./resources/") # Uncomment this line to setup the ASSETS_PATH macro to the final assets directory when you share the game and move the resources to the build folder
+### BUILD OPTIONS ###
 
 ########################################
 ### SELECT A PLATFORM TO COMPILE FOR ###
 ########################################
-target_compile_definitions(LauraEngine PUBLIC LR_PLATFORM_WINDOWS)
-#target_compile_definitions(LauraEngine PUBLIC LR_PLATFORM_LINUX) # !!! currently UNSUPPORTED !!!
 
+option(LR_PLATFORM_WINDOWS "Enable Windows platform support" ON)
+option(LR_PLATFORM_LINUX "Enable Linux platform support (currently unsupported)" OFF)
 
-target_include_directories(LauraEngine PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}"
-											  "${CMAKE_SOURCE_DIR}/app/include") # this needs to go later (Laura needs to be independent from the editor)
+set(ENABLE_CONSOLE "ON")
 
-set(LRPCH_HEADER "${CMAKE_CURRENT_SOURCE_DIR}/lrpch.h")
-set(LRPCH_SOURCE "${CMAKE_CURRENT_SOURCE_DIR}/lrpch.cpp")
-add_library(lrpchLib STATIC ${LRPCH_SOURCE})
-target_precompile_headers(lrpchLib PUBLIC ${LRPCH_HEADER})
-target_link_libraries(lrpchLib PUBLIC spdlog::spdlog
-									  glm
-									  )
+# CMake compatible thirdparty libs: Thanks to https://github.com/meemknight/cmakeSetup
+set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
+set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+set(GLFW_INSTALL OFF CACHE BOOL "" FORCE)
+set(ONLY_LIBS ON)								# GLEW wont generate executable targets
+add_subdirectory(Thirdparty/glfw-3.3.2)			# Window creation
+add_subdirectory(Thirdparty/glew-cmake)			# OpenGL loader
+add_subdirectory(Thirdparty/stb_image)			# Loading textures/images
+add_subdirectory(Thirdparty/stb_truetype)		# Loading ttf fonts
+add_subdirectory(Thirdparty/glm)				# Math
+add_subdirectory(Thirdparty/imgui-docking)		# UI
+add_subdirectory(Thirdparty/assimp)				# Model loading
+add_subdirectory(Thirdparty/spdlog)				# Logging/Debugging
+add_subdirectory(Thirdparty/delta-lib)			# Delta time // subject to change (my own library)
 
-target_link_libraries(LauraEngine PUBLIC glfw 
-										 libglew_static 
-										 imgui
-										 deltaLib
-										 assimp 
-										 stb_image 
-										 lrpchLib
-										 )
+add_library(LauraEngine STATIC)
+set_property(TARGET LauraEngine PROPERTY CXX_STANDARD 20)
+file(GLOB_RECURSE LAURA_SOURCES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp")
+target_sources(LauraEngine PRIVATE ${LAURA_SOURCES})
+target_include_directories(LauraEngine PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/src/")
+
+# Setting up the Precompiled Header
+add_library(lrpchLib STATIC "${CMAKE_CURRENT_SOURCE_DIR}/src/lrpch.cpp")
+target_precompile_headers(lrpchLib PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/src/lrpch.h")
+target_link_libraries(lrpchLib PUBLIC spdlog::spdlog glm)
+
+target_link_libraries(LauraEngine PRIVATE glm glfw libglew_static stb_image 
+        stb_truetype imgui deltaLib spdlog::spdlog lrpchLib)
+
+if(MSVC)
+	target_compile_definitions(LauraEngine PUBLIC _CRT_SECURE_NO_WARNINGS)
+	set_property(TARGET LauraEngine PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+	if (NOT ENABLE_CONSOLE)
+		set_target_properties(LauraEngine PROPERTIES LINK_FLAGS "/SUBSYSTEM:WINDOWS /ENTRY:mainCRTStartup")
+	endif()
+endif()
+
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+    target_compile_definitions(LauraEngine PUBLIC LR_RESOURCES_PATH="${CMAKE_CURRENT_SOURCE_DIR}/src/Resources/")
+elseif(CMAKE_BUILD_TYPE STREQUAL "Release")
+
+    set(RESOURCES_PATH "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources")
+    # Post build step to copy resources to the output directory
+    add_custom_command(TARGET LauraEngine POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy_directory
+        "${CMAKE_CURRENT_SOURCE_DIR}/src/Resources" "${RESOURCES_PATH}")
+    
+    target_compile_definitions(LauraEngine PUBLIC LR_RESOURCES_PATH="${RESOURCES_PATH}")
+endif()
+
+if(LR_PLATFORM_WINDOWS)
+    target_compile_definitions(LauraEngine PUBLIC LR_PLATFORM_WINDOWS)
+endif()
+if(LR_PLATFORM_LINUX)
+    message(WARNING "LR_PLATFORM_LINUX is currently unsupported.")
+    # target_compile_definitions(LauraEngine PUBLIC LR_PLATFORM_LINUX)
+endif()
 
