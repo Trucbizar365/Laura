@@ -1,4 +1,5 @@
 cmake_minimum_required(VERSION 3.16)
+set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 project(Sandbox VERSION 1.1.0)
 
 add_subdirectory(Laura)
@@ -13,5 +14,10 @@ target_include_directories(${EXECUTABLE_NAME} PUBLIC "${CMAKE_CURRENT_SOURCE_DIR
 
 target_link_libraries(${EXECUTABLE_NAME} PUBLIC LauraEngine)
 
-cmake_minimum_required(VERSION 3.16)
-project(App VERSION 1.1.0)
+if(MSVC)
+	target_compile_definitions(${EXECUTABLE_NAME} PUBLIC _CRT_SECURE_NO_WARNINGS)
+	set_property(TARGET ${EXECUTABLE_NAME} PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+	if (NOT ENABLE_CONSOLE)
+		set_target_properties(${EXECUTABLE_NAME} PROPERTIES LINK_FLAGS "/SUBSYSTEM:WINDOWS /ENTRY:mainCRTStartup")
+	endif()
+endif()

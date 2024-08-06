@@ -18,12 +18,20 @@ set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 set(GLFW_INSTALL OFF CACHE BOOL "" FORCE)
+
+# Override Assimp options
+set(BUILD_SHARED_LIBS OFF CACHE BOOL "Build package with shared libraries" FORCE)
+option(ASSIMP_BUILD_ASSIMP_TOOLS "Build Assimp tools" ON)
+set(ASSIMP_BUILD_TESTS OFF CACHE BOOL "Build Assimp tests" FORCE)
+set(BUILD_SHARED_LIBS OFF CACHE BOOL "Build package with shared libraries" FORCE) # assimp will build as a static library
+
 set(ONLY_LIBS ON)								# GLEW wont generate executable targets
+
 add_subdirectory(Thirdparty/glfw-3.3.2)			# Window creation
 add_subdirectory(Thirdparty/glew-cmake)			# OpenGL loader
 add_subdirectory(Thirdparty/stb_image)			# Loading textures/images
 add_subdirectory(Thirdparty/stb_truetype)		# Loading ttf fonts
-add_subdirectory(Thirdparty/glm)				# Math
+add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/Thirdparty/glm")				# Math
 add_subdirectory(Thirdparty/imgui-docking)		# UI
 add_subdirectory(Thirdparty/assimp)				# Model loading
 add_subdirectory(Thirdparty/spdlog)				# Logging/Debugging
@@ -36,20 +44,12 @@ target_sources(LauraEngine PRIVATE ${LAURA_SOURCES})
 target_include_directories(LauraEngine PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/src/")
 
 # Setting up the Precompiled Header
-add_library(lrpchLib STATIC "${CMAKE_CURRENT_SOURCE_DIR}/src/lrpch.cpp")
-target_precompile_headers(lrpchLib PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/src/lrpch.h")
-target_link_libraries(lrpchLib PUBLIC spdlog::spdlog glm)
+#add_library(lrpchLib STATIC "${CMAKE_CURRENT_SOURCE_DIR}/src/lrpch.cpp")
+#target_precompile_headers(lrpchLib PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/src/lrpch.h")
+#target_link_libraries(lrpchLib PUBLIC glm spdlog::spdlog)
 
-target_link_libraries(LauraEngine PRIVATE glm glfw libglew_static stb_image 
-        stb_truetype imgui deltaLib spdlog::spdlog lrpchLib)
-
-if(MSVC)
-	target_compile_definitions(LauraEngine PUBLIC _CRT_SECURE_NO_WARNINGS)
-	set_property(TARGET LauraEngine PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
-	if (NOT ENABLE_CONSOLE)
-		set_target_properties(LauraEngine PROPERTIES LINK_FLAGS "/SUBSYSTEM:WINDOWS /ENTRY:mainCRTStartup")
-	endif()
-endif()
+target_link_libraries(LauraEngine PUBLIC assimp glm glfw libglew_static stb_image 
+        stb_truetype imgui deltaLib spdlog::spdlog)
 
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
     target_compile_definitions(LauraEngine PUBLIC LR_RESOURCES_PATH="${CMAKE_CURRENT_SOURCE_DIR}/src/Resources/")

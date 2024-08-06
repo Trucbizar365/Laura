@@ -4,3 +4,6 @@
 [submodule "Laura/Thirdparty/spdlog"]
 	path = Laura/Thirdparty/spdlog
 	url = https://github.com/gabime/spdlog.git
+[submodule "Laura/Thirdparty/assimp"]
+	path = Laura/Thirdparty/assimp
+	url = https://github.com/assimp/assimp.git

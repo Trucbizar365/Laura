@@ -37,7 +37,8 @@ namespace Laura
 	void Renderer::UpdateCamera(const Camera& camera)
 	{
 		m_CameraUBO->Bind();
-		m_CameraUBO->AddData(0, sizeof(glm::mat4), &camera.transform.toMatrix());
+		glm::mat4 camTransform = camera.transform.toMatrix();
+		m_CameraUBO->AddData(0, sizeof(glm::mat4), &camTransform);
 		float focalLength = camera.getFocalLength();
 		m_CameraUBO->AddData(64, sizeof(float), &focalLength);
 		m_CameraUBO->Unbind();
@@ -46,9 +47,12 @@ namespace Laura
 	void Renderer::UpdateEnvironment(const EnvironmentEntity& environment)
 	{
 		m_EnvironmentUBO->Bind();
-		m_EnvironmentUBO->AddData(0, sizeof(glm::vec3), &environment.skybox.getGroundColor());
-		m_EnvironmentUBO->AddData(16, sizeof(glm::vec3), &environment.skybox.getHorizonColor());
-		m_EnvironmentUBO->AddData(32, sizeof(glm::vec3), &environment.skybox.getZenithColor());
+		glm::vec3 groundColor = environment.skybox.getGroundColor();
+		glm::vec3 horizonColor = environment.skybox.getHorizonColor();
+		glm::vec3 zenithColor = environment.skybox.getZenithColor();
+		m_EnvironmentUBO->AddData(0, sizeof(glm::vec3), &groundColor);
+		m_EnvironmentUBO->AddData(16, sizeof(glm::vec3), &horizonColor);
+		m_EnvironmentUBO->AddData(32, sizeof(glm::vec3), &zenithColor);
 		bool useGradient = (environment.skybox.getType() == SkyboxType::SKYBOX_GRADIENT) ? true : false;
 		m_EnvironmentUBO->AddData(48, sizeof(bool), &useGradient);
 		m_EnvironmentUBO->Unbind();

@@ -121,7 +121,8 @@ namespace Laura {
 		m_Camera.setFOV(90.0f);
 
 		m_Environment.skybox.changeType(SkyboxType::SKYBOX_TEXTURE);
-		m_Environment.skybox.setTexturePath(std::string(LR_RESOURCES_PATH "Skyboxes/Metro_default.hdr"));
+		std::string texturePath = LR_RESOURCES_PATH "Skyboxes/Metro_default.hdr";
+		m_Environment.skybox.setTexturePath(texturePath);
 		
 		renderer->renderSettings.viewportDimensions = glm::vec2(300, 100);
 		renderer->renderSettings.raysPerPixel = 1;

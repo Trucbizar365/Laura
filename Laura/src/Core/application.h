@@ -54,7 +54,7 @@ namespace Laura {
         virtual void shutdown();
     };
 
-    Application* createApplication();
+    Application* CreateApplication();
 }
 
 #endif // APPLICATION_H
