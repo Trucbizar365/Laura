@@ -11,22 +11,12 @@ project(LauraEngine VERSION 1.1.0)
 option(LR_PLATFORM_WINDOWS "Enable Windows platform support" ON)
 option(LR_PLATFORM_LINUX "Enable Linux platform support (currently unsupported)" OFF)
 
-set(ENABLE_CONSOLE "ON")
-
 # CMake compatible thirdparty libs: Thanks to https://github.com/meemknight/cmakeSetup
 set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 set(GLFW_INSTALL OFF CACHE BOOL "" FORCE)
-
-# Override Assimp options
-set(BUILD_SHARED_LIBS OFF CACHE BOOL "Build package with shared libraries" FORCE)
-option(ASSIMP_BUILD_ASSIMP_TOOLS "Build Assimp tools" ON)
-set(ASSIMP_BUILD_TESTS OFF CACHE BOOL "Build Assimp tests" FORCE)
-set(BUILD_SHARED_LIBS OFF CACHE BOOL "Build package with shared libraries" FORCE) # assimp will build as a static library
-
 set(ONLY_LIBS ON)								# GLEW wont generate executable targets
-
 add_subdirectory(Thirdparty/glfw-3.3.2)			# Window creation
 add_subdirectory(Thirdparty/glew-cmake)			# OpenGL loader
 add_subdirectory(Thirdparty/stb_image)			# Loading textures/images
@@ -53,15 +43,18 @@ target_link_libraries(LauraEngine PUBLIC assimp glm glfw libglew_static stb_imag
 
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
     target_compile_definitions(LauraEngine PUBLIC LR_RESOURCES_PATH="${CMAKE_CURRENT_SOURCE_DIR}/src/Resources/")
-elseif(CMAKE_BUILD_TYPE STREQUAL "Release")
-
-    set(RESOURCES_PATH "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/resources")
+    message(STATUS "LR_RESOURCES_PATH: ${CMAKE_CURRENT_SOURCE_DIR}/src/Resources/")
+elseif(CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
     # Post build step to copy resources to the output directory
     add_custom_command(TARGET LauraEngine POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy_directory
-        "${CMAKE_CURRENT_SOURCE_DIR}/src/Resources" "${RESOURCES_PATH}")
+        "${CMAKE_CURRENT_SOURCE_DIR}/src/Resources" "./resources/")
     
-    target_compile_definitions(LauraEngine PUBLIC LR_RESOURCES_PATH="${RESOURCES_PATH}")
+    target_compile_definitions(LauraEngine PUBLIC LR_RESOURCES_PATH="./resources/")
+    message(STATUS "LR_RESOURCES_PATH: ./resources/")
+else()
+	message(------------->>> FATAL_ERROR "Unsupported build type: ${CMAKE_BUILD_TYPE}")
 endif()
+
 
 if(LR_PLATFORM_WINDOWS)
     target_compile_definitions(LauraEngine PUBLIC LR_PLATFORM_WINDOWS)

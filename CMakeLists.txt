@@ -4,6 +4,8 @@ project(Sandbox VERSION 1.1.0)
 
 add_subdirectory(Laura)
 
+option(ENABLE_CONSOLE "Enable console" ON)
+
 set(EXECUTABLE_NAME "LauraSandbox")
 add_executable(${EXECUTABLE_NAME})
 set_property(TARGET ${EXECUTABLE_NAME} PROPERTY CXX_STANDARD 20)
