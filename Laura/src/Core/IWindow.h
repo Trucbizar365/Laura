@@ -51,7 +51,7 @@ namespace Laura {
 
 		/// createWindow is a factory method that creates a window with the given properties.
 		/// reutrns a heap pointer
-		static IWindow* createWindow(const WindowProps windowProps = WindowProps());
+		static std::shared_ptr<IWindow> createWindow(const WindowProps windowProps = WindowProps());
 	};
 
 }

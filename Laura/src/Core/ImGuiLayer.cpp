@@ -10,7 +10,7 @@
 
 namespace Laura {
 
-    ImGuiLayer::ImGuiLayer(IWindow* window)
+    ImGuiLayer::ImGuiLayer(std::shared_ptr<IWindow> window)
         : m_Window(window)
     {
     }
@@ -52,15 +52,6 @@ namespace Laura {
 
     void ImGuiLayer::onImGuiRender()
     {
-        bool show_demo_window = true;
-        if (show_demo_window)
-            ImGui::ShowDemoWindow(&show_demo_window);
-
-
-        //int display_w, display_h;
-        //glfwGetFramebufferSize(static_cast<GLFWwindow*>(m_Window->getNativeWindow()), &display_w, &display_h);
-        //glViewport(0, 0, display_w, display_h);
-
     }
 
     void ImGuiLayer::Begin()

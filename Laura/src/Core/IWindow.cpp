@@ -9,10 +9,10 @@
 
 namespace Laura {
 
-	IWindow* IWindow::createWindow(WindowProps windowProps)
+	std::shared_ptr<IWindow> IWindow::createWindow(WindowProps windowProps)
 	{
 		#ifdef PLATFORM_WINDOWS
-			return new GLFWWindowIMPL(windowProps);
+			return std::make_shared<GLFWWindowIMPL>(windowProps);
 		#else
 			std::cout << "Unknown platform!" << std::endl;
 			return nullptr;

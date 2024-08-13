@@ -9,7 +9,7 @@ namespace Laura {
 	class ImGuiLayer : public ILayer
 	{
 	public:
-		ImGuiLayer(IWindow* window);
+		ImGuiLayer(std::shared_ptr<IWindow> window);
 		virtual ~ImGuiLayer();
 
 		void Begin();
@@ -19,7 +19,7 @@ namespace Laura {
 		void onDetach() override;
 		void onImGuiRender() override;
 	private:
-		IWindow* m_Window;
+		std::shared_ptr<IWindow> m_Window;
 	};
 
 }
