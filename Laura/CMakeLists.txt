@@ -25,6 +25,7 @@ add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/Thirdparty/glm")				    # Math
 add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/Thirdparty/imgui-docking")		# UI
 add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/Thirdparty/assimp")				# Model loading
 add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/Thirdparty/spdlog")				# Logging/Debugging
+add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/Thirdparty/entt")				    # ECS
 
 add_library(LauraEngine STATIC)
 set_property(TARGET LauraEngine PROPERTY CXX_STANDARD 20)
@@ -37,8 +38,10 @@ add_library(lrpchLib STATIC "${CMAKE_CURRENT_SOURCE_DIR}/src/lrpch.cpp")
 target_precompile_headers(lrpchLib PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/src/lrpch.h")
 target_link_libraries(lrpchLib PUBLIC glm spdlog::spdlog)
 
-target_link_libraries(LauraEngine PUBLIC assimp glm glfw libglew_static stb_image 
-        stb_truetype imgui spdlog::spdlog)
+# only these should be public
+target_link_libraries(LauraEngine PUBLIC glm imgui spdlog::spdlog entt) 
+# these should be private but it does not work with private for some reason
+target_link_libraries(LauraEngine PUBLIC assimp glfw libglew_static stb_image stb_truetype) 
 
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
     target_compile_definitions(LauraEngine PUBLIC LR_RESOURCES_PATH="${CMAKE_CURRENT_SOURCE_DIR}/src/Resources/")
