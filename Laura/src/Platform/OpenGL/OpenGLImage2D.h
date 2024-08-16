@@ -1,5 +1,4 @@
-#ifndef OPENGL_IMAGE2D_H
-#define OPENGL_IMAGE2D_H
+#pragma once
 
 #include "lrpch.h"
 #include <gl/glew.h>
@@ -20,5 +19,3 @@ namespace Laura
 		GLenum m_Image2DType;
 	};
 }
-
-#endif // OPENGL_IMAGE2D_H

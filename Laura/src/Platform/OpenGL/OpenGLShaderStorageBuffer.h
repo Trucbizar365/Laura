@@ -1,5 +1,4 @@
-#ifndef OPENGL_SHADER_STORAGE_BUFFER_H
-#define OPENGL_SHADER_STORAGE_BUFFER_H
+#pragma once
 
 #include "lrpch.h"
 #include "renderer/IShaderStorageBuffer.h"
@@ -27,5 +26,3 @@ namespace Laura
 	};
 
 }
-
-#endif // OPENGL_SHADER_STORAGE_BUFFER_H

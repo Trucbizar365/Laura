@@ -1,5 +1,4 @@
-#ifndef ENVIRONMENT_H
-#define ENVIRONMENT_H
+#pragma once
 
 #include "Components/SkyboxComponent.h"
 
@@ -15,5 +14,3 @@ namespace Laura
 		SkyboxComponent skybox;
 	};
 }
-
-#endif // ENVIRONMENT_H

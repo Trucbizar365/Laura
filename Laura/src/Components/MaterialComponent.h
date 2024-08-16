@@ -1,5 +1,4 @@
-#ifndef MATERIAL_COMPONENT_H
-#define MATERIAL_COMPONENT_H
+#pragma once
 
 #include "lrpch.h"
 #include "renderer/Material.h"
@@ -17,5 +16,3 @@ namespace Laura
 		Material m_Material;
 	};
 }
-
-#endif // MATERIAL_COMPONENT_H

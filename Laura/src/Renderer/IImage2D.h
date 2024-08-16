@@ -1,5 +1,4 @@
-#ifndef IIMAGE2D_H
-#define IIMAGE2D_H
+#pragma once
 
 #include "lrpch.h"
 
@@ -21,5 +20,3 @@ namespace Laura {
 		virtual int GetID() const = 0;
 	};
 }
-
-#endif // IIMAGE2D_H

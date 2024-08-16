@@ -1,5 +1,4 @@
-#ifndef OPENGL_RENDERER_API_H
-#define OPENGL_RENDERER_API_H
+#pragma once
 
 #include "lrpch.h"
 #include "renderer/IRendererAPI.h"
@@ -16,5 +15,3 @@ namespace Laura {
 	};
 
 }
- 
-#endif // OPENGL_RENDERER_API_H

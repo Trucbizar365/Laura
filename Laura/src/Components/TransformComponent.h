@@ -1,5 +1,4 @@
-#ifndef TRANSFORM_COMPONENT_H
-#define TRANSFORM_COMPONENT_H
+#pragma once
 
 #include "lrpch.h"
 #include <glm/glm.hpp>
@@ -27,5 +26,3 @@ namespace Laura
 		glm::vec3 m_Scale;
 	};
 }
-
-#endif // TRANSFORM_COMPONENT_H

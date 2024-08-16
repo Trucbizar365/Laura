@@ -1,5 +1,4 @@
-#ifndef BVH_BUILDER_H
-#define BVH_BUILDER_H
+#pragma once
 
 #include "lrpch.h"
 
@@ -161,5 +160,3 @@ namespace Laura
         unsigned int getBVHTreeDepth(const std::vector<Node>& BVH, BVH::Node current_node, unsigned int height);
     }
 }
-
-#endif // BVH_BUILDER_H

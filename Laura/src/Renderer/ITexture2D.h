@@ -1,5 +1,4 @@
-#ifndef ITEXTURE2D_H
-#define ITEXTURE2D_H
+#pragma once
 
 #include "lrpch.h"
 
@@ -15,5 +14,3 @@ namespace Laura {
 	};
 
 }
-
-#endif // ITEXTURE2D_H

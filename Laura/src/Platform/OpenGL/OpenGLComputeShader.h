@@ -1,5 +1,4 @@
-#ifndef OPENGL_COMPUTE_SHADER_H
-#define OPENGL_COMPUTE_SHADER_H
+#pragma once
 
 #include "lrpch.h"
 #include "renderer/IComputeShader.h"
@@ -34,5 +33,3 @@ namespace Laura {
 	};
 
 }
-
-#endif // OPENGL_COMPUTE_SHADER_H

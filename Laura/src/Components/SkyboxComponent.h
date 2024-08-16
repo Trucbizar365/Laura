@@ -1,5 +1,4 @@
-#ifndef SKYBOX_COMPONENT_H
-#define SKYBOX_COMPONENT_H
+#pragma once
 
 #include "lrpch.h"
 
@@ -39,5 +38,3 @@ namespace Laura
 		glm::vec3 m_GroundColor, m_HorizonColor, m_ZenithColor;
 	};
 }
-
-#endif // SKYBOX_COMPONENT_H

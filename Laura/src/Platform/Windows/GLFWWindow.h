@@ -1,5 +1,4 @@
-#ifndef GLFW_WINDOW_IMPL_H
-#define GLFW_WINDOW_IMPL_H
+#pragma once
 
 #include <GLFW/glfw3.h>
 
@@ -51,5 +50,3 @@ namespace Laura {
 	};
 
 }
-
-#endif // GLFW_WINDOW_IMPL_H

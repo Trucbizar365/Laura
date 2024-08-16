@@ -1,5 +1,4 @@
-#ifndef TEXTURE_LOADER_H
-#define TEXTURE_LOADER_H
+#pragma once
 
 #include "lrpch.h"
 
@@ -27,5 +26,3 @@ namespace Laura
         void freeTexture(LoadedTexture& texture_data);
     }
 }
-
-#endif // TEXTURE_LOADER_H

@@ -1,5 +1,4 @@
-#ifndef MOUSECODES_H
-#define MOUSECODES_H
+#pragma once
 
 namespace Laura {
 
@@ -24,5 +23,3 @@ namespace Laura {
 	}
 
 }
-
-#endif // MOUSECODES_H

@@ -1,5 +1,4 @@
-#ifndef LOG_H
-#define LOG_H
+#pragma once
 
 #include "lrpch.h"
 
@@ -32,5 +31,3 @@ namespace Laura {
 #define LR_APP_WARN(...)     ::Laura::Log::GetAppLogger()->warn(__VA_ARGS__)
 #define LR_APP_ERROR(...)    ::Laura::Log::GetAppLogger()->error(__VA_ARGS__)
 #define LR_APP_CRITICAL(...) ::Laura::Log::GetAppLogger()->critical(__VA_ARGS__)
-
-#endif // LOG_H

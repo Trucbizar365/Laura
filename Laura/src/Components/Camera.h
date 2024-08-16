@@ -1,5 +1,4 @@
-#ifndef CAMERA_H
-#define CAMERA_H
+#pragma once
 
 #include "lrpch.h"
 
@@ -24,5 +23,3 @@ namespace Laura
 		float m_FOV, m_FocalLength;
 	};
 }
-
-#endif // CAMERA_H

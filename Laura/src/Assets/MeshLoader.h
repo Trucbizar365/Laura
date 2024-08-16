@@ -1,5 +1,4 @@
-#ifndef MESH_LOADER_H
-#define MESH_LOADER_H
+#pragma once
 
 #include "lrpch.h"
 #include "Components/MeshComponent.h"
@@ -12,5 +11,3 @@ namespace Laura
         MeshComponent loadMesh(const std::string& filepath);
     }
 }
-
-#endif // MESH_LOADER_H

@@ -1,5 +1,4 @@
-#ifndef OPENGL_TEXTURE_H
-#define OPENGL_TEXTURE_H
+#pragma once
 
 #include "lrpch.h"
 #include "Renderer/ITexture2D.h"
@@ -19,5 +18,3 @@ namespace Laura {
 	};
 
 }
-
-#endif // OPENGL_TEXTURE_H

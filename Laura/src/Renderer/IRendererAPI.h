@@ -1,5 +1,4 @@
-#ifndef IRENDERER_API_H
-#define IRENDERER_API_H
+#pragma once
 
 #include "lrpch.h"
 
@@ -31,5 +30,3 @@ namespace Laura {
 	};
 
 }
-
-#endif // IRENDERER_API_H

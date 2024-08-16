@@ -1,5 +1,4 @@
-#ifndef ISHADER_STORAGE_BUFFER_H
-#define ISHADER_STORAGE_BUFFER_H
+#pragma once
 
 #include "lrpch.h"
 
@@ -35,5 +34,3 @@ namespace Laura
 	};
 
 }
-
-#endif // ISHADER_STORAGE_BUFFER_H

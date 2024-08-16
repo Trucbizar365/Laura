@@ -1,5 +1,4 @@
-#ifndef EVENTS_H
-#define EVENTS_H
+#pragma once
 
 #include "lrpch.h"
 
@@ -66,5 +65,3 @@ namespace Laura {
 	void logEvent(Event* event);
 
 }
-
-#endif // EVENTS_H

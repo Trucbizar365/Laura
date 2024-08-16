@@ -1,3 +1,4 @@
+#pragma once
 #include "renderer/IRenderingContext.h"
 #include "core/IWindow.h"
 

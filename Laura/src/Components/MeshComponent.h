@@ -1,5 +1,4 @@
-#ifndef MESH_COMPONENT_H
-#define MESH_COMPONENT_H
+#pragma once
 
 #include "lrpch.h"
 #include "Geometry/Triangle.h"
@@ -24,5 +23,3 @@ namespace Laura
 		std::vector<Triangle> m_Mesh;
 	};
 }
-
-#endif // MESH_COMPONENT_H

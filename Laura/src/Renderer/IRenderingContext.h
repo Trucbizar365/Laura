@@ -1,5 +1,4 @@
-#ifndef IRENDERING_CONTEXT_H
-#define IRENDERING_CONTEXT_H
+#pragma once
 
 namespace Laura {
 
@@ -11,5 +10,3 @@ namespace Laura {
 	};
 
 }
-
-#endif // IRENDERING_CONTEXT_H

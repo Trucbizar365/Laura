@@ -1,5 +1,4 @@
-#ifndef IUNIFORM_BUFFER_H
-#define IUNIFORM_BUFFER_H
+#pragma once
 
 #include "lrpch.h"
 
@@ -32,5 +31,3 @@ namespace Laura
 	};
 
 }
-
-#endif // IUNIFORM_BUFFER_H

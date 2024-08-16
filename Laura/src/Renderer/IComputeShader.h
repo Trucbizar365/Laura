@@ -1,5 +1,4 @@
-#ifndef ICOMPUTE_SHADER_H
-#define ICOMPUTE_SHADER_H
+#pragma once
 
 #include "lrpch.h"
 
@@ -25,5 +24,3 @@ namespace Laura {
 	};
 
 }
-
-#endif // ICOMPUTE_SHADER_H

@@ -1,3 +1,4 @@
+#pragma once
 #include <core/application.h>
 
 extern Laura::Application* Laura::CreateApplication();

@@ -1,5 +1,4 @@
-#ifndef LAYERSTACK_H
-#define LAYERSTACK_H
+#pragma once
 
 #include "lrpch.h"
 
@@ -27,5 +26,3 @@ namespace Laura {
 	};
 
 }
-
-#endif // LAYERSTACK_H

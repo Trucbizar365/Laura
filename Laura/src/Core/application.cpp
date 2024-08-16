@@ -17,7 +17,7 @@ namespace Laura {
 	void Application::init()
 	{
 		Log::Init();
-		_Window = IWindow::createWindow(); // window also sets up the rendering context (OpenGL, Vulkan ...)
+		_Window = IWindow::createWindow(); // window also sets up the rendering context (OpenGL, Vulkan [not supported yet] ...)
 		_RendererAPI = IRendererAPI::Create();
 		_LayerStack = std::make_shared<LayerStack>();
 		_ImGuiLayer = std::make_shared<ImGuiLayer>(_Window);
@@ -44,13 +44,11 @@ namespace Laura {
 		shutdown();
 	}
 
-
 	void Application::render()
 	{
 	}
 
 	void Application::shutdown()
 	{
-		glfwTerminate();
 	}
 }

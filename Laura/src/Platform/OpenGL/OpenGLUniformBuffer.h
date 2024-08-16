@@ -1,5 +1,4 @@
-#ifndef OPENGL_UNIFORM_BUFFER_H
-#define OPENGL_UNIFORM_BUFFER_H
+#pragma once
 
 #include "lrpch.h"
 #include "renderer/IUniformBuffer.h"
@@ -25,5 +24,3 @@ namespace Laura
 	};
 
 }
-
-#endif // OPENGL_UNIFORM_BUFFER_H

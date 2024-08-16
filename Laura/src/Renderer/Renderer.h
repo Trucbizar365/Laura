@@ -1,5 +1,4 @@
-#ifndef RENDERER_H
-#define RENDERER_H
+#pragma once
 
 #include "lrpch.h"
 
@@ -94,5 +93,3 @@ namespace Laura {
 	};
 
 }
-
-#endif // RENDERER_H

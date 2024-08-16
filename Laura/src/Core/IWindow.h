@@ -1,5 +1,4 @@
-#ifndef IWINDOW_H
-#define IWINDOW_H
+#pragma once
 
 #include "lrpch.h"
 
@@ -55,5 +54,3 @@ namespace Laura {
 	};
 
 }
-
-#endif // IWINDOW_H

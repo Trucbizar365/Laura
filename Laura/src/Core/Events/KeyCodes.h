@@ -1,5 +1,4 @@
-#ifndef KEYCODES_H
-#define KEYCODES_H
+#pragma once
 
 #include <imgui.h>
 
@@ -263,5 +262,3 @@ namespace Laura {
 	}
 
 }
-
-#endif // KEYCODES_H
