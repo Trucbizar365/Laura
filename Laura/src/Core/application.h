@@ -20,6 +20,7 @@ namespace Laura {
     {
     public:
         Application();
+        Application(WindowProps windowProps);
         virtual ~Application();
         void run();
     protected:

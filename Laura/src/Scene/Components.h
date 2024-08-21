@@ -53,12 +53,32 @@ namespace Laura
 		CameraComponent() = default;
 		CameraComponent(float fov, float aspectRatio)
 			: fov(fov), aspectRatio(aspectRatio) {};
-
-		float fov{ 80.0f };
+		
+		bool isMain{ false };
+		float fov{ 90.0f };
 		float aspectRatio{ 16.0f/9.0f };
 		// since we transform the size of the screen in the compute shader to "normalized device coordinates" or NDC for short (-1, 1) 
 		// half of the screen width is 1. Therefore (screen width / 2) / tan(FOV in radians / 2) can be simplified to 1 / tan(FOV_rad / 2)
 		inline const float& GetFocalLength() const { return 1.0f/tan(glm::radians(fov)/2.0f); };
 	};
+
+	struct Script
+	{	
+		Script() = default;
+
+		virtual void OnCreate() = 0;
+		virtual void OnUpdate() = 0;
+		virtual void OnDestroy() = 0;
+	};
+
+	struct ScriptComponent
+	{
+		ScriptComponent() = default;
+		ScriptComponent(Script* script)
+			: script(script) {}
+
+		Script* script;
+	};
+
 
 }

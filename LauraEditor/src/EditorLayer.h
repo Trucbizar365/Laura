@@ -17,7 +17,7 @@ namespace Laura
 	private:
 		std::shared_ptr<Renderer> m_Renderer;
 	private:
-		glm::vec2 prevViewportWindowSize, prevViewportWindowPos, viewportSize;
+		glm::ivec2 prevViewportWindowSize, prevViewportWindowPos, viewportSize;
 		ImVec2 topLeftTextureCoords, bottomLeftTextureCoords;
 		float aspectRatio;
 

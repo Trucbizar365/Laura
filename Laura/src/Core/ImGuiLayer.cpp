@@ -59,7 +59,6 @@ namespace Laura {
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
-        ImGui::DockSpaceOverViewport(0, ImGui::GetMainViewport());
     }
 
     void ImGuiLayer::End()

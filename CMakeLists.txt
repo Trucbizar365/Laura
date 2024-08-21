@@ -16,6 +16,17 @@ target_include_directories(${EXECUTABLE_NAME} PUBLIC "${CMAKE_CURRENT_SOURCE_DIR
 
 target_link_libraries(${EXECUTABLE_NAME} PUBLIC LauraEngine)
 
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+    target_compile_definitions(${EXECUTABLE_NAME} PUBLIC EDITOR_RESOURCES_PATH="${CMAKE_CURRENT_SOURCE_DIR}/LauraEditor/EditorResources/")
+    message(STATUS "EDITOR_RESOURCES_PATH: ${CMAKE_CURRENT_SOURCE_DIR}/LauraEditor/EditorResources/")
+elseif(CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
+    target_compile_definitions(${EXECUTABLE_NAME} PUBLIC EDITOR_RESOURCES_PATH="./EditorResources/")
+    message(STATUS "EDITOR_RESOURCES_PATH: ./resources/ (put EditorResources next to the .exe file)")
+else()
+	message(!!!! ERROR "Unsupported build type: ${CMAKE_BUILD_TYPE}" !!!!)
+endif()
+
+
 if(MSVC)
 	target_compile_definitions(${EXECUTABLE_NAME} PUBLIC _CRT_SECURE_NO_WARNINGS)
 	set_property(TARGET ${EXECUTABLE_NAME} PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")

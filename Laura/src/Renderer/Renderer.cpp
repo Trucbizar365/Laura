@@ -17,7 +17,7 @@ namespace Laura
 	{
 		m_FrameTexture = IImage2D::Create(nullptr, renderSettings.frameDimentions.x, renderSettings.frameDimentions.y, 0, Image2DType::LR_READ_WRITE);
 
-		LoadedTexture tex = TextureLoader::loadTexture(std::string(LR_RESOURCES_PATH "Skyboxes/Metro_default.hdr"), 4);
+		LoadedTexture tex = TextureLoader::loadTexture(skybox.getTexturePath(), 4);
 		m_SkyboxTexture = ITexture2D::Create(tex.data, tex.width, tex.height, 1);
 		TextureLoader::freeTexture(tex);
 
@@ -25,7 +25,7 @@ namespace Laura
 		m_EnvironmentUBO = IUniformBuffer::Create(64, 1, BufferUsageType::DYNAMIC_DRAW);
 		m_RenderSettingsUBO = IUniformBuffer::Create(32, 2, BufferUsageType::DYNAMIC_DRAW);
 		
-		m_Shader = IComputeShader::Create(LR_RESOURCES_PATH "shaders/RayTracingDefault.comp", glm::uvec3(1));
+		m_Shader = IComputeShader::Create(LR_RESOURCES_PATH "Shaders/RayTracingDefault.comp", glm::uvec3(1));
 		// could potentially split the BVH rendering mode to another shader altogether
 		m_Shader->Bind();
 

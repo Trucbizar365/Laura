@@ -14,8 +14,12 @@ namespace Laura
 	public:
 		Scene();
 		~Scene();
-		Entity AddEntity();
+		Entity CreateEntity();
 		void DestroyEntity(const Entity& entity);
+
+		void OnStart();
+		void OnUpdate();
+		void OnShutdown();
 
 		inline entt::registry* Get() const { return m_Registry; }
 

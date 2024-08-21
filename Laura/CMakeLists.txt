@@ -44,17 +44,13 @@ target_link_libraries(LauraEngine PUBLIC glm imgui spdlog::spdlog entt)
 target_link_libraries(LauraEngine PUBLIC assimp glfw libglew_static stb_image stb_truetype) 
 
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-    target_compile_definitions(LauraEngine PUBLIC LR_RESOURCES_PATH="${CMAKE_CURRENT_SOURCE_DIR}/src/Resources/")
-    message(STATUS "LR_RESOURCES_PATH: ${CMAKE_CURRENT_SOURCE_DIR}/src/Resources/")
+    target_compile_definitions(LauraEngine PUBLIC LR_RESOURCES_PATH="${CMAKE_CURRENT_SOURCE_DIR}/src/EngineResources/")
+    message(STATUS "LR_RESOURCES_PATH: ${CMAKE_CURRENT_SOURCE_DIR}/src/EngineResources/")
 elseif(CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
-    # Post build step to copy resources to the output directory
-    add_custom_command(TARGET LauraEngine POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy_directory
-        "${CMAKE_CURRENT_SOURCE_DIR}/src/Resources" "./resources/")
-    
-    target_compile_definitions(LauraEngine PUBLIC LR_RESOURCES_PATH="./resources/")
-    message(STATUS "LR_RESOURCES_PATH: ./resources/")
+    target_compile_definitions(LauraEngine PUBLIC LR_RESOURCES_PATH="./EngineResources/")
+    message(STATUS "LR_RESOURCES_PATH: ./resources/ (put EngineResources next to the .exe file)")
 else()
-	message(------------->>> FATAL_ERROR "Unsupported build type: ${CMAKE_BUILD_TYPE}")
+	message(!!!! ERROR "Unsupported build type: ${CMAKE_BUILD_TYPE}" !!!!)
 endif()
 
 
