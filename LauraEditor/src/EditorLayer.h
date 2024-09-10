@@ -1,10 +1,14 @@
 #pragma once
 
 #include <Laura.h>
+#include "EditorState.h"
+
+/// --- PANELS --- ///
+#include "EditorUI/SceneHierarchyPanel.h"
+#include "EditorUI/InspectorPanel.h"
 
 namespace Laura
 {
-
 	class EditorLayer : public ILayer
 	{
 	public:
@@ -18,11 +22,20 @@ namespace Laura
 		std::shared_ptr<Renderer> m_Renderer;
 	private:
 		glm::ivec2 prevViewportWindowSize, prevViewportWindowPos, viewportSize;
-		ImVec2 topLeftTextureCoords, bottomLeftTextureCoords;
+		ImVec2 topLeftTextureCoords, bottomRightTextureCoords;
 		float aspectRatio;
 
 	private:
-		Scene m_Scene;
+		EditorState m_EditorState;
+		// The Editor Layer manages the Scenes
+		// It has to manage the LOADING and UNLOADING of scenes
+		// UI panels only work with the active scene
+		std::shared_ptr<Scene> m_Scene;
+
+		// UI panels
+		SceneHierarchyPanel m_SceneHierarchyPanel;
+		InspectorPanel m_InspectorPanel;
+
 	};
 
 }

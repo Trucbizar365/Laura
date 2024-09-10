@@ -22,7 +22,6 @@ namespace Laura {
 	private:
 		struct RenderSettings
 		{
-			glm::vec2 frameDimentions;
 			uint32_t raysPerPixel;
 			uint32_t bouncesPerRay;
 			bool accumulateFrames;
@@ -43,11 +42,12 @@ namespace Laura {
 		// 5. load the default texture
 		void BeginScene(const Entity& camera, const Skybox& skybox);
 
-		void UpdateCameraUBO(const Entity& camera);
+		void UpdateCameraUBO();
 		void UpdateSkyboxUBO(const Skybox& skybox);
-		
 		void UpdateRenderSettingsUBO();
 		RenderSettings renderSettings;
+		
+		void UpdateViewport(const glm::vec2& ViewportDims);
 
 		// submit mesh has 3 roles
 		// 1. save the mesh data to some kind of data sturcture
@@ -80,10 +80,12 @@ namespace Laura {
 		void EndScene();
 
 	private:
+		glm::vec2 m_ViewportDims;
+
 		std::shared_ptr<IComputeShader> m_Shader;
 
 		std::shared_ptr<ITexture2D> m_SkyboxTexture;
-		std::shared_ptr<IImage2D> m_FrameTexture;
+		std::shared_ptr<IImage2D> m_ViewportTexture;
 
 		std::shared_ptr<IUniformBuffer> m_CameraUBO, m_RenderSettingsUBO, m_EnvironmentUBO;
 		std::shared_ptr<IShaderStorageBuffer> m_TriangleMeshSSBO, m_BVHSSBO;
@@ -91,6 +93,10 @@ namespace Laura {
 	private:
 		uint32_t m_AccumulateFrameCount;
 		bool m_genTopLevelBVH, m_genBottomLevelBVH;
+
+		// TODO: make a more robust system for updating camera and meshes
+		// For now we are just keeping a reference of the camera to be able to update it
+		Entity m_Camera;
 	};
 
 }

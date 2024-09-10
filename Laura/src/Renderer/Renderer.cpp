@@ -15,7 +15,9 @@ namespace Laura
 
 	void Renderer::BeginScene(const Entity& camera, const Skybox& skybox)
 	{
-		m_FrameTexture = IImage2D::Create(nullptr, renderSettings.frameDimentions.x, renderSettings.frameDimentions.y, 0, Image2DType::LR_READ_WRITE);
+		m_Camera = camera;
+
+		m_ViewportTexture = IImage2D::Create(nullptr, m_ViewportDims.x, m_ViewportDims.y, 0, Image2DType::LR_READ_WRITE);
 
 		LoadedTexture tex = TextureLoader::loadTexture(skybox.getTexturePath(), 4);
 		m_SkyboxTexture = ITexture2D::Create(tex.data, tex.width, tex.height, 1);
@@ -29,16 +31,16 @@ namespace Laura
 		// could potentially split the BVH rendering mode to another shader altogether
 		m_Shader->Bind();
 
-		UpdateCameraUBO(camera);
+		UpdateCameraUBO();
 		UpdateSkyboxUBO(skybox);
 		UpdateRenderSettingsUBO();
 	}
 
-	void Renderer::UpdateCameraUBO(const Entity& camera)
+	void Renderer::UpdateCameraUBO()
 	{
 		m_CameraUBO->Bind();
-		glm::mat4 transform = camera.GetComponent<TransformComponent>().transform;
-		float focalLength = camera.GetComponent<CameraComponent>().GetFocalLength();
+		glm::mat4 transform = m_Camera.GetComponent<TransformComponent>().Transform;
+		float focalLength = m_Camera.GetComponent<CameraComponent>().GetFocalLength();
 		m_CameraUBO->AddData(0, sizeof(glm::mat4), &transform);
 		m_CameraUBO->AddData(64, sizeof(float), &focalLength);
 		m_CameraUBO->Unbind();
@@ -65,6 +67,12 @@ namespace Laura
 		m_RenderSettingsUBO->AddData(12, sizeof(uint32_t), &m_AccumulateFrameCount);
 		m_RenderSettingsUBO->AddData(16, sizeof(bool), &renderSettings.displayBVH);
 		m_RenderSettingsUBO->Unbind();
+	}
+
+	void Renderer::UpdateViewport(const glm::vec2& ViewportDims)
+	{
+		m_ViewportDims = ViewportDims;
+		m_ViewportTexture = IImage2D::Create(nullptr, m_ViewportDims.x, m_ViewportDims.y, 0, Image2DType::LR_READ_WRITE);
 	}
 
 	void Renderer::Submit(const MeshComponent& meshComponent, const TransformComponent& transformComponent, const MaterialComponent& materialComponent)
@@ -105,13 +113,15 @@ namespace Laura
 
 	std::shared_ptr<IImage2D> Renderer::RenderScene()
 	{
+		UpdateCameraUBO();
 		m_Shader->Bind();
-		m_Shader->setWorkGroupSizes(glm::uvec3(ceil(renderSettings.frameDimentions.x / 8),
-			                                   ceil(renderSettings.frameDimentions.y / 4), 
+		std::cout << m_ViewportDims.x << " " << m_ViewportDims.y << std::endl;
+		m_Shader->setWorkGroupSizes(glm::uvec3(ceil(m_ViewportDims.x / 8),
+			                                   ceil(m_ViewportDims.y / 4),
 			                                   1));
 		m_Shader->Dispatch();
 
-		return m_FrameTexture;
+		return m_ViewportTexture;
 	}
 
 	void Renderer::EndScene()

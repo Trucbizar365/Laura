@@ -12,18 +12,23 @@ namespace Laura
 	{
 		TransformComponent() = default;
 		TransformComponent(const glm::mat4& transform)
-			: transform(transform) {}
+			: Transform(transform) {}
 
-		glm::mat4 transform{ 1.0f };
+		glm::mat4 Transform{ 1.0f };
 	};
 
 	namespace TransformHandler
 	{
-		void Rotate(TransformComponent& transform, glm::vec3& angles);
+		// DOES NOT return a reference use TransformHandler::SetRotation() to set the rotation
+		glm::vec3 GetRotation(TransformComponent& transform);
+		// DOES NOT return a reference use TransformHandler::SetTranslation() to set the translation
+		glm::vec3 GetTranslation(TransformComponent& transform);
+		// DOES NOT return a reference use TransformHandler::SetScale() to set the scale
+		glm::vec3 GetScale(TransformComponent& transform);
 
-		void Translate(TransformComponent& transform, const glm::vec3& translation);
-
-		void Scale(TransformComponent& transform, const glm::vec3& scale);
+		void SetRotation(TransformComponent& transform, glm::vec3& angles);
+		void SetTranslation(TransformComponent& transform, const glm::vec3& translation);
+		void SetScale(TransformComponent& transform, const glm::vec3& scale);
 	}
 
 
@@ -80,5 +85,12 @@ namespace Laura
 		Script* script;
 	};
 
+	struct TagComponent
+	{
+		TagComponent() = default;
+		TagComponent(const std::string& tag)
+			: Tag(tag) {};
 
+		std::string Tag;
+	};
 }

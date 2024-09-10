@@ -15,8 +15,10 @@ namespace Laura
 	Entity Scene::CreateEntity()
 	{
 		// constructs a naked entity with no components and returns its identifier
-		entt::entity entity = m_Registry->create();
-		return Entity(entity, m_Registry); 
+		entt::entity entityID = m_Registry->create();
+		Entity entity(entityID, m_Registry);
+		entity.AddComponent<TagComponent>("EmptyEntity");
+		return entity;
 	}
 
 	void Scene::DestroyEntity(const Entity& entity)

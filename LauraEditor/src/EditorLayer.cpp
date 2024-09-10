@@ -1,5 +1,6 @@
 #include "EditorLayer.h"
 
+
 namespace Laura
 {
 
@@ -15,16 +16,21 @@ namespace Laura
 
 	void EditorLayer::onAttach()
 	{
+		m_Scene = std::make_shared<Scene>(); // Call the default constructor of the Scene class
 		// Setting up the Skybox
-		m_Scene.skybox.changeType(SkyboxType::SKYBOX_TEXTURE);
+		m_Scene->skybox.changeType(SkyboxType::SKYBOX_TEXTURE);
 		std::string texturePath = EDITOR_RESOURCES_PATH "Skyboxes/kloofendal_48d_partly_cloudy_puresky_4k.hdr";
-		m_Scene.skybox.setTexturePath(texturePath);
+		m_Scene->skybox.setTexturePath(texturePath);
 
 
 		// Adding a CAMERA to the scene
-		Entity camera = m_Scene.CreateEntity();
+		Entity camera = m_Scene->CreateEntity();
+		{
+			std::string& tag = camera.GetComponent<TagComponent>().Tag;
+			tag = std::string("Camera");
+		}
 		TransformComponent& cameraTransform = camera.AddComponent<TransformComponent>();
-		TransformHandler::Translate(cameraTransform, { 0.0f, 40.0f, -200.0f });
+		TransformHandler::SetTranslation(cameraTransform, { 0.0f, 40.0f, -200.0f });
 		CameraComponent cameraComponent = camera.AddComponent<CameraComponent>();
 		// Using the default values for the camera component
 		cameraComponent.fov = 30.0f;
@@ -32,7 +38,11 @@ namespace Laura
 
 
 		// Adding a 3D MODEL to the scene
-		Entity dragon = m_Scene.CreateEntity();
+		Entity dragon = m_Scene->CreateEntity();
+		{
+			std::string& tag = dragon.GetComponent<TagComponent>().Tag;
+			tag = std::string("Dragon");
+		}
 		MeshComponent& dragonMesh			= dragon.AddComponent<MeshComponent>();
 		TransformComponent& dragonTransform	= dragon.AddComponent<TransformComponent>();
 		MaterialComponent& dragonMaterial	= dragon.AddComponent<MaterialComponent>();
@@ -42,6 +52,10 @@ namespace Laura
 		//dragonMesh.mesh = MeshLoader::loadMesh(std::string(EDITOR_RESOURCES_PATH "Models/stanford_bunny_pbr.glb"));
 		//dragonMesh.mesh = MeshLoader::loadMesh(std::string(EDITOR_RESOURCES_PATH "Models/sponza_scene.glb"));
 
+		m_Renderer->renderSettings.raysPerPixel = 1;
+		m_Renderer->renderSettings.bouncesPerRay = 5;
+		m_Renderer->renderSettings.maxAABBIntersections = 10000;
+		m_Renderer->renderSettings.displayBVH = false;
 
 		// The FRAME_WIDTH and FRAME_HEIGHT define the dimensions of the render frame.
 		// These values represent the actual number of pixels that the renderer will process to produce the final image.
@@ -49,11 +63,7 @@ namespace Laura
 		// The camera's aspect ratio only stretches the image to fit the viewport window correctly
 		#define FRAME_WIDTH 1280.0f
 		#define FRAME_HEIGHT 720.0f
-		m_Renderer->renderSettings.frameDimentions = glm::vec2(FRAME_WIDTH, FRAME_HEIGHT);
-		m_Renderer->renderSettings.raysPerPixel = 1;
-		m_Renderer->renderSettings.bouncesPerRay = 5;
-		m_Renderer->renderSettings.maxAABBIntersections = 10000;
-		m_Renderer->renderSettings.displayBVH = false;
+		m_Renderer->UpdateViewport(glm::vec2(FRAME_WIDTH, FRAME_HEIGHT));
 
 		/// ------------- SCRIPTING -------------- ///
 
@@ -77,16 +87,20 @@ namespace Laura
 		};
 		
 		// Testing the TEST SCRIPT on a TEST ENTITY
-		Entity testEntity = m_Scene.CreateEntity();
+		Entity testEntity = m_Scene->CreateEntity();
+		{
+			std::string& tag = testEntity.GetComponent<TagComponent>().Tag;
+			tag = std::string("TestScript");
+		}
 		testEntity.AddComponent<ScriptComponent>(new TestScript());
 		//m_Scene.DestroyEntity(testEntity); // testing the script's OnDestroy() function
 
 		/// ---------------------------------------- ///
 
-		m_Scene.OnStart();
+		m_Scene->OnStart();
 
 		// setting up the renderer
-		m_Renderer->BeginScene(camera, m_Scene.skybox);
+		m_Renderer->BeginScene(camera, m_Scene->skybox);
 		MeshComponent dragon_mesh = dragon.GetComponent<MeshComponent>();
 		TransformComponent dragon_transform = dragon.GetComponent<TransformComponent>();
 		MaterialComponent dragon_material = dragon.GetComponent<MaterialComponent>();
@@ -99,13 +113,16 @@ namespace Laura
 
 	void EditorLayer::onUpdate()
 	{
-		m_Scene.OnUpdate();
+		m_Scene->OnUpdate();
 	}
 
 
 	void EditorLayer::onImGuiRender()
 	{
-		ImGui::DockSpaceOverViewport(0, ImGui::GetMainViewport());
+		ImGui::DockSpaceOverViewport(0, ImGui::GetMainViewport(), ImGuiDockNodeFlags_AutoHideTabBar);
+
+		m_SceneHierarchyPanel.OnImGuiRender(m_Scene, m_EditorState);
+		m_InspectorPanel.OnImGuiRender(m_Scene, m_EditorState);
 
 		bool showDemoWindow = false;
 		ImGui::ShowDemoWindow(&showDemoWindow);
@@ -134,20 +151,19 @@ namespace Laura
 				viewportSize.x = ceil(viewportDims.y * aspectRatio); // calculate the width based on the aspect ratio
 			}
 
-			m_Renderer->renderSettings.frameDimentions = glm::ivec2(viewportSize.x, viewportSize.y);
-			m_Renderer->renderSettings.accumulateFrames = false;
-			m_Renderer->UpdateRenderSettingsUBO();
-
 			topLeftTextureCoords.x = float(viewportDims.x - viewportSize.x) / 2.0f;
 			topLeftTextureCoords.y = float(viewportDims.y - viewportSize.y) / 2.0f;
 			// viewport offset
 			topLeftTextureCoords.x += ImGui::GetWindowPos().x;
 			topLeftTextureCoords.y += ImGui::GetWindowPos().y;
 
-			bottomLeftTextureCoords.x = topLeftTextureCoords.x + viewportSize.x;
-			bottomLeftTextureCoords.y = topLeftTextureCoords.y + viewportSize.y;
+			bottomRightTextureCoords.x = topLeftTextureCoords.x + viewportSize.x;
+			bottomRightTextureCoords.y = topLeftTextureCoords.y + viewportSize.y;
+ 
+			m_Renderer->UpdateViewport(glm::vec2(viewportSize.x, viewportSize.y));
+			m_Renderer->renderSettings.accumulateFrames = false;
+			m_Renderer->UpdateRenderSettingsUBO();
 		}
-
 
 		// check if the viewport window position changed
 		glm::ivec2 viewportWindowPos = glm::ivec2(ImGui::GetWindowPos().x, ImGui::GetWindowPos().y);
@@ -161,14 +177,14 @@ namespace Laura
 			topLeftTextureCoords.x += viewportWindowPos.x;
 			topLeftTextureCoords.y += viewportWindowPos.y;
 
-			bottomLeftTextureCoords.x = topLeftTextureCoords.x + viewportSize.x;
-			bottomLeftTextureCoords.y = topLeftTextureCoords.y + viewportSize.y;
+			bottomRightTextureCoords.x = topLeftTextureCoords.x + viewportSize.x;
+			bottomRightTextureCoords.y = topLeftTextureCoords.y + viewportSize.y;
 		}
 
 		std::shared_ptr<IImage2D> RenderedFrame = m_Renderer->RenderScene();
 
 		ImDrawList* drawList = ImGui::GetWindowDrawList();
-		drawList->AddImage((ImTextureID)RenderedFrame->GetID(), topLeftTextureCoords, bottomLeftTextureCoords, { 0, 1 }, { 1, 0 });
+		drawList->AddImage((ImTextureID)RenderedFrame->GetID(), topLeftTextureCoords, bottomRightTextureCoords, { 0, 1 }, { 1, 0 });
 
 		ImGui::PopStyleVar();
 		ImGui::End();
@@ -176,7 +192,7 @@ namespace Laura
 
 	void EditorLayer::onDetach()
 	{
-		m_Scene.OnShutdown();
+		m_Scene->OnShutdown();
 	}
 
 }

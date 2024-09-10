@@ -11,7 +11,7 @@ add_executable(${EXECUTABLE_NAME})
 set_property(TARGET ${EXECUTABLE_NAME} PROPERTY CXX_STANDARD 20)
 
 file(GLOB_RECURSE EDITOR_SOURCES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/LauraEditor/src/*.cpp")
-target_sources(${EXECUTABLE_NAME} PRIVATE ${EDITOR_SOURCES})
+target_sources(${EXECUTABLE_NAME} PRIVATE ${EDITOR_SOURCES} "LauraEditor/src/EditorUI/InspectorPanel.h")
 target_include_directories(${EXECUTABLE_NAME} PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/LauraEditor/src/")
 
 target_link_libraries(${EXECUTABLE_NAME} PUBLIC LauraEngine)
