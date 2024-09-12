@@ -14,6 +14,8 @@ namespace Laura
 	struct EditorState
 	{
 		entt::entity selectedEntity = entt::null;
+		/// VIEWPORT ///
+		bool ViewportSettingsPanelOpen = false;
 		ViewportMode viewportMode = ViewportMode::FIT_TO_VIEWPORT;
 	};
 }

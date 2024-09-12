@@ -18,13 +18,15 @@ namespace Laura {
 	{
 		Log::Init();
 		_Window = IWindow::createWindow(); // window also sets up the rendering context (OpenGL, Vulkan [not supported yet] ...)
-		_RendererAPI = IRendererAPI::Create();
 		_LayerStack = std::make_shared<LayerStack>();
-		_ImGuiLayer = std::make_shared<ImGuiLayer>(_Window);
 		// make window forward events to the layer stack
 		_Window->setEventCallback([this](Event* event) { _LayerStack->onEvent(event); });
-		_LayerStack->PushLayer(_ImGuiLayer);
+		
+		_RendererAPI = IRendererAPI::Create();
 		_Renderer = std::make_shared<Renderer>();
+
+		_ImGuiContextManager = std::make_shared<ImGuiContextManager>(_Window);
+		_ImGuiContextManager->Init();
 	}
 
 	void Application::run()
@@ -36,16 +38,11 @@ namespace Laura {
 			_RendererAPI->Clear({0.98f, 0.24f, 0.97f, 1.0f}); // fill the screen with a color (pink)
 			_LayerStack->onUpdate();
 
-			_ImGuiLayer->Begin();
-			_LayerStack->onImGuiRender();
-			_ImGuiLayer->End();
-			render();
+			_ImGuiContextManager->BeginFrame();
+			_LayerStack->onImGuiRender(); // all of the rendering onto the screen happens here
+			_ImGuiContextManager->EndFrame();
 		}
 		shutdown();
-	}
-
-	void Application::render()
-	{
 	}
 
 	void Application::shutdown()

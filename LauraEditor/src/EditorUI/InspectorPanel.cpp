@@ -3,9 +3,9 @@
 namespace Laura
 {
 
-    void InspectorPanel::OnImGuiRender(std::shared_ptr<Scene> scene, EditorState& editorState)
+    void InspectorPanel::OnImGuiRender(std::shared_ptr<Scene> scene, EditorState* editorState)
     {
-        if (editorState.selectedEntity == entt::null)
+        if (editorState->selectedEntity == entt::null)
 		{
 			ImGui::Begin("Inspector");
 			ImGui::Text("Select an entity to inspect");
@@ -14,7 +14,7 @@ namespace Laura
 		}
 
         entt::registry* activeRegistry = scene->Get();
-        entt::entity selectedEntity = editorState.selectedEntity;
+        entt::entity selectedEntity = editorState->selectedEntity;
         Entity entity(selectedEntity, activeRegistry); // convert to Laura Entity
 
         ImGui::Begin("Inspector");

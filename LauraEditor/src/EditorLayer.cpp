@@ -5,13 +5,10 @@ namespace Laura
 {
 
 	EditorLayer::EditorLayer(std::shared_ptr<Renderer> renderer)
-		: m_Renderer(renderer),
-		prevViewportWindowSize(glm::ivec2(0, 0)),
-		prevViewportWindowPos(glm::ivec2(0, 0)),
-		viewportSize(glm::ivec2(0, 0)),
-		aspectRatio(16.0f/9.0f)
+		: m_Renderer(renderer)
 	{
 		setLayerName("EditorLayer");
+		m_EditorState = new EditorState();
 	}
 
 	void EditorLayer::onAttach()
@@ -159,6 +156,7 @@ namespace Laura
 	void EditorLayer::onDetach()
 	{
 		m_Scene->OnShutdown();
+		delete m_EditorState;
 	}
 
 }

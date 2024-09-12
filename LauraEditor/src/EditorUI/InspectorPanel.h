@@ -10,6 +10,6 @@ namespace Laura
 		InspectorPanel() = default;
 		~InspectorPanel() = default;
 
-		void OnImGuiRender(std::shared_ptr<Scene> scene, EditorState& editorState);
+		void OnImGuiRender(std::shared_ptr<Scene> scene, EditorState* editorState);
 	};
 }

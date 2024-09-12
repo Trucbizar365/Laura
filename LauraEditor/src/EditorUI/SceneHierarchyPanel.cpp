@@ -3,7 +3,7 @@
 namespace Laura
 {
 
-    void SceneHierarchyPanel::OnImGuiRender(std::shared_ptr<Scene> scene, EditorState& editorState)
+    void SceneHierarchyPanel::OnImGuiRender(std::shared_ptr<Scene> scene, EditorState* editorState)
     {
         ImGui::Begin("Scene Hierarchy");
 
@@ -39,7 +39,7 @@ namespace Laura
                 ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick;
                 
                 // if the entity is selected, highlight it
-                if (entityID == editorState.selectedEntity)
+                if (entityID == editorState->selectedEntity)
                 {
                     flags |= ImGuiTreeNodeFlags_Selected;
                 }
@@ -48,7 +48,7 @@ namespace Laura
                 
                 if (ImGui::IsItemClicked())
                 {
-                    editorState.selectedEntity = entityID;
+                    editorState->selectedEntity = entityID;
                 }
 
                 // display any children entities (if any)
@@ -63,7 +63,7 @@ namespace Laura
             // Deselect the selected entity if the user clicks in the window but outside of any tree node
             if (ImGui::IsMouseDown(0) && ImGui::IsWindowHovered())
 			{
-				editorState.selectedEntity = entt::null;
+				editorState->selectedEntity = entt::null;
 			}
         }
 

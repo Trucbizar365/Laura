@@ -27,7 +27,8 @@ namespace Laura
 		float aspectRatio;
 
 	private:
-		EditorState m_EditorState;
+		// The Editor Layer owns the Editor State (and deletes it)
+		EditorState* m_EditorState;
 		// The Editor Layer manages the Scenes
 		// It has to manage the LOADING and UNLOADING of scenes
 		// UI panels only work with the active scene
