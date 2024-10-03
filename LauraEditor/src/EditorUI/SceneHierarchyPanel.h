@@ -1,15 +1,19 @@
 #pragma once 
 #include "Laura.h"
 #include "EditorState.h"
+#include "EditorTheme.h"
 
 namespace Laura
 {
 	class SceneHierarchyPanel
 	{
 	public:
-		SceneHierarchyPanel() = default;
+		SceneHierarchyPanel(std::shared_ptr<EditorState> editorState, std::shared_ptr<ThemeManager> themeManager);
 		~SceneHierarchyPanel() = default;
 
-		void OnImGuiRender(std::shared_ptr<Scene> scene, std::shared_ptr<EditorState> editorState);
+		void OnImGuiRender(std::shared_ptr<Scene> scene);
+	private:
+		std::shared_ptr<EditorState> m_EditorState;
+		std::shared_ptr<ThemeManager> m_ThemeManager;
 	};
 }

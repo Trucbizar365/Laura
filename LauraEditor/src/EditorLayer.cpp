@@ -8,7 +8,8 @@ namespace Laura
 		m_AssetManager(assetManager),
 		m_EditorState(std::make_shared<EditorState>()),
 		m_ThemeManager(std::make_shared<ThemeManager>()),
-		m_InspectorPanel(m_EditorState, m_ThemeManager)
+		m_InspectorPanel(m_EditorState, m_ThemeManager),
+		m_SceneHierarchyPanel(m_EditorState, m_ThemeManager)
 	{
 		setLayerName("EditorLayer");
 	}
@@ -152,7 +153,7 @@ namespace Laura
 
 		bool showDemoWindow = false;
 		ImGui::ShowDemoWindow(&showDemoWindow);
-		m_SceneHierarchyPanel.OnImGuiRender(m_Scene, m_EditorState);
+		m_SceneHierarchyPanel.OnImGuiRender(m_Scene);
 		m_InspectorPanel.OnImGuiRender(m_Scene);
 		if (m_EditorState->ThemeSettingsPanelOpen) { m_ThemesPanel.OnImGuiRender(m_EditorState, m_ThemeManager); }
 

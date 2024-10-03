@@ -17,7 +17,7 @@ namespace Laura
 		ImVec4 DefaultHeaderHovered = ImVec4{ 0.3f, 0.305f, 0.31f, 1.0f };      // ImGuiCol_HeaderHovered
 		ImVec4 DefaultHeaderActive = ImVec4{ 0.15f, 0.1505f, 0.151f, 1.0f };       // ImGuiCol_HeaderActive
 		// Buttons
-		ImVec4 DefaultButton = ImVec4{ 0.078f, 0.078f, 0.078f, 1.0f };             // ImGuiCol_Button
+		ImVec4 DefaultButton = ImVec4{ 0.0f, 0.0f, 0.0f, 0.0f };             // ImGuiCol_Button (transparent)
 		ImVec4 DefaultButtonHovered = ImVec4{ 0.3f, 0.305f, 0.31f, 1.0f };    // ImGuiCol_ButtonHovered
 		ImVec4 DefaultButtonActive = ImVec4{ 0.15f, 0.1505f, 0.151f, 1.0f };       // ImGuiCol_ButtonActive
 		// Checkmarks
@@ -64,7 +64,12 @@ namespace Laura
 		ImVec4 TransformButtonXActive = ImVec4{ 0.609f, 0.109f, 0.109f, 1.0f };
 		ImVec4 TransformButtonYActive = ImVec4{ 0.109f, 0.609f, 0.109f, 1.0f };
 		ImVec4 TransformButtonZActive = ImVec4{ 0.109f, 0.109f, 0.609f, 1.0f };
+		// Secondary button styles
 		ImVec4 ButtonGray = ImVec4{ 0.169f, 0.169f, 0.169f, 1.0f };
+		// Selected headers
+		ImVec4 SelectedHeader = ImVec4{ 0.138f, 0.138f, 0.138f, 1.0f };
+		
+		ImVec4 AddComponentButton = ImVec4{ 0.078f, 0.078f, 0.078f, 1.0f };
 	};
 
 	class ThemeManager
@@ -195,8 +200,12 @@ struct YAML::convert<Laura::Theme>
 		node["TransformButtonXActive"] = rhs.TransformButtonXActive;
 		node["TransformButtonYActive"] = rhs.TransformButtonYActive;
 		node["TransformButtonZActive"] = rhs.TransformButtonZActive;
-		// Button Style 2
+		// Secondary button styles
 		node["ButtonGray"] = rhs.ButtonGray;
+		// Selected headers
+		node["SelectedHeader"] = rhs.SelectedHeader;
+
+		node["AddComponentButton"] = rhs.AddComponentButton;
 
 		return node;
 	}
@@ -263,8 +272,12 @@ struct YAML::convert<Laura::Theme>
 		rhs.TransformButtonXActive = node["TransformButtonXActive"].as<ImVec4>();
 		rhs.TransformButtonYActive = node["TransformButtonYActive"].as<ImVec4>();
 		rhs.TransformButtonZActive = node["TransformButtonZActive"].as<ImVec4>();
-		// Button Style 2
+		// Secondary button styles
 		rhs.ButtonGray = node["ButtonGray"].as<ImVec4>();
+		// Selected headers
+		rhs.SelectedHeader = node["SelectedHeader"].as<ImVec4>();
+
+		rhs.AddComponentButton = node["AddComponentButton"].as<ImVec4>();
 
 		return true;
 	}

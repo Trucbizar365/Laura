@@ -132,6 +132,12 @@ namespace Laura
 			ImGui::Spacing();
 		}
 
+		/// TRANSFORM COMPONENT UI ////////////////////////////////////////////////////////////
+		DrawComponent<TransformComponent>(std::string(ICON_FA_ARROWS_UP_DOWN_LEFT_RIGHT " Transform"), entity, [&](Entity& _entity)
+			{
+				DrawTransformSliders(m_ThemeManager, _entity);
+			});
+
 		/// CAMERA COMPOENENT UI //////////////////////////////////////////////////////////////
 		DrawComponent<CameraComponent>(std::string(ICON_FA_VIDEO " Camera Component"), entity, [](Entity& entity)
 			{
@@ -140,11 +146,6 @@ namespace Laura
 				ImGui::DragFloat("FOV", &cameraComponent.fov, 0.1f, 10.0f, 130.0f, "%.1f");
 			});
 
-		/// TRANSFORM COMPONENT UI ////////////////////////////////////////////////////////////
-		DrawComponent<TransformComponent>(std::string(ICON_FA_ARROWS_UP_DOWN_LEFT_RIGHT " Transform"), entity, [&](Entity& _entity)
-			{
-				DrawTransformSliders(m_ThemeManager, _entity);
-			});
 
 		/// MESH COMPONENT UI /////////////////////////////////////////////////////////////////
 
@@ -156,6 +157,41 @@ namespace Laura
 
 		/// MATERIAL COMPONENT UI /////////////////////////////////////////////////////////////
 		// TODO
+
+		ImVec2 panelDims = ImGui::GetContentRegionAvail();
+		float lineHeight = ImGui::GetFont()->FontSize + ImGui::GetStyle().FramePadding.y * 2.0f;
+		ImGui::Dummy(ImVec2(0.0f, 10.0f));
+		ImGui::SetCursorPosX(panelDims.x / 4);
+		bool popupOpened = false;
+		m_ThemeManager->ImGuiSet(ImGuiCol_Button, m_ThemeManager->GetActiveTheme()->AddComponentButton);
+		if(ImGui::Button("Add Component", {panelDims.x / 2, lineHeight}))
+		{
+			popupOpened = true;
+			ImGui::OpenPopup("AddComponent");
+		}
+		m_ThemeManager->ImGuiSet(ImGuiCol_Button, m_ThemeManager->GetActiveTheme()->DefaultButton);
+		if (ImGui::IsPopupOpen("AddComponent"))
+		{
+			ImVec2 addButtonPos = ImGui::GetItemRectMin();
+			ImVec2 addButtonSize = ImGui::GetItemRectSize();
+			ImGui::SetNextWindowSizeConstraints(
+				ImVec2(FLT_MIN, FLT_MIN),
+				ImVec2(FLT_MAX, 300.0f) // if the popup contains too many compnents, adds a scrollbar
+			);
+			ImGui::SetNextWindowPos(ImVec2(addButtonPos.x, addButtonPos.y + addButtonSize.y));
+			ImGui::SetNextWindowSize(ImVec2(panelDims.x / 2, 0.0f));
+		}
+		if (ImGui::BeginPopup("AddComponent"))
+		{
+			ImGui::Selectable(ICON_FA_ARROWS_UP_DOWN_LEFT_RIGHT " Transform", false);
+			ImGui::Selectable(ICON_FA_VIDEO " Camera Component", false);
+			ImGui::Selectable(ICON_FA_CUBE " Mesh Component", false);
+			ImGui::Selectable(ICON_FA_LAYER_GROUP " Material Component", false);
+			ImGui::Selectable(ICON_FA_FILE_CODE " Script", false);
+			ImGui::EndPopup();
+		}
+		// ensure that there is always some space under the Add Component button when scrolling to display the popup
+		ImGui::Dummy(ImVec2(0.0f, 100.0f)); 
         ImGui::End();
     }
 }
