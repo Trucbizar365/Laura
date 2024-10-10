@@ -9,7 +9,8 @@ namespace Laura
 		m_EditorState(std::make_shared<EditorState>()),
 		m_ThemeManager(std::make_shared<ThemeManager>()),
 		m_InspectorPanel(m_EditorState, m_ThemeManager),
-		m_SceneHierarchyPanel(m_EditorState, m_ThemeManager)
+		m_SceneHierarchyPanel(m_EditorState, m_ThemeManager),
+		m_ThemesPanel(m_EditorState, m_ThemeManager)
 	{
 		setLayerName("EditorLayer");
 	}
@@ -21,9 +22,10 @@ namespace Laura
 		std::string statusMessage;
 		if (!m_ThemeManager->LoadTheme(m_EditorState->persistent.ThemeFilePath, statusMessage))
 		{
+			m_EditorState->persistent.ThemeFilePath = ""; // reset the theme file path if it failed to load
+			m_ThemeManager->LoadBuiltInDefualtTheme();
 			LR_EDITOR_WARN("Failed to load theme: {0}", statusMessage);
 		}
-		m_ThemeManager->ApplyThemeColors(); // sets the imguis style based on the current theme (default if no theme is loaded)
 
 		
 
@@ -167,7 +169,7 @@ namespace Laura
 		ImGui::ShowDemoWindow(&showDemoWindow);
 		m_SceneHierarchyPanel.OnImGuiRender(m_Scene);
 		m_InspectorPanel.OnImGuiRender(m_Scene);
-		if (m_EditorState->temp.ThemeSettingsPanelOpen) { m_ThemesPanel.OnImGuiRender(m_EditorState, m_ThemeManager); }
+		if (m_EditorState->temp.ThemeSettingsPanelOpen) { m_ThemesPanel.OnImGuiRender(); }
 
 		//m_Renderer->SetFrameResolution(glm::vec2(viewportSize.x, viewportSize.y));
 		//m_Renderer->renderSettings.accumulateFrames = false;
@@ -181,6 +183,5 @@ namespace Laura
 	{
 		m_Scene->OnShutdown();
 		serializeState(m_EditorState); // save the persistent part of the editor state to the file
-		std::cout << "OnDetach has been called\n";
 	}
 }

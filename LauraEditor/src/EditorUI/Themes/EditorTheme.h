@@ -7,6 +7,7 @@ namespace Laura
 {
 	#define LR_THEME_FILE_EXTENSION ".lrtheme"
 	
+	// to add an entry also update the template specifications at the bottom of this file
 	struct Theme
 	{
 		// Backgrounds
@@ -67,7 +68,7 @@ namespace Laura
 		ImVec4 TransformButtonYActive = ImVec4{ 0.109f, 0.609f, 0.109f, 1.0f };
 		ImVec4 TransformButtonZActive = ImVec4{ 0.109f, 0.109f, 0.609f, 1.0f };
 		// Secondary button styles
-		ImVec4 ButtonGray = ImVec4{ 0.169f, 0.169f, 0.169f, 1.0f };
+		ImVec4 ButtonGray = ImVec4{ 0.229f, 0.229f, 0.229f, 1.0f };
 		// Selected headers
 		ImVec4 SelectedHeader = ImVec4{ 0.138f, 0.138f, 0.138f, 1.0f };
 		
@@ -79,29 +80,29 @@ namespace Laura
 	public:
 		ThemeManager();
 
+		// sets the currently active colors for ImGui widgets to defalut values of the currently active theme
+		void ImGuiSetAll();
+		// Example usage: ThemeManager.ImGuiSet(ImGuiCol_Text, ThemeManager.GetActiveTheme()->Text);
+		inline void ImGuiSet(ImGuiCol_ widget, ImVec4 color){ ImGui::GetStyle().Colors[widget] = color; }
+		inline std::shared_ptr<const Theme> GetActiveTheme() { return m_ActiveTheme; }
+
+		inline bool LoadBuiltInDefualtTheme() 
+		{
+			m_ActiveTheme = std::make_shared<Theme>();
+			ImGuiSetAll();
+			return true; // always succeeds (returning bool just for consistency)
+		}
 		inline bool LoadTheme(const std::string& filepath, std::string& statusMessage)
 		{
 			bool success = DeserializeTheme(m_ActiveTheme, filepath, statusMessage);
-			ApplyThemeColors();
+			ImGuiSetAll();
 			return success;
 		}
-
-		// Example usage: ThemeManager.ImGuiSet(ImGuiCol_Text, ThemeManager.GetActiveTheme()->Text);
-		inline void ImGuiSet(ImGuiCol_ widget, ImVec4 color)
-		{
-			ImGui::GetStyle().Colors[widget] = color;
-		}
-
-		// sets the currently active colors for ImGui widgets to defalut values of the currently active theme
-		void ApplyThemeColors();
-
-		// will generate a .lrtheme file at the specified filepath with the default theme values
-		inline bool GenerateDefaultThemeFile(const std::string& filepath, std::string& statusMessage)
+		// will save the currently active theme into a .lrtheme file at the specified filepath
+		inline bool SaveTheme(const std::string& filepath, std::string& statusMessage)
 		{
 			return SerializeTheme(std::make_shared<Theme>(), filepath, statusMessage);
 		}
-
-		inline std::shared_ptr<const Theme> GetActiveTheme() { return m_ActiveTheme; }
 	private:
 		std::shared_ptr<Theme> m_ActiveTheme;
 

@@ -25,11 +25,9 @@ namespace Laura
 		}
 
 		ImGui::OpenPopup(popupTitle);
-		std::cout << "Opening popup" << std::endl;
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(10, 10));
 		if (ImGui::BeginPopupModal(popupTitle, NULL, ImGuiWindowFlags_AlwaysAutoResize))
 		{
-			std::cout << "Popup open" << std::endl;
 			ImGui::Text(popupMessage);
 			float panelWidth = ImGui::GetContentRegionAvail().x;
 			float buttonWidth = panelWidth * 0.5f - 5.0f;

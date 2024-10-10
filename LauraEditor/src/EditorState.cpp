@@ -5,7 +5,6 @@ namespace Laura
     bool serializeState(const std::shared_ptr<const EditorState>& state)
     {
         std::string filepath = EDITOR_STATE_FILE_PATH;
-        std::cout << "Serializing: " << filepath << std::endl;
         if (!filepath.ends_with(".yaml"))
         {
             LR_EDITOR_CRITICAL("Invalid file extension for theme file: {0}", filepath);
@@ -46,7 +45,6 @@ namespace Laura
 	bool deserializeState(const std::shared_ptr<EditorState>& state)
 	{
         std::string filepath = EDITOR_STATE_FILE_PATH;
-        std::cout << "Deserializing: " << filepath << std::endl;
         // Check for the correct file extension
         if (!filepath.ends_with(".yaml"))
         {

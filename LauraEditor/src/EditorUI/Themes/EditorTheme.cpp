@@ -115,7 +115,7 @@ namespace Laura
 
 
 
-    void ThemeManager::ApplyThemeColors()
+    void ThemeManager::ImGuiSetAll()
     {
         ImVec4* colors = ImGui::GetStyle().Colors;
 
