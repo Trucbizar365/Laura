@@ -24,8 +24,11 @@
 #include "Scene/Entity.h"
 #include "Scene/Components.h"
 #include "Scene/Skybox.h" 
+#include "Scene/SceneManager.h"
 //// ---------------- ////
 
 #include "Assets/AssetManager.h"
 #include "Assets/MeshLoader.h"
 #include "Assets/TextureLoader.h"
+
+#include "Core/GUID.h"

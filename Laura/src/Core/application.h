@@ -32,6 +32,7 @@ namespace Laura {
         std::shared_ptr<IRendererAPI> _RendererAPI;
         std::shared_ptr<Renderer> _Renderer;
         std::shared_ptr<AssetManager> _AssetManager;
+        std::shared_ptr<SceneManager> _SceneManager;
         std::shared_ptr<DeltaTime> dt;
 
     protected:

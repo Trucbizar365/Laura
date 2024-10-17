@@ -1,6 +1,6 @@
-/////////////////////////////
-/// OFFICIAL LAURA EDITOR ///
-/////////////////////////////
+////////////////////
+/// LAURA EDITOR ///
+////////////////////
 
 #include <Laura.h>
 #include <LauraEntrypoint.h>
@@ -21,7 +21,7 @@ namespace Laura
 		{
 			IRendererAPI::SetAPI(IRendererAPI::API::OpenGL);
 			Application::init(); // call the default init method first
-			_LayerStack->PushLayer(std::make_shared<EditorLayer>(_Renderer, _AssetManager));
+			_LayerStack->PushLayer(std::make_shared<EditorLayer>(_Renderer, _SceneManager, _AssetManager));
 		}
 
 		~LauraEditor()

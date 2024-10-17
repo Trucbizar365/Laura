@@ -10,7 +10,7 @@ namespace Laura
 	class Scene
 	{
 	public:
-		std::shared_ptr<Skybox> skybox;
+		GUID skyboxID;
 	public:
 		Scene();
 		~Scene();

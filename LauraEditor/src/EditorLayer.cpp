@@ -3,9 +3,11 @@
 namespace Laura
 {
 
-	EditorLayer::EditorLayer(std::shared_ptr<Renderer> renderer, std::shared_ptr<AssetManager> assetManager)
-		: m_Renderer(renderer), 
+	EditorLayer::EditorLayer(std::shared_ptr<Renderer> renderer, std::shared_ptr<SceneManager> sceneManager, std::shared_ptr<AssetManager> assetManager)
+		: m_Renderer(renderer),
+		m_SceneManager(sceneManager),
 		m_AssetManager(assetManager),
+
 		m_EditorState(std::make_shared<EditorState>()),
 		m_ThemeManager(std::make_shared<ThemeManager>()),
 		m_InspectorPanel(m_EditorState, m_ThemeManager),
@@ -27,15 +29,17 @@ namespace Laura
 			LR_EDITOR_WARN("Failed to load theme: {0}", statusMessage);
 		}
 
-		
+		m_Scene = std::make_shared<Scene>();
 
-		m_Scene = std::make_shared<Scene>(); // Call the default constructor of the Scene class
+
 		// Setting up the Skybox
-		
 		// TODO make the api for the texture channels more user friendly and less error prone
 		// currently there is no way to catch these errors and they lead to hard to debug crashes
-		uint32_t skyboxTextureID = m_AssetManager->LoadTexture(EDITOR_RESOURCES_PATH "Skyboxes/kloofendal_48d_partly_cloudy_puresky_4k.hdr", 4);
-		m_Scene->skybox = std::make_shared<Skybox>(skyboxTextureID);
+		GUID skyboxTextureID = m_AssetManager->LoadTexture(EDITOR_RESOURCES_PATH "Skyboxes/kloofendal_48d_partly_cloudy_puresky_4k.hdr", 4);
+		m_Scene->skyboxID = skyboxTextureID;
+		// asset manager just loads the texture and returns the ID
+		// the Skybox class stores this texture
+		//m_Scene->skybox = std::make_shared<Skybox>(skyboxTextureID);
 		
 
 		// Adding a CAMERA to the scene
@@ -47,15 +51,13 @@ namespace Laura
 		TransformComponent& cameraTransform = camera.AddComponent<TransformComponent>();
 		cameraTransform.SetTranslation({ 0.0f, 40.0f, -200.0f });
 		CameraComponent cameraComponent = camera.AddComponent<CameraComponent>();
-		// Using the default values for the camera component
+		//Using the default values for the camera component
 		cameraComponent.fov = 30.0f;
-		//cameraComponent.aspectRatio = 16.0f/9.0f;
 
 
 		// Adding a 3D MODEL to the scene
 		Entity dragon = m_Scene->CreateEntity();
 		{
-			
 			std::string& tag = dragon.GetComponent<TagComponent>().Tag;
 			tag = std::string("Dragon");
 
@@ -63,7 +65,8 @@ namespace Laura
 			TransformComponent& dragonTransform = dragon.AddComponent<TransformComponent>();
 			MaterialComponent& dragonMaterial = dragon.AddComponent<MaterialComponent>();
 
-			uint32_t ID = m_AssetManager->LoadMesh(std::string(EDITOR_RESOURCES_PATH "Models/stanford_dragon_pbr.glb"));
+			// TODO: this should be loaded upon opening the editor - asset manager should keep track of the assets to be loaded (serialize/deserialize them)
+			GUID ID = m_AssetManager->LoadMesh(std::string(EDITOR_RESOURCES_PATH "Models/stanford_dragon_pbr.glb"));
 			//uint32_t ID = m_AssetManager->LoadMesh(std::string(EDITOR_RESOURCES_PATH "Models/stanford_bunny_pbr.glb"));
 			//uint32_t ID = m_AssetManager->LoadMesh(std::string(EDITOR_RESOURCES_PATH "Models/sponza_scene.glb"));
 			dragonMesh.SetID(ID);
@@ -81,27 +84,27 @@ namespace Laura
 		#define FRAME_HEIGHT 150.0f
 		m_Renderer->SetFrameResolution(glm::vec2(FRAME_WIDTH, FRAME_HEIGHT));
 
-		/// ------------- SCRIPTING -------------- ///
-		// Test SCRIPT (will be in its own file in the future)
+		/// ------------- SCRIPTING -------------- /// (just to see how to use the system) will change in the future
+		/* 
+		 Test SCRIPT (will be in its own file in the future)
 		class TestScript : public Script
 		{
 			virtual void OnCreate() override 
 			{
 				LR_EDITOR_INFO("TestScript::OnCreate (called in scene.OnStart())");
 			}
-
+		
 			virtual void OnUpdate() override
 			{
 				LR_EDITOR_INFO("TestScript::OnUpdate (this should get called every frame)");
 			}
-
+		
 			virtual void OnDestroy() override
 			{
 				LR_EDITOR_INFO("TestScript::OnDestroy (called once the entity gets destroyed)");
 			}
 		};
-		
-		// Testing the TEST SCRIPT on a TEST ENTITY
+		 Testing the TEST SCRIPT on a TEST ENTITY
 		Entity testEntity = m_Scene->CreateEntity();
 		{
 			std::string& tag = testEntity.GetComponent<TagComponent>().Tag;
@@ -110,17 +113,12 @@ namespace Laura
 		testEntity.AddComponent<ScriptComponent>(new TestScript());
 		testEntity.RemoveComponent<ScriptComponent>();
 		m_Scene->DestroyEntity(testEntity); // testing the script's OnDestroy() function
+		*/
 		/// ---------------------------------------- ///
 
-		m_Scene->OnStart();
-
-		// setting up the renderer
-		std::shared_ptr<LoadedTexture> texture = m_AssetManager->GetTexture(skyboxTextureID);
-		m_Renderer->BeginScene(camera, texture);
-		MeshComponent dragon_mesh = dragon.GetComponent<MeshComponent>();
-		TransformComponent dragon_transform = dragon.GetComponent<TransformComponent>();
-		MaterialComponent dragon_material = dragon.GetComponent<MaterialComponent>();
-		m_Renderer->Submit(m_AssetManager->GetMesh(dragon_mesh.GetID()), dragon_transform, dragon_material);
+		m_Scene->OnStart(); // calls the onStart() of the scripts
+		
+		m_Renderer->Init();
 	}
 
 	void EditorLayer::onEvent(Event* event)
@@ -165,17 +163,18 @@ namespace Laura
 			ImGui::EndMainMenuBar();
 		}
 
-		bool showDemoWindow = false;
-		ImGui::ShowDemoWindow(&showDemoWindow);
 		m_SceneHierarchyPanel.OnImGuiRender(m_Scene);
 		m_InspectorPanel.OnImGuiRender(m_Scene);
 		if (m_EditorState->temp.ThemeSettingsPanelOpen) { m_ThemesPanel.OnImGuiRender(); }
 
-		//m_Renderer->SetFrameResolution(glm::vec2(viewportSize.x, viewportSize.y));
-		//m_Renderer->renderSettings.accumulateFrames = false;
-		//m_Renderer->UpdateRenderSettingsUBO();
-
+		// Parse the scene for rendering
+		std::shared_ptr<RenderableScene> rScene = m_SceneManager->ParseSceneForRendering(m_Scene);
+		
+		// Render The Scene
+		m_Renderer->SubmitScene(rScene);
 		std::shared_ptr<IImage2D> RenderedFrame = m_Renderer->RenderScene();
+		
+		// Display the rendered frame in the viewport panel
 		m_ViewportPanel.OnImGuiRender(RenderedFrame, m_EditorState);
 	}
 

@@ -22,13 +22,14 @@ namespace Laura {
 		// make window forward events to the layer stack
 		_Window->setEventCallback([this](Event* event) { _LayerStack->onEvent(event); });
 		
-		_RendererAPI = IRendererAPI::Create();
-		_Renderer = std::make_shared<Renderer>();
-
 		_ImGuiContextManager = std::make_shared<ImGuiContext>(_Window);
 		_ImGuiContextManager->Init();
 
+		_SceneManager = std::make_shared<SceneManager>();
 		_AssetManager = std::make_shared<AssetManager>();
+
+		_RendererAPI = IRendererAPI::Create();
+		_Renderer = std::make_shared<Renderer>(_AssetManager);
 	}
 
 	void Application::run()

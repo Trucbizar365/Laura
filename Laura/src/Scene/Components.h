@@ -7,6 +7,7 @@
 
 #include "Geometry/Triangle.h" // for mesh component
 #include "Renderer/Material.h" // for material component
+#include "Core/GUID.h"
 
 namespace Laura
 {
@@ -45,10 +46,10 @@ namespace Laura
 	{
 	public:
 		MeshComponent() = default;
-		inline uint32_t GetID() { return m_ID; }
-		inline void SetID(uint32_t id) { m_ID = id; }
+		inline GUID GetID() { return m_guid; }
+		inline void SetID(GUID id) { m_guid = id; }
 	private:
-		uint32_t m_ID;
+		GUID m_guid;
 	};
 
 	struct MaterialComponent
@@ -101,5 +102,12 @@ namespace Laura
 			: Tag(tag) {};
 
 		std::string Tag;
+	};
+
+	struct GUIDComponent
+	{
+		GUIDComponent() = default;
+
+		GUID id;
 	};
 }

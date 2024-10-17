@@ -17,15 +17,18 @@ namespace Laura
 	class EditorLayer : public ILayer
 	{
 	public:
-		EditorLayer(std::shared_ptr<Renderer> renderer, std::shared_ptr<AssetManager> assetManager);
+		EditorLayer(std::shared_ptr<Renderer> renderer, std::shared_ptr<SceneManager> sceneManager, std::shared_ptr<AssetManager> assetManager);
 		virtual void onAttach() override;
 		virtual void onDetach() override;
 		virtual void onUpdate() override;
 		virtual void onImGuiRender() override;
 		virtual void onEvent(Event* event) override;
+	
 	private:
+		// EDITOR INDEPENDENT SYSTEMS
 		std::shared_ptr<Renderer> m_Renderer;
 		std::shared_ptr<AssetManager> m_AssetManager;
+		std::shared_ptr<SceneManager> m_SceneManager;
 	private:
 		glm::ivec2 prevViewportWindowSize, prevViewportWindowPos, viewportSize;
 		ImVec2 topLeftTextureCoords, bottomRightTextureCoords;
