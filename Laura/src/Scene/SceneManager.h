@@ -16,29 +16,34 @@ namespace Laura
 		
 		glm::mat4 cameraTransform;
 		float cameraFocalLength;
+	
+		std::vector<int> meshMappings;
+		std::vector<int> materialMappings;
 
-		// updated every frame
-		std::vector<glm::mat4> TransformList; 
-		
-		// updated when meshesOrBvhsDirty
-		std::vector<uint64_t> meshAndBvhIndices; 
-		std::vector<std::shared_ptr<std::vector<Triangle>>> uniqueMeshList;
-		std::vector<std::shared_ptr<BVH::BVH_data>> uniqueBvhList;
+		std::vector<glm::mat4> transforms;
+		std::vector<std::shared_ptr<std::vector<Triangle>>> meshes;
+		std::vector<std::shared_ptr<BVH::BVH_data>> BVHs;
+		std::vector<std::shared_ptr<Material>> materials;
 
-		// updated when materialsDirty
-		std::vector<uint64_t> materialIndices;
-		std::vector<Material> uniqueMaterialList;
+		bool skyboxDirty, meshesDirty, materialsDirty;
 
-		bool meshesOrBvhsDirty, materialsDirty;
+		bool isValid;
 	};
 
 	class SceneManager
 	{
 	public:
-		SceneManager();
-		~SceneManager();
-		std::shared_ptr<RenderableScene> ParseSceneForRendering(std::shared_ptr<Scene> scene, std::shared_ptr<AssetManager> assetManager);
+		inline SceneManager(std::shared_ptr<AssetManager> assetManager)
+			: m_AssetManager(assetManager)
+		{
+		}
+		~SceneManager() = default;
+		std::shared_ptr<RenderableScene> ParseSceneForRendering(std::shared_ptr<Scene> scene);
 	private:
-		std::unordered_map<GUID, int> oldMeshGuidToIndexMap;
+		std::shared_ptr<AssetManager> m_AssetManager;
+
+		GUID m_Cached_SkyboxGUID;
+		std::vector<int> m_Cached_MeshMappings;
+		std::vector<int> m_Cached_MaterialMappings;
 	};
 }

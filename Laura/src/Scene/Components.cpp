@@ -1,8 +1,8 @@
-#include "Components.h"
+#include "Scene/Components.h"
 
 namespace Laura 
 {
-	/// TRANSFORM COMPOENENT ///////////////////////////////////////////////////////////////////
+	/// TRANSFORM COMPONENT ///////////////////////////////////////////////////////////////////
 
 	TransformComponent::TransformComponent()
 		: m_Rotation(0.0f), 

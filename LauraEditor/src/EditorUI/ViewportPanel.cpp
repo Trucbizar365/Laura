@@ -18,11 +18,19 @@ namespace Laura
 		
 		ForceUpdate = false;
 
+		ImVec2 panelDims = ImGui::GetContentRegionAvail();
+		float lineHeight = ImGui::GetFont()->FontSize + ImGui::GetStyle().FramePadding.y * 2.0f;
+		ImGui::Spacing();
+		ImGui::SameLine(panelDims.x - lineHeight);
+		if (ImGui::Button(ICON_FA_ELLIPSIS_VERTICAL, {lineHeight, lineHeight}))
+		{
+			editorState->temp.ViewportSettingsPanelOpen = true;
+		}
+
 		DrawViewportSettingsPanel(editorState);
 
 		if (image == nullptr)
 		{
-			ImGui::Text("No image to display");
 			ImGui::PopStyleVar();
 			ImGui::End();
 			return;
@@ -100,14 +108,6 @@ namespace Laura
 		ImVec2 BRImVec = ImVec2(m_BottomRightImageCoords.x, m_BottomRightImageCoords.y);
 		drawList->AddImage((ImTextureID)image->GetID(), TLImVec, BRImVec, { 0, 1 }, { 1, 0 });
 
-		ImVec2 panelDims = ImGui::GetContentRegionAvail();
-		float lineHeight = ImGui::GetFont()->FontSize + ImGui::GetStyle().FramePadding.y * 2.0f;
-		ImGui::Spacing();
-		ImGui::SameLine(panelDims.x - lineHeight);
-		if (ImGui::Button(ICON_FA_ELLIPSIS_VERTICAL, {lineHeight, lineHeight}))
-		{
-			editorState->temp.ViewportSettingsPanelOpen = true;
-		}
 
 		ImGui::PopStyleVar();
 		ImGui::End();

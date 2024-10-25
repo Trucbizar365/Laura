@@ -32,8 +32,8 @@ namespace Laura
 			uint32_t maxAABBIntersections;
 		};
 	public:
-		inline Renderer(std::shared_ptr<AssetManager> assetManager)
-			: m_AssetManager(assetManager), m_AccumulateFrameCount(0), m_CachedSkyboxID(0), m_CachedMeshCount(0), m_FrameResolution(300, 100)
+		inline Renderer()
+			: m_AccumulateFrameCount(0), m_FrameResolution(300, 100)
 		{
 		}
 		~Renderer() = default;
@@ -51,8 +51,8 @@ namespace Laura
 		void SetFrameResolution(const glm::vec2& resolution);
 
 	private:
-		void UpdateCameraUBO(Entity camera);
-		void UpdateSkyboxUBO(GUID skyboxID);
+		void UpdateCameraUBO(glm::mat4 transform, float focalLength);
+		void UpdateSkyboxUBO(std::shared_ptr<LoadedTexture> skyboxTex);
 		void UpdateRenderSettingsUBO();
 		void Submit(const Entity& model);
 
@@ -65,12 +65,7 @@ namespace Laura
 		std::shared_ptr<IShaderStorageBuffer> m_TriangleMeshSSBO, m_BVHSSBO;
 
 		uint32_t m_AccumulateFrameCount;
-		uint32_t m_CachedMeshCount;
-		GUID m_CachedSkyboxID;
-
-		bool m_SceneReadyForRendering = false; // currently the only requirement for rendering is having a camera with a transform in the scene
-
-		std::shared_ptr<AssetManager> m_AssetManager;
+		bool m_SceneValid;
 	};
 
 }

@@ -10,7 +10,7 @@ namespace Laura
 	class Scene
 	{
 	public:
-		GUID skyboxGUID;
+		GUID skyboxGuid;
 	public:
 		Scene();
 		~Scene();
@@ -21,7 +21,7 @@ namespace Laura
 		void OnUpdate();
 		void OnShutdown();
 
-		inline entt::registry* Get() const { return m_Registry; }
+		inline entt::registry* GetRegistry() const { return m_Registry; }
 
 	private:
 		entt::registry* m_Registry;

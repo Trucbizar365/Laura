@@ -2,70 +2,128 @@
 
 namespace Laura
 {
-	SceneManager::SceneManager()
-	{
-	}
-
-	SceneManager::~SceneManager()
-	{
-	}
-
-	std::shared_ptr<RenderableScene> SceneManager::ParseSceneForRendering(std::shared_ptr<Scene> scene, std::shared_ptr<AssetManager> assetManager)
+	std::shared_ptr<RenderableScene> SceneManager::ParseSceneForRendering(std::shared_ptr<Scene> scene)
 	{
 		std::shared_ptr<RenderableScene> rScene = std::make_shared<RenderableScene>();
-		rScene->meshesOrBvhsDirty = false;
-		rScene->materialsDirty = false;
-
-		rScene->skybox = assetManager->GetTexture(scene->skyboxGUID);
-
-		std::unordered_map<GUID, int> newMeshGuidToIndexMap;
-		int meshIdx = 0;
-		for (auto entity : scene->Get()->view<TransformComponent>())
+		rScene->isValid = false;
+		/// SKYBOX /////////////////////////////////////////////////////////////////////////
+		rScene->skyboxDirty = false;
+		if (m_Cached_SkyboxGUID != scene->skyboxGuid)
 		{
-			// Are the entities gonna be in the same order? if not then the meshIdxes will be different every frame
-			Entity e(entity, scene->Get());
+			// if the GUID hasn't changed the renderer won't need the texture
+			rScene->skybox = m_AssetManager->GetTexture(scene->skyboxGuid);
+			rScene->skyboxDirty = true;
+		}
+		m_Cached_SkyboxGUID = scene->skyboxGuid;
+
+		/// GENERATE ENTITY LIST AND UNIQUE MESH/MATERIAL GUID SETS ////////////////////////
+		std::vector<Entity> entityList;
+		std::unordered_set<GUID> meshGuidSet;
+		std::unordered_set<GUID> materialGuidSet;
+		for (auto enttEntity : scene->GetRegistry()->view<TransformComponent>())
+		{
+			Entity e(enttEntity, scene->GetRegistry());
+			if (e.HasComponent<CameraComponent>())
+			{
+				CameraComponent camera = e.GetComponent<CameraComponent>();
+				if (camera.isMain)
+				{
+					rScene->isValid = true;
+					rScene->cameraTransform = e.GetComponent<TransformComponent>().GetMatrix();
+					rScene->cameraFocalLength = camera.GetFocalLength();
+				}
+			}
+
+			// every renderable entity has to have a transform and a mesh component | materials are optional i.e. default material is assigned if not present
 			if (e.HasComponent<MeshComponent>())
 			{
-				GUID meshGUID = e.GetComponent<MeshComponent>().GetID();
-				if (newMeshGuidToIndexMap.find(meshGUID) == newMeshGuidToIndexMap.end())
+				if (e.GetComponent<GUIDComponent>().guid == 0)
+					continue;
+
+				GUID meshGuid = e.GetComponent<MeshComponent>().guid;
+				if (meshGuid == 0)
+					continue;
+				meshGuidSet.insert(meshGuid);
+
+				if (e.HasComponent<MaterialComponent>())
 				{
-					newMeshGuidToIndexMap[meshGUID] = meshIdx;
-					rScene->uniqueMeshList.push_back(assetManager->GetMesh(meshGUID)); // TODO: This should not copy the mesh
-					rScene->uniqueBvhList.push_back(assetManager->GetBVH(meshGUID));
-					meshIdx++;
+					GUID materialGuid = e.GetComponent<MaterialComponent>().guid;
+					materialGuidSet.insert(materialGuid); // 0 = default material else custom material
 				}
+				else
+				{
+					materialGuidSet.insert(0); // default material
+				}
+
+				entityList.push_back(e); // this entity is valid for rendering so we add it to the entity array
 			}
 		}
 
-		for (const auto& pair : newMeshGuidToIndexMap)
-		{
-			if (oldMeshGuidToIndexMap.find(pair.first) == oldMeshGuidToIndexMap.end())
+		/// SORTING ///////////////////////////////////////////////////////////////////////
+		// After collecting the entities and mesh GUIDs, we sort them to ensure a stable, predictable order.
+		// Mesh GUIDs are sorted, and entities are sorted by their GUID to ensure consistency in rendering order and lookups.
+		std::vector<GUID> meshGuidList(meshGuidSet.begin(), meshGuidSet.end());
+		std::vector<GUID> materialGuidList(materialGuidSet.begin(), materialGuidSet.end());
+		std::sort(meshGuidList.begin(), meshGuidList.end());
+		std::sort(materialGuidList.begin(), materialGuidList.end());
+		std::sort(entityList.begin(), entityList.end(), 
+			[](const Entity& e1, const Entity& e2) 
 			{
-				oldMeshGuidToIndexMap = newMeshGuidToIndexMap;
-				rScene->meshesOrBvhsDirty = true;
+				return e1.GetComponent<GUIDComponent>().guid < e2.GetComponent<GUIDComponent>().guid;
+			});
+
+		/// SET INDEX MAPPINGS ////////////////////////////////////////////////////////////
+		for (Entity e : entityList)
+		{
+			auto meshIterator = std::lower_bound(meshGuidList.begin(), meshGuidList.end(), e.GetComponent<MeshComponent>().guid);
+			int meshIndex = std::distance(meshGuidList.begin(), meshIterator);
+			rScene->meshMappings.push_back(meshIndex);
+
+			auto materialIterator = std::lower_bound(materialGuidList.begin(), materialGuidList.end(), e.GetComponent<MaterialComponent>().guid);
+			int materialIndex = std::distance(materialGuidList.begin(), materialIterator);
+			rScene->materialMappings.push_back(materialIndex);
+
+			rScene->transforms.push_back(e.GetComponent<TransformComponent>().GetMatrix());
+		}
+
+		/// PASS MESH BVH AND MATERIAL DATA TO RSCENE /////////////////////////////////////
+		for (GUID guid : meshGuidList)
+		{
+			std::shared_ptr<std::vector<Triangle>> mesh = m_AssetManager->GetMesh(guid);
+			std::shared_ptr<BVH::BVH_data> meshBVH = m_AssetManager->GetBVH(guid);
+			rScene->meshes.push_back(mesh);
+			rScene->BVHs.push_back(meshBVH);
+		}
+		for (GUID guid : materialGuidList)
+		{
+			std::shared_ptr<Material> material = m_AssetManager->GetMaterial(guid);
+			rScene->materials.push_back(material);
+		}
+
+		/// CHECK FLAGS ////////////////////////////////////////////////////////////////////
+		rScene->meshesDirty = false;
+		rScene->materialsDirty = false;
+
+		for (int i =0; i < rScene->meshMappings.size(); i++)
+		{
+			if (i >= m_Cached_MeshMappings.size() || m_Cached_MeshMappings[i] != rScene->meshMappings[i])
+			{
+				rScene->meshesDirty = true;
 				break;
 			}
 		}
-
-		for (auto entity : scene->Get()->view<TransformComponent>())
+		for (int i = 0; i < rScene->materialMappings.size(); i++)
 		{
-			Entity e(entity, scene->Get());
-			// find the main Camera
-			if (e.HasComponent<CameraComponent>())
+			if (i >= m_Cached_MaterialMappings.size() || m_Cached_MaterialMappings[i] != rScene->materialMappings[i])
 			{
-				if (e.GetComponent<CameraComponent>().isMain)
-				{
-					rScene->cameraTransform = e.GetComponent<TransformComponent>().GetMatrix();
-					rScene->cameraFocalLength = e.GetComponent<CameraComponent>().GetFocalLength();
-				}
-			}
-
-			if (e.HasComponent<MeshComponent>())
-			{
-				GUID meshGUID = e.GetComponent<MeshComponent>().GetID();
-				rScene->meshAndBvhIndices.push_back(newMeshGuidToIndexMap[meshGUID]); // Connect the meshAndBvhIndices to the uniqueMeshList
+				rScene->materialsDirty = true;
+				break;
 			}
 		}
+		
+		/// CACHE DATA FOR THE NEXT FRAME /////////////////////////////////////////////////
+		m_Cached_MeshMappings = rScene->meshMappings;
+		m_Cached_MaterialMappings = rScene->materialMappings;
 
 		return rScene;
 	}

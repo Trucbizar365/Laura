@@ -3,6 +3,8 @@
 #include "Assets/MeshLoader.h"
 #include "Assets/TextureLoader.h"
 
+#include <cassert>
+
 namespace Laura
 {
 	GUID AssetManager::LoadMesh(const std::string& filepath)
@@ -29,8 +31,9 @@ namespace Laura
 		return id;
 	}
 
-	uint32_t AssetManager::LoadMaterial(const std::string& filepath)
+	GUID AssetManager::LoadMaterial(const std::string& filepath)
 	{
+		// TODO: Implement
 		return 0;
 	}
 
@@ -45,29 +48,41 @@ namespace Laura
 		m_BVHs.erase(id);
 	}
 
-	void AssetManager::UnloadMaterial(uint32_t id)
+	void AssetManager::UnloadMaterial(GUID id)
 	{
 		m_Materials.erase(id);
 	}
 
 	std::shared_ptr<std::vector<Triangle>> AssetManager::GetMesh(GUID id)
 	{
-		return m_Meshes.at(id);
+		auto it = m_Meshes.find(id);
+		assert(it != m_Meshes.end() && "Invalid BVH GUID");
+		return it->second;
 	}
 
 	std::shared_ptr<BVH::BVH_data> AssetManager::GetBVH(GUID id)
 	{
-		return m_BVHs.at(id);
+		auto it = m_BVHs.find(id);
+		assert(it != m_BVHs.end() && "Invalid BVH GUID");
+		return it->second;
 	}
 
-	std::shared_ptr<Material> AssetManager::GetMaterial(uint32_t id)
+	std::shared_ptr<Material> AssetManager::GetMaterial(GUID id)
 	{
-		return m_Materials.at(id);
+		if (id == 0) 
+		{
+			return m_DefaultMaterial;
+		}
+		auto it = m_Materials.find(id);
+		assert(it != m_Materials.end() && "Invalid BVH GUID");
+		return it->second;
 	}
 
 	std::shared_ptr<LoadedTexture> AssetManager::GetTexture(GUID id)
 	{
-		return m_Textures.at(id);
+		auto it = m_Textures.find(id);
+		assert(it != m_Textures.end() && "Invalid BVH GUID");
+		return it->second;
 	}
 
 

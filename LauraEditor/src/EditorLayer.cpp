@@ -20,57 +20,50 @@ namespace Laura
 
 	void EditorLayer::onAttach()
 	{
-		deserializeState(m_EditorState); // load the persistent part of editor state from the file
+		deserializeState(m_EditorState);
 		std::string statusMessage;
 		if (!m_ThemeManager->LoadTheme(m_EditorState->persistent.ThemeFilePath, statusMessage))
 		{
-			m_EditorState->persistent.ThemeFilePath = ""; // reset the theme file path if it failed to load
+			m_EditorState->persistent.ThemeFilePath = "";
 			m_ThemeManager->LoadBuiltInDefualtTheme();
 			LR_EDITOR_WARN("Failed to load theme: {0}", statusMessage);
 		}
-
+		
+		// TODO: Scene serialization/deserialization
 		m_Scene = std::make_shared<Scene>();
 
-
-		// Setting up the Skybox
 		// TODO make the api for the texture channels more user friendly and less error prone
 		// currently there is no way to catch these errors and they lead to hard to debug crashes
-		GUID skyboxTextureID = m_AssetManager->LoadTexture(EDITOR_RESOURCES_PATH "Skyboxes/kloofendal_48d_partly_cloudy_puresky_4k.hdr", 4);
-		m_Scene->skyboxGUID = skyboxTextureID;
-		// asset manager just loads the texture and returns the ID
-		// the Skybox class stores this texture
-		//m_Scene->skybox = std::make_shared<Skybox>(skyboxTextureID);
-		
-
-		// Adding a CAMERA to the scene
-		Entity camera = m_Scene->CreateEntity();
 		{
+			GUID guid = m_AssetManager->LoadTexture(EDITOR_RESOURCES_PATH "Skyboxes/kloofendal_48d_partly_cloudy_puresky_4k.hdr", 4);
+			m_Scene->skyboxGuid = guid;
+		}
+		
+		{
+			Entity camera = m_Scene->CreateEntity();
 			std::string& tag = camera.GetComponent<TagComponent>().Tag;
 			tag = std::string("Camera");
+			TransformComponent& cameraTransform = camera.AddComponent<TransformComponent>();
+			cameraTransform.SetTranslation({ 0.0f, 40.0f, -200.0f });
+			CameraComponent cameraComponent = camera.AddComponent<CameraComponent>();
+			cameraComponent.fov = 30.0f;
 		}
-		TransformComponent& cameraTransform = camera.AddComponent<TransformComponent>();
-		cameraTransform.SetTranslation({ 0.0f, 40.0f, -200.0f });
-		CameraComponent cameraComponent = camera.AddComponent<CameraComponent>();
-		//Using the default values for the camera component
-		cameraComponent.fov = 30.0f;
 
 
-		// Adding a 3D MODEL to the scene
-		Entity dragon = m_Scene->CreateEntity();
 		{
+			Entity dragon = m_Scene->CreateEntity();
 			std::string& tag = dragon.GetComponent<TagComponent>().Tag;
 			tag = std::string("Dragon");
-
 			MeshComponent& dragonMesh = dragon.AddComponent<MeshComponent>();
 			TransformComponent& dragonTransform = dragon.AddComponent<TransformComponent>();
 			MaterialComponent& dragonMaterial = dragon.AddComponent<MaterialComponent>();
-
 			// TODO: this should be loaded upon opening the editor - asset manager should keep track of the assets to be loaded (serialize/deserialize them)
-			GUID ID = m_AssetManager->LoadMesh(std::string(EDITOR_RESOURCES_PATH "Models/stanford_dragon_pbr.glb"));
-			//uint32_t ID = m_AssetManager->LoadMesh(std::string(EDITOR_RESOURCES_PATH "Models/stanford_bunny_pbr.glb"));
-			//uint32_t ID = m_AssetManager->LoadMesh(std::string(EDITOR_RESOURCES_PATH "Models/sponza_scene.glb"));
-			dragonMesh.SetID(ID);
+			GUID guid = m_AssetManager->LoadMesh(std::string(EDITOR_RESOURCES_PATH "Models/stanford_dragon_pbr.glb"));
+			//uint32_t guid = m_AssetManager->LoadMesh(std::string(EDITOR_RESOURCES_PATH "Models/stanford_bunny_pbr.glb"));
+			//uint32_t guid = m_AssetManager->LoadMesh(std::string(EDITOR_RESOURCES_PATH "Models/sponza_scene.glb"));
+			dragonMesh.guid = guid;
 		}
+
 		m_Renderer->renderSettings.raysPerPixel = 1;
 		m_Renderer->renderSettings.bouncesPerRay = 5;
 		m_Renderer->renderSettings.maxAABBIntersections = 10000;
@@ -173,9 +166,7 @@ namespace Laura
 		// Render The Scene
 		m_Renderer->SubmitScene(rScene);
 		std::shared_ptr<IImage2D> RenderedFrame = m_Renderer->RenderScene();
-		
-		// Display the rendered frame in the viewport panel
-		m_ViewportPanel.OnImGuiRender(RenderedFrame, m_EditorState);
+		m_ViewportPanel.OnImGuiRender(RenderedFrame, m_EditorState);		
 	}
 
 	void EditorLayer::onDetach()

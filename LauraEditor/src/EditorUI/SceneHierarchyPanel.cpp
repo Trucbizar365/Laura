@@ -32,7 +32,7 @@ namespace Laura
             ImGui::EndMenu();
         }
 
-        entt::registry* activeRegistry = scene->Get();
+        entt::registry* activeRegistry = scene->GetRegistry();
         if(!activeRegistry)
 		{
 			ImGui::End();

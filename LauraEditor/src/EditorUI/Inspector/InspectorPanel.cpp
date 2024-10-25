@@ -19,8 +19,9 @@ namespace Laura
 			ImGui::End();
 			return;
 		}
+		
 
-        entt::registry* activeRegistry = scene->Get();
+        entt::registry* activeRegistry = scene->GetRegistry();
         entt::entity selectedEntity = m_EditorState->temp.selectedEntity;
         Entity entity(selectedEntity, activeRegistry); // convert to Laura Entity
 
@@ -50,10 +51,20 @@ namespace Laura
 			});
 
 		/// CAMERA COMPOENENT UI //////////////////////////////////////////////////////////////
-		DrawComponent<CameraComponent>(std::string(ICON_FA_VIDEO " Camera Component"), entity, [](Entity& entity)
+		DrawComponent<CameraComponent>(std::string(ICON_FA_VIDEO " Camera Component"), entity, [&](Entity& entity)
 			{
 				auto& cameraComponent = entity.GetComponent<CameraComponent>();
-				ImGui::Checkbox("Main", &cameraComponent.isMain);
+				if (ImGui::Checkbox("Main", &cameraComponent.isMain))
+				{
+					for (auto e : scene->GetRegistry()->view<CameraComponent>())
+					{
+						Entity otherEntity(e, scene->GetRegistry());
+						if (otherEntity.GetComponent<GUIDComponent>().guid != entity.GetComponent<GUIDComponent>().guid)
+						{
+							otherEntity.GetComponent<CameraComponent>().isMain = false;
+						}
+					}
+				}
 				ImGui::DragFloat("FOV", &cameraComponent.fov, 0.1f, 10.0f, 130.0f, "%.1f");
 			});
 
@@ -63,7 +74,7 @@ namespace Laura
 		DrawComponent<MeshComponent>(std::string(ICON_FA_CUBE " Mesh"), entity, [](Entity& entity)
 			{
 				auto& meshComponent = entity.GetComponent<MeshComponent>();
-				ImGui::Text("Mesh ID: %d", meshComponent.GetID());
+				ImGui::Text("Mesh ID: %d", meshComponent.guid);
 			});
 
 		/// MATERIAL COMPONENT UI /////////////////////////////////////////////////////////////

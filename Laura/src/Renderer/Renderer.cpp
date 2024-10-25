@@ -24,46 +24,52 @@ namespace Laura
 
 	void Renderer::SubmitScene(std::shared_ptr<RenderableScene> rScene)
 	{
-		m_SceneReadyForRendering = rScene->mainCamera.IsValid();
-		if (!rScene) { return; }
-
+		m_SceneValid = rScene->isValid; // this flag determines if the renderer will try to render the scene upon RenderScene() call
+		// we still try to update parts which are valid
 
 		UpdateRenderSettingsUBO();
-
-		if (rScene->mainCamera.IsValid())
+		UpdateCameraUBO(rScene->cameraTransform, rScene->cameraFocalLength);
+		
+		if (rScene->skyboxDirty)
 		{
-			UpdateCameraUBO(rScene->mainCamera);
+			m_SkyboxTexture = ITexture2D::Create(rScene->skybox->data, rScene->skybox->width, rScene->skybox->height, 1);
 		}
 
-		if (m_CachedSkyboxID != rScene->skyboxID)
+		if (rScene->meshesDirty)
 		{
-			UpdateSkyboxUBO(rScene->skyboxID);
-		}
-
-		if (rScene->meshesDirty || rScene->updateMaterials || rScene->transformsDirty)
-		{
-			for (Entity& model : rScene->models)
-			{
-				Submit(model);
-			}
+			//for (Entity& model : rScene->models)
+			//{
+			//	Submit(model);
+			//}
+			//std::cout << "Submitting model to renderer" << std::endl;
+			//// TODO: make the renderer utilize the transform and material components (currently only using the mesh component)
+			
+			std::shared_ptr<std::vector<Triangle>> mesh = rScene->meshes[0];
+			std::shared_ptr<BVH::BVH_data> meshBVH = rScene->BVHs[0];
+			
+			m_TriangleMeshSSBO = IShaderStorageBuffer::Create(sizeof(Triangle) * meshBVH->TRIANGLES_size, 3, BufferUsageType::STATIC_DRAW);
+			m_TriangleMeshSSBO->Bind();
+			m_TriangleMeshSSBO->AddData(0, sizeof(Triangle) * meshBVH->TRIANGLES_size, meshBVH->TRIANGLES.data());
+			m_TriangleMeshSSBO->Unbind();
+			
+			m_BVHSSBO = IShaderStorageBuffer::Create(sizeof(BVH::Node) * meshBVH->BVH_size, 4, BufferUsageType::STATIC_DRAW);
+			m_BVHSSBO->Bind();
+			m_BVHSSBO->AddData(0, sizeof(BVH::Node) * meshBVH->BVH_size, meshBVH->BVH.data());
+			m_BVHSSBO->Unbind();
 		}
 	}
 
-	void Renderer::UpdateCameraUBO(Entity camera)
+	void Renderer::UpdateCameraUBO(glm::mat4 transform, float focalLength)
 	{
 		m_CameraUBO->Bind();
-		glm::mat4 transform = camera.GetComponent<TransformComponent>();
-		float focalLength = camera.GetComponent<CameraComponent>().GetFocalLength();
 		m_CameraUBO->AddData(0, sizeof(glm::mat4), &transform);
 		m_CameraUBO->AddData(64, sizeof(float), &focalLength);
 		m_CameraUBO->Unbind();
 	}
 
-	void Renderer::UpdateSkyboxUBO(GUID skyboxID)
+	void Renderer::UpdateSkyboxUBO(std::shared_ptr<LoadedTexture> skyboxTex)
 	{
-		std::shared_ptr<LoadedTexture> skybox = m_AssetManager->GetTexture(skyboxID);
-		m_SkyboxTexture = ITexture2D::Create(skybox->data, skybox->width, skybox->height, 1);
-		m_CachedSkyboxID = skyboxID;
+		
 
 		//m_EnvironmentUBO->Bind();
 		//m_EnvironmentUBO->AddData(0, sizeof(glm::vec3), &skybox.getGroundColor());
@@ -88,30 +94,12 @@ namespace Laura
 
 	void Renderer::Submit(const Entity& model)
 	{
-		std::cout << "Submitting model to renderer" << std::endl;
-		// TODO: make the renderer utilize the transform and material components (currently only using the mesh component)
-		GUID modelID = model.GetComponent<MeshComponent>().GetID();
-
-		std::shared_ptr<std::vector<Triangle>> mesh = m_AssetManager->GetMesh(modelID);
-		std::shared_ptr<BVH::BVH_data> meshBVH = m_AssetManager->GetBVH(modelID);
-
-		m_TriangleMeshSSBO = IShaderStorageBuffer::Create(sizeof(Triangle) * meshBVH->TRIANGLES_size, 3, BufferUsageType::STATIC_DRAW);
-		m_TriangleMeshSSBO->Bind();
-		m_TriangleMeshSSBO->AddData(0, sizeof(Triangle) * meshBVH->TRIANGLES_size, meshBVH->TRIANGLES.data());
-		m_TriangleMeshSSBO->Unbind();
-
-		m_BVHSSBO = IShaderStorageBuffer::Create(sizeof(BVH::Node) * meshBVH->BVH_size, 4, BufferUsageType::STATIC_DRAW);
-		m_BVHSSBO->Bind();
-		m_BVHSSBO->AddData(0, sizeof(BVH::Node) * meshBVH->BVH_size, meshBVH->BVH.data());
-		m_BVHSSBO->Unbind();
+		
 	}
 
 	std::shared_ptr<IImage2D> Renderer::RenderScene()
 	{
-		if (!m_SceneReadyForRendering)
-		{
-			return nullptr;
-		}
+		if (!m_SceneValid) { return nullptr; }
 
 		m_Shader->Bind();
 		m_Shader->setWorkGroupSizes(glm::uvec3(ceil(m_FrameResolution.x / 8),

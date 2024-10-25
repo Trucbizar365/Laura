@@ -1,16 +1,28 @@
 #pragma once
-#include "glm/glm.hpp"
+#include "Core/GUID.h"
+
+#include <glm/glm.hpp>
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/euler_angles.hpp>
 
-#include "Geometry/Triangle.h" // for mesh component
-#include "Renderer/Material.h" // for material component
-#include "Core/GUID.h"
 
 namespace Laura
 {
+	struct GUIDComponent
+	{
+		GUID guid;
+	};
+
+	struct TagComponent
+	{
+		TagComponent() = default;
+		TagComponent(const std::string& tag)
+			: Tag(tag) {};
+
+		std::string Tag;
+	};
 
 	struct TransformComponent
 	{
@@ -44,24 +56,12 @@ namespace Laura
 
 	struct MeshComponent
 	{
-	public:
-		MeshComponent() = default;
-		inline GUID GetID() { return m_guid; }
-		inline void SetID(GUID id) { m_guid = id; }
-	private:
-		GUID m_guid;
+		GUID guid = GUID(0);
 	};
 
 	struct MaterialComponent
 	{
-		MaterialComponent() = default;
-		MaterialComponent(glm::vec3 color, float emissionStrength, glm::vec3 emissionColor)
-			: color(color), emissionStrength(emissionStrength), emissionColor(emissionColor) {}
-			
-		glm::vec3 color;              // offset 0   // alignment 16 // size 12 // total 12 bytes
-		float emissionStrength;       // offset 12  // alignment 4  // size 4  // total 16 bytes
-		glm::vec3 emissionColor;      // offset 16  // alignment 16 // size 12 // total 28 bytes
-		float std140padding;          // offset 28  // alignment 4  // size 4  // total 32 bytes
+		GUID guid = GUID(0);
 	};
 
 	struct CameraComponent
@@ -77,6 +77,7 @@ namespace Laura
 		inline const float& GetFocalLength() const { return 1.0f/tan(glm::radians(fov)/2.0f); };
 	};
 
+	/// EXPERIMENTAL SCRIPTING SYSTEM /// (will change in the future)
 	struct Script
 	{	
 		Script() = default;
@@ -94,20 +95,5 @@ namespace Laura
 
 		Script* script;
 	};
-
-	struct TagComponent
-	{
-		TagComponent() = default;
-		TagComponent(const std::string& tag)
-			: Tag(tag) {};
-
-		std::string Tag;
-	};
-
-	struct GUIDComponent
-	{
-		GUIDComponent() = default;
-
-		GUID id;
-	};
+	///////////////////////////////////////
 }
