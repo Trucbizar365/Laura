@@ -39,20 +39,32 @@ namespace Laura {
 		init();
 		while (!_Window->shouldClose())
 		{
-			_Profiler->startTimestamp("global");
+			_Profiler->beginFrame();
+			{
+				auto t = _Profiler->getTimer("Window.OnUpdate()");
+				_Window->onUpdate();
+			}
 
-			_Window->onUpdate();
-			_RendererAPI->Clear({0.98f, 0.24f, 0.97f, 1.0f}); // fill the screen with a color (pink)
+			{
+				auto t = _Profiler->getTimer("RendererAPI.Clear()");
+				_RendererAPI->Clear({ 0.98f, 0.24f, 0.97f, 1.0f }); // fill the screen with a color (pink)
+			}
+
+			//const double* d = _Profiler->getDurations();
+			//if (d)
+			//{
+			//	std::cout << *d << "\n";
+			//}
 			_LayerStack->onUpdate();
+			
+			{
+				auto t = _Profiler->getTimer("Global Rendering");
+				_ImGuiContextManager->BeginFrame();
+				_LayerStack->onImGuiRender(); // all of the rendering onto the screen happens here
+				_ImGuiContextManager->EndFrame();
+			}
 
-			_ImGuiContextManager->BeginFrame();
-			_LayerStack->onImGuiRender(); // all of the rendering onto the screen happens here
-			_ImGuiContextManager->EndFrame();
-
-			_Profiler->endTimestamp("global");
-
-			std::shared_ptr<const Timestamp> ts = _Profiler->getTimestamp("global");
-			std::cout << "[" << ts->elapsed_ms << "] " << "Global" << "\n";
+			_Profiler->endFrame();
 		}
 		shutdown();
 	}

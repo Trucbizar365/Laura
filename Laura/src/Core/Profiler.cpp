@@ -1,43 +1,41 @@
 #include "Profiler.h"
-#include "Profiler.h"
 
-namespace Laura {
-
-	void Profiler::startTimestamp(const std::string& id)
+namespace Laura 
+{	
+	Profiler::ScopeTimer::ScopeTimer(Profiler* profiler, const char* label)
+		: m_Profiler(profiler), m_Label(label)
 	{
-		Timestamp ts;
-		ts.start = std::chrono::high_resolution_clock::now();
-		m_Timestamps.insert_or_assign(id, ts);
+		m_Start = std::chrono::high_resolution_clock::now();
 	}
 
-	void Profiler::endTimestamp(const std::string& id)
+	Profiler::ScopeTimer::~ScopeTimer()
 	{
-		auto it = m_Timestamps.find(id);
-		if (it == m_Timestamps.end())
-		{
-			std::cout << "Invalid End Timestamp ID" << std::endl;
-			return;
-		}
-
-		Timestamp& ts = it->second;
-		ts.end = std::chrono::high_resolution_clock::now();
-		ts.elapsed_ns = std::chrono::duration_cast<std::chrono::nanoseconds>(ts.end - ts.start);
-		ts.elapsed_ms = std::chrono::duration<double, std::milli>(ts.elapsed_ns).count();
+		std::chrono::high_resolution_clock::time_point end = std::chrono::high_resolution_clock::now();
+		double elapsed_ms = std::chrono::duration<double, std::milli>(end - m_Start).count();
+		m_Profiler->add(m_Label, elapsed_ms);
 	}
 
-	const std::shared_ptr<const Timestamp> Profiler::getTimestamp(const std::string& id) const
+	Profiler::Profiler()
+		: m_Labels(), m_Durations(), m_LabelsLastFrame(), m_DurationsLastFrame() {}
+
+	void Profiler::beginFrame()
 	{
-		auto it = m_Timestamps.find(id);
-		if (it == m_Timestamps.end())
-		{
-			std::cout << "Invalid Get Timestamp ID" << std::endl;
-			return nullptr;
-		}
-		return std::make_shared<const Timestamp>(it->second);
+		m_Labels.clear();
+		m_Durations.clear();
 	}
 
-	const std::unordered_map<std::string, Timestamp>& Laura::Profiler::getAllTimestamps() const
+	void Profiler::endFrame()
 	{
-		return m_Timestamps;
+		m_LabelsLastFrame = m_Labels;
+		m_DurationsLastFrame = m_Durations;
 	}
+
+	const std::shared_ptr<Profiler::ScopeTimer> Profiler::getTimer(const char* label) {
+		return std::make_shared<Profiler::ScopeTimer>(this, label);
+	}
+
+	void Profiler::add(const char* label, double elapsed_ms) {
+		m_Labels.push_back(label);
+		m_Durations.push_back(elapsed_ms);
+	};
 }

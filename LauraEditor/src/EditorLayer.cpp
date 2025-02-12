@@ -197,6 +197,7 @@ namespace Laura
 		// Render The Scene
 		m_Renderer->SubmitScene(rScene);
 		std::shared_ptr<IImage2D> RenderedFrame = m_Renderer->RenderScene();
+
 		m_ViewportPanel.OnImGuiRender(RenderedFrame, m_EditorState);
 		m_ProfilerPanel.OnImGuiRender(m_Profiler);
 	}
