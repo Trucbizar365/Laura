@@ -15,6 +15,7 @@
 #include <queue>
 #include <unordered_map>
 #include <unordered_set>
+#include <span>
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>

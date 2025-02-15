@@ -2,36 +2,45 @@
 
 namespace Laura
 {
-	BVHAccel::BVHAccel(){}
-
-	std::vector<BVHNode>& BVHAccel::Build(const std::vector<Tri>& mesh, std::vector<int>* triIdxs)
-	{
-		m_Mesh = mesh;
-		m_NodesUsed = 0;
-		const int N = mesh.size();
-
-		m_Nodes.resize(2 * N - 1);
-		m_TriIdxs.resize(N);
-		for (int i = 0; i < N; i++) m_TriIdxs[i] = i;
-
-		BVHNode& root = m_Nodes[m_NodesUsed++];
-		root.leftfirst = 0;
-		root.primCount = N;
-		UpdateAABB(root);
-		SubDivide(root);
-		
-		triIdxs = &m_TriIdxs;
-		return m_Nodes;
+	BVHAccel::BVHAccel(const std::vector<Tri>& mesh)
+	: m_Mesh(mesh){
+		Build();
 	}
 
-	void BVHAccel::UpdateAABB(BVHNode& node)
+	void BVHAccel::Build()
+	{
+		m_NodesUsed = 0;
+		const size_t N = m_Mesh.size(); // for convenience
+
+		// preallocate the maximum number of nodes
+		m_Nodes.resize(2 * N - 1);
+		
+		// generate index array - [0, 1, 2, ..., n] - identic mapping
+		m_Indices.resize(N); 
+		for (int i = 0; i < N; i++) 
+			m_Indices[i] = i;
+
+		// root as node at index 0
+		Node& root = m_Nodes[m_NodesUsed++];
+		// root contains full mesh
+		root.leftChild_Or_FirstTri = 0;
+		root.triCount = N;
+
+		UpdateAABB(root);
+		SubDivide(root);
+	}
+
+	void BVHAccel::UpdateAABB(Node& node)
 	{
 		node.min = glm::vec3(FLT_MAX);
 		node.max = glm::vec3(-FLT_MAX);
-		for (int i = 0; i < node.primCount; i++)
+		// iterate over primitives contained by the Node
+		for (int i = 0; i < node.triCount; i++)
 		{
-			const int triIdx = m_TriIdxs[node.leftfirst + i];
-			const Tri& tri = m_Mesh[triIdx];
+			// get the real triangle index in the m_Mesh
+			const int realTriIdx = m_Indices[node.leftChild_Or_FirstTri + i];
+			const Tri& tri = m_Mesh[realTriIdx];
+			// find minimum & maximum coordinates
 			node.min = glm::min(node.min, tri.v0);
 			node.min = glm::min(node.min, tri.v1);
 			node.min = glm::min(node.min, tri.v2);
@@ -41,40 +50,51 @@ namespace Laura
 		}
 	}
 
-	void BVHAccel::SubDivide(BVHNode& node)
+	void BVHAccel::SubDivide(Node& node)
 	{
-		if (node.primCount <= 2) return;
+		// Found Leaf Node
+		if (node.triCount <= 2) 
+			return;
+		
 		// SPLIT METHOD
 		glm::vec3 AABB = node.max - node.min;
-		int axis = 0;
-		if (AABB.y > AABB.x) axis = 1;
-		if (AABB.z > AABB.y) axis = 2;
-		int splitPoint = node.min[axis] + AABB[axis] * 0.5;
+		int splitAxis = 0;
+		if (AABB.y > AABB.x) splitAxis = 1;
+		if (AABB.z > AABB.y) splitAxis = 2;
+		int splitPoint = node.min[splitAxis] + AABB[splitAxis] * 0.5;
 		// SPLIT METHOD
 
-		int left = node.leftfirst;
-		int right = node.leftfirst + node.primCount - 1;
+		uint32_t leftPtr = node.leftChild_Or_FirstTri; // points to the firstTri in node's triangles
+		uint32_t rightPtr = node.leftChild_Or_FirstTri + node.triCount - 1; // points to the lastTri
 
-		while (left <= right)
+		// partition/sort the triangles (quicksort partition)
+		while (leftPtr <= rightPtr)
 		{
-			if (m_Mesh[left].centroid[axis] < splitPoint) 
-				left++;
+			if (m_Mesh[m_Indices[leftPtr]].centroid[splitAxis] < splitPoint) 
+				leftPtr++;
 			else 
-				SwapTris(left, right);
+				Swap(leftPtr, rightPtr--); // swap and decrement right
 		}
 
-		int leftCount = node.leftfirst - left;
-		if (leftCount == 0 || leftCount == node.primCount) return;
+		int leftTriCount = leftPtr - node.leftChild_Or_FirstTri; // distance between firstTri and partition point
+		
+		// couldn't partition
+		if (leftTriCount == 0 || leftTriCount == node.triCount) 
+			return;
 
+		// find indices for the new child nodes
 		int leftChildIdx = m_NodesUsed++;
 		int rightChildIdx = m_NodesUsed++;
 
-		m_Nodes[leftChildIdx].leftfirst = node.leftfirst;
-		m_Nodes[leftChildIdx].primCount = leftCount;
-		m_Nodes[rightChildIdx].leftfirst = node.leftfirst + leftCount;
-		m_Nodes[rightChildIdx].primCount = node.primCount - leftCount;
-		node.leftfirst = leftChildIdx;
-		node.primCount = 0;
+		// populate children
+		m_Nodes[leftChildIdx].leftChild_Or_FirstTri = node.leftChild_Or_FirstTri;
+		m_Nodes[leftChildIdx].triCount = leftTriCount;
+		m_Nodes[rightChildIdx].leftChild_Or_FirstTri = node.leftChild_Or_FirstTri + leftTriCount;
+		m_Nodes[rightChildIdx].triCount = node.triCount - leftTriCount;
+		
+		// update current node
+		node.triCount = 0; // Important! mark the node as non-leaf node
+		node.leftChild_Or_FirstTri = leftChildIdx; // now points to the leftChild node
 
 		UpdateAABB(m_Nodes[leftChildIdx]);
 		UpdateAABB(m_Nodes[rightChildIdx]);
