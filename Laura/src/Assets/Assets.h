@@ -2,46 +2,21 @@
 
 #include "lrpch.h"
 
-#include "Core/GUID.h"
-
+#include "Assets/AssetTypes.h"
 #include "Assets/BVHAccel.h"
+
+#include "Core/GUID.h"
 
 #include <filesystem>
 
 namespace Laura::Asset
 {
-	struct Metadata{
-		virtual ~Metadata() = default;
-	};
-
-	struct MeshMetadata : public Metadata {
-		uint32_t vertStartIdx = 0; // also bvhIndexBufferStartIdx
-		uint32_t vertSize = 0;	   // also bvhIndexBufferSize
-		uint32_t bvhStartIdx = 0;
-		uint32_t bvhSize = 0;
-		std::filesystem::path path = {};
-
-		~MeshMetadata() override = default;
-	};
-
-	struct TextureMetadata : public Metadata {
-		uint32_t texStartIdx = 0;
-		int32_t width = 0;
-		int32_t height = 0;
-		int32_t channels = 0;
-		std::filesystem::path path = {};
-
-		~TextureMetadata() override = default;
-	};
-
-	typedef glm::vec3 Vertex; // will expand in the future
-
 	struct ResourcePool {
-		std::unordered_map<LR_GUID, std::shared_ptr<Metadata>> metadata;
-		std::vector<Vertex> meshVerts;
-		std::vector<BVHAccel::Node> bvhNodes;
-		std::vector<uint32_t> bvhIndexBuffer; // indirection between BVHAccel::Node and vertices in ResourcePool::meshVerts
-		std::vector<unsigned char> textureData;
+		std::unordered_map<LR_GUID, std::shared_ptr<Metadata>> Metadata;
+		std::vector<Triangle> MeshBuffer;
+		std::vector<uint32_t> IndexBuffer; // indirection between BVHAccel::Node and triangles in ResourcePool::meshBuffer
+		std::vector<BVHAccel::Node> NodeBuffer;
+		std::vector<unsigned char> TextureBuffer;
 	};
 
 	class Manager
@@ -65,8 +40,8 @@ namespace Laura::Asset
 		std::shared_ptr<T> Get(const LR_GUID& guid) {
 			if (!ResourcePoolValid(resourcePool))
 				return nullptr;
-			auto it = resourcePool->metadata.find(guid);
-			if (it == resourcePool->metadata.end())
+			auto it = resourcePool->Metadata.find(guid);
+			if (it == resourcePool->Metadata.end())
 				return nullptr;
 			return std::dynamic_pointer_cast<T>(it->second);
 		}

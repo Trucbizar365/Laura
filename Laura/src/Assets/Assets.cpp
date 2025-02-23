@@ -11,18 +11,10 @@ namespace Laura::Asset
 
 	LR_GUID Manager::LoadMesh(const std::filesystem::path& path)
     {
-        std::vector<Vertex>& mesh = resourcePool->meshVerts;
-        auto metadata = std::make_shared<MeshMetadata>();
-        metadata->vertStartIdx = mesh.size();
-        metadata->path = path;
-
-        const std::string pathStr = path.string();
-
         Assimp::Importer importer;
-        const aiScene* scene = importer.ReadFile(pathStr, aiProcessPreset_TargetRealtime_MaxQuality);
-
+        const aiScene* scene = importer.ReadFile(path.string(), aiProcessPreset_TargetRealtime_MaxQuality);
         if (!scene) {
-            LR_CORE_CRITICAL("Failed to load mesh: {}", pathStr);
+            LR_CORE_CRITICAL("Failed to load mesh: {}", path.string());
             return LR_GUID(0);
         }
 
@@ -30,8 +22,15 @@ namespace Laura::Asset
         for (unsigned int i = 0; i < scene->mNumMeshes; ++i) {
             numTris += scene->mMeshes[i]->mNumFaces;
         }
+
+        std::vector<Triangle>& meshBuffer = resourcePool->MeshBuffer;
+
+        auto metadata = std::make_shared<MeshMetadata>();
+        metadata->firstTriIdx = meshBuffer.size();
+        metadata->TriCount = numTris;
+        metadata->path = path;
         
-        mesh.reserve(mesh.size() + 3*numTris);
+        meshBuffer.reserve(meshBuffer.size() + metadata->TriCount);
 
         for (unsigned int i = 0; i < scene->mNumMeshes; ++i) {
             const aiMesh* subMesh = scene->mMeshes[i];
@@ -39,20 +38,23 @@ namespace Laura::Asset
             for (unsigned int j = 0; j < subMesh->mNumFaces; ++j) {
                 const auto& face = subMesh->mFaces[j];
 
-                // ignore index buffer store triangles directly
-                auto idxs = face.mIndices;               
-                mesh.push_back(glm::vec3(verts[idxs[0]].x, verts[idxs[0]].y, verts[idxs[0]].z));
-                mesh.push_back(glm::vec3(verts[idxs[1]].x, verts[idxs[1]].y, verts[idxs[1]].z));
-                mesh.push_back(glm::vec3(verts[idxs[2]].x, verts[idxs[2]].y, verts[idxs[2]].z));
+                auto idxs = face.mIndices;
+                meshBuffer.emplace_back( Triangle({ 
+                    glm::vec3(verts[idxs[0]].x, verts[idxs[0]].y, verts[idxs[0]].z),
+                    glm::vec3(verts[idxs[1]].x, verts[idxs[1]].y, verts[idxs[1]].z),
+                    glm::vec3(verts[idxs[2]].x, verts[idxs[2]].y, verts[idxs[2]].z)
+                    })
+                );
             }
         }
 
-        LR_CORE_INFO("Loaded {} triangles from mesh: {}", mesh.size(), pathStr);
+        LR_CORE_INFO("Loaded {} triangles from mesh: {}", numTris, path.string());
 
-        // TODO BVH BUILDING here
+        BVHAccel BVH(meshBuffer, metadata->firstTriIdx, metadata->TriCount); // pass in the mesh
+        BVH.Build(resourcePool->NodeBuffer, resourcePool->IndexBuffer, metadata->firstNodeIdx, metadata->nodeCount); // populate in place
 
         LR_GUID guid;
-        resourcePool->metadata[guid] = metadata;
+        resourcePool->Metadata[guid] = metadata;
         return guid;
     }
 
@@ -66,22 +68,22 @@ namespace Laura::Asset
 			return LR_GUID(0);
 		}
         
-        std::vector<unsigned char>& textures = resourcePool->textureData;
+        std::vector<unsigned char>& textureBuffer = resourcePool->TextureBuffer;
 
         auto metadata = std::make_shared<TextureMetadata>();
-        metadata->texStartIdx = textures.size();
+        metadata->texStartIdx = textureBuffer.size();
         metadata->width = width;
         metadata->height = height;
         metadata->channels = (desiredChannels == 0) ? channels : desiredChannels;
         metadata->path = path;
 
         const size_t totalBytes = metadata->width * metadata->height * metadata->channels;
-        textures.reserve(textures.size() + totalBytes);
-        textures.insert(textures.end(), data, data + totalBytes);
+        textureBuffer.reserve(textureBuffer.size() + totalBytes);
+        textureBuffer.insert(textureBuffer.end(), data, data + totalBytes);
         stbi_image_free(data);
 		
         LR_GUID guid;
-        resourcePool->metadata[guid] = metadata;
+        resourcePool->Metadata[guid] = metadata;
 		return guid;
 	}
 }
