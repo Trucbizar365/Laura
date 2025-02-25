@@ -85,7 +85,6 @@ namespace Laura
 		LR_GUID guid = LR_GUID(0); // GUID of the texture
 	};
 
-
 	/// EXPERIMENTAL SCRIPTING SYSTEM /// (will change in the future)
 	struct Script
 	{	

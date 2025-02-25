@@ -33,11 +33,8 @@ namespace Laura
 		}
 		
 		m_AssetManager->SetResourcePool(m_ResourcePool.get());
-
 		m_Scene = std::make_shared<Scene>();
 
-		// TODO make the api for the texture channels more user friendly and less error prone
-		// currently there is no way to catch these errors and they lead to hard to debug crashes
 		{
 			Entity skyboxEntity = m_Scene->CreateEntity();
 			skyboxEntity.GetComponent<TagComponent>().Tag = std::string("Skybox");
@@ -54,8 +51,6 @@ namespace Laura
 			CameraComponent cameraComponent = camera.AddComponent<CameraComponent>();
 			cameraComponent.fov = 30.0f;
 		}
-
-
 		{
 			Entity dragon = m_Scene->CreateEntity();
 			std::string& tag = dragon.GetComponent<TagComponent>().Tag;
@@ -69,7 +64,6 @@ namespace Laura
 			//uint32_t guid = m_AssetManager->LoadMesh(std::string(EDITOR_RESOURCES_PATH "Models/sponza_scene.glb"));
 			dragonMesh.guid = guid;
 		}
-
 		{
 			Entity sponza_e = m_Scene->CreateEntity();
 			std::string& tag = sponza_e.GetComponent<TagComponent>().Tag;

@@ -94,16 +94,10 @@ namespace Laura
 	void Renderer::SetupGPUResource(std::shared_ptr<const ParsedScene> pScene, const Settings& settings)
 	{
 		if (settings.resolution != m_Cache.resolution) {
-			m_FrameTexture = IImage2D::Create(nullptr, settings.resolution.x, settings.resolution.y, 0, Image2DType::LR_READ_WRITE);
+			m_Frame = IImage2D::Create(nullptr, settings.resolution.x, settings.resolution.y, 0, Image2DType::LR_READ_WRITE);
 			m_Cache.resolution = settings.resolution;
 		}
 
-	}
-
-	void Renderer::SetFrameResolution(const glm::vec2& resolution)
-	{
-		m_FrameResolution = resolution;
-		m_Frame = 
 	}
 
 	void Renderer::SubmitScene(std::shared_ptr<RenderableScene> rScene)
