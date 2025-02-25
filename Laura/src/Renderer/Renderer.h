@@ -29,22 +29,37 @@ namespace Laura
 			glm::vec2 resolution;
 		};
 
-		struct EntityHandle 
+		struct Cache
 		{
-			uint32_t FirstTriIdx	= 0;
-			uint32_t TriCount		= 0;
-			uint32_t FirstNodeIdx	= 0;
-			uint32_t NodeCount		= 0;
-			glm::mat4 transform;
+			glm::vec2 resolution = {0.0f, 0.0f};
+		};
+
+		struct MeshEntityHandle 
+		{
+			MeshEntityHandle(uint32_t firstTriIdx = 0, uint32_t triCount = 0, uint32_t firstNodeIdx = 0, uint32_t nodeCount = 0, glm::mat4 transform = {}) 
+			:	FirstTriIdx(firstTriIdx),
+				TriCount(triCount),
+				FirstNodeIdx(firstNodeIdx),
+				NodeCount(nodeCount),
+				Transform(transform)
+			{
+			}
+
+			uint32_t FirstTriIdx;
+			uint32_t TriCount;
+			uint32_t FirstNodeIdx;
+			uint32_t NodeCount;
+			glm::mat4 Transform;
 		};
 
 		struct ParsedScene {
-			std::vector<EntityHandle> entityLookupTable;
-			uint32_t FirstTexByteSkyboxIdx = 0;
-			uint32_t SkyboxTexByteCount	   = 0;
+			std::vector<MeshEntityHandle> MeshEntityLookupTable;
+
+			uint32_t SkyboxFirstTexIdx = 0, SkyboxWidth = 0, SkyboxHeight = 0, SkyboxChannels = 0;
+			
+			bool hasValidCamera = false;
 			glm::mat4 CameraTransform;
-			float CameraFocalLength;
-			bool hasValidCamera			   = false;
+			float CameraFocalLength = 0;
 		};
 
 
@@ -56,10 +71,11 @@ namespace Laura
 		inline static void SetAPI(IRendererAPI::API api) { IRendererAPI::SetAPI(api); } // setter
 
 		void Init();
-		std::shared_ptr<IImage2D> Render(Scene* scene, Asset::ResourcePool* resourcePool, Settings& renderSettings);
+		std::shared_ptr<IImage2D> Render(const Scene* scene, const Asset::ResourcePool* resourcePool, const Settings& renderSettings);
 
 	private:
-		std::shared_ptr<ParsedScene> Parse(Scene* scene, Asset::ResourcePool* resourcePool);
+		std::shared_ptr<const ParsedScene> Parse(const Scene* scene, const Asset::ResourcePool* resourcePool) const;
+		void SetupGPUResource(std::shared_ptr<const ParsedScene> pScene, const Settings& settings);
 		std::shared_ptr<IImage2D> Draw();
 
 		std::shared_ptr<IComputeShader> m_Shader;
@@ -68,6 +84,6 @@ namespace Laura
 		std::shared_ptr<IUniformBuffer> m_CameraUBO, m_RenderSettingsUBO, m_EnvironmentUBO, m_ObjectsMetadataUBO;
 		std::shared_ptr<IShaderStorageBuffer> m_TransformsSSBO, m_ContinuousMeshesSSBO, m_ContinuousBvhsSSBO, m_MeshMappingsSSBO, m_MeshSizesSSBO, m_BvhMappingsSSBO, m_BVHSizesSSBO;
 
-		uint32_t m_AccumulateFrameCount;
+		Cache m_Cache;
 	};
 }

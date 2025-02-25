@@ -77,6 +77,15 @@ namespace Laura
 		inline const float& GetFocalLength() const { return 1.0f/tan(glm::radians(fov)/2.0f); };
 	};
 
+	struct SkyboxComponent
+	{
+		SkyboxComponent() = default;
+
+		bool isMain = false;
+		LR_GUID guid = LR_GUID(0); // GUID of the texture
+	};
+
+
 	/// EXPERIMENTAL SCRIPTING SYSTEM /// (will change in the future)
 	struct Script
 	{	

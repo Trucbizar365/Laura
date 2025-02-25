@@ -19,7 +19,7 @@ namespace Laura::Asset
 		std::vector<unsigned char> TextureBuffer;
 
 		template <typename T>
-		std::shared_ptr<T> Get(const LR_GUID& guid) {
+		std::shared_ptr<T> Get(const LR_GUID& guid) const {
 			auto it = Metadata.find(guid);
 			if (it == Metadata.end())
 				return nullptr;

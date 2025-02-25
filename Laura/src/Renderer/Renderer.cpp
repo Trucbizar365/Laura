@@ -1,7 +1,4 @@
 #include "renderer/Renderer.h"
-#include "Assets/TextureLoader.h"
-#include "Renderer/BVH/BVHBuilder.h"
-#include "GL/glew.h"
 
 namespace Laura 
 {
@@ -18,59 +15,95 @@ namespace Laura
 		//m_EnvironmentUBO = IUniformBuffer::Create(64, 3, BufferUsageType::DYNAMIC_DRAW);
 	}
 
-	std::shared_ptr<IImage2D> Renderer::Render(Scene* scene, Asset::ResourcePool* resourcePool, Settings& renderSettings)
+
+	std::shared_ptr<IImage2D> Renderer::Render(const Scene* scene, const Asset::ResourcePool* resourcePool, const Settings& renderSettings)
 	{
+		// STEP 1: Parse the scene (Renderer::Parse())
+		const auto pScene = Parse(scene, resourcePool);
+		if (!pScene) // Most likely scene missing camera
+			return nullptr;
+		// STEP 2: Populate GPU Buffers (Renderer::SetupGPUResources)
+
+		// STEP 3: Draw Call (Renderer::Draw())
+
+
 		return std::shared_ptr<IImage2D>();
 	}
 
 
-
-	std::shared_ptr<Renderer::ParsedScene> Renderer::Parse(Scene* scene, Asset::ResourcePool* resourcePool)
+	std::shared_ptr<const Renderer::ParsedScene> Renderer::Parse(const Scene* scene, const Asset::ResourcePool* resourcePool) const
 	{
 		auto pScene = std::make_shared<Renderer::ParsedScene>();
 
-		for (entt::entity enttEntity : scene->GetRegistry()->view<TransformComponent>()){
-			Entity e(enttEntity, scene->GetRegistry());
+		auto cameraView = scene->GetRegistry()->view<TransformComponent, CameraComponent>();
+		for (auto entity : cameraView) {
+			Entity e(entity, scene->GetRegistry());
 
-			if (e.HasComponent<CameraComponent>()){
-				if (e.GetComponent<CameraComponent>().isMain){
-					pScene->hasValidCamera = true;
-					pScene->CameraTransform = e.GetComponent<TransformComponent>().GetMatrix();
-					pScene->CameraFocalLength = e.GetComponent<CameraComponent>().GetFocalLength();
-				}
-			}
+			if (!e.GetComponent<CameraComponent>().isMain)
+				continue;
 
-			if (e.HasComponent<MeshComponent>()){
-				LR_GUID& guid = e.GetComponent<MeshComponent>().guid;
-				if (guid == 0) // invalid MeshComponent - shouldn't happen
-					continue;
-
-				std::shared_ptr<Asset::MeshMetadata> metadata = resourcePool->Get<Asset::MeshMetadata>(guid);
-				if (!metadata)
-					continue;
-				
-				MeshEntityHandle handle;
-				handle.FirstTriIdx = metadata->firstTriIdx;
-				handle.TriCount = metadata->TriCount;
-				handle.FirstNodeIdx = metadata->firstNodeIdx;
-				handle.NodeCount = metadata->nodeCount;
-				handle.transform = e.GetComponent<TransformComponent>().GetMatrix();
-
-				pScene->MeshEntityLookupTable.push_back(handle);
-			}
+			pScene->hasValidCamera = true;
+			pScene->CameraTransform = e.GetComponent<TransformComponent>().GetMatrix();
+			pScene->CameraFocalLength = e.GetComponent<CameraComponent>().GetFocalLength();
+			break;
 		}
 
-		if (!pScene->hasValidCamera) // don't render anything
+		if (!pScene->hasValidCamera)
 			return nullptr;
+		
+		auto skyboxView = scene->GetRegistry()->view<SkyboxComponent>();
+		for (auto entity : skyboxView) {
+			Entity e(entity, scene->GetRegistry());
+			const auto& skyboxComponent = e.GetComponent<SkyboxComponent>();
+			if (!skyboxComponent.isMain)
+				continue;
 
+			std::shared_ptr<Asset::TextureMetadata> metadata = resourcePool->Get<Asset::TextureMetadata>(skyboxComponent.guid);
+			if (!metadata)
+				continue;
 
+			pScene->SkyboxFirstTexIdx = metadata->texStartIdx;
+			pScene->SkyboxWidth = metadata->width;
+			pScene->SkyboxHeight = metadata->height;
+			pScene->SkyboxChannels = metadata->channels;
+			break;
+		}
+
+		auto renderableView = scene->GetRegistry()->view<TransformComponent, MeshComponent>();
+		pScene->MeshEntityLookupTable.reserve(renderableView.size_hint());
+		for (auto entity : renderableView) {
+			Entity e(entity, scene->GetRegistry());
+
+			LR_GUID& guid = e.GetComponent<MeshComponent>().guid;
+
+			std::shared_ptr<Asset::MeshMetadata> metadata = resourcePool->Get<Asset::MeshMetadata>(guid);
+			if (!metadata)
+				continue;
+
+			pScene->MeshEntityLookupTable.emplace_back(
+				metadata->firstTriIdx,
+				metadata->TriCount,
+				metadata->firstNodeIdx,
+				metadata->nodeCount,
+				e.GetComponent<TransformComponent>().GetMatrix()
+			);
+		}
+		return pScene;
 	}
 
+	void Renderer::SetupGPUResource(std::shared_ptr<const ParsedScene> pScene, const Settings& settings)
+	{
+		if (settings.resolution != m_Cache.resolution) {
+			m_FrameTexture = IImage2D::Create(nullptr, settings.resolution.x, settings.resolution.y, 0, Image2DType::LR_READ_WRITE);
+			m_Cache.resolution = settings.resolution;
+		}
+
+	}
 
 	void Renderer::SetFrameResolution(const glm::vec2& resolution)
 	{
 		m_FrameResolution = resolution;
-		m_Frame = IImage2D::Create(nullptr, m_FrameResolution.x, m_FrameResolution.y, 0, Image2DType::LR_READ_WRITE);
+		m_Frame = 
 	}
 
 	void Renderer::SubmitScene(std::shared_ptr<RenderableScene> rScene)

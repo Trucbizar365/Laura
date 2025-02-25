@@ -32,17 +32,19 @@ namespace Laura
 			LR_EDITOR_WARN("Failed to load theme: {0}", statusMessage);
 		}
 		
-		m_AssetManager->SetResourcePool(m_ResourcePool.get()); // pass in raw ptr
+		m_AssetManager->SetResourcePool(m_ResourcePool.get());
 
 		m_Scene = std::make_shared<Scene>();
 
 		// TODO make the api for the texture channels more user friendly and less error prone
 		// currently there is no way to catch these errors and they lead to hard to debug crashes
 		{
-			LR_GUID guid = m_AssetManager->LoadTexture(EDITOR_RESOURCES_PATH "Skyboxes/kloofendal_48d_partly_cloudy_puresky_4k.hdr", 4);
-			m_Scene->skyboxGuid = guid;
+			Entity skyboxEntity = m_Scene->CreateEntity();
+			skyboxEntity.GetComponent<TagComponent>().Tag = std::string("Skybox");
+			auto& skyboxComponent = skyboxEntity.AddComponent<SkyboxComponent>();
+			skyboxComponent.guid = m_AssetManager->LoadTexture(EDITOR_RESOURCES_PATH "Skyboxes/kloofendal_48d_partly_cloudy_puresky_4k.hdr", 4);
+			skyboxComponent.isMain = true;
 		}
-		
 		{
 			Entity camera = m_Scene->CreateEntity();
 			std::string& tag = camera.GetComponent<TagComponent>().Tag;
