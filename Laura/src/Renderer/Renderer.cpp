@@ -2,6 +2,11 @@
 
 namespace Laura 
 {
+	void Renderer::Init()
+	{
+		m_SettingsUBO = IUniformBuffer::Create(36, 1, BufferUsageType::DYNAMIC_DRAW);
+		m_CameraUBO = IUniformBuffer::Create(80, 0, BufferUsageType::DYNAMIC_DRAW);
+	}
 
 	std::shared_ptr<IImage2D> Renderer::Render(const Scene* scene, const Asset::ResourcePool* resourcePool)
 	{
@@ -13,7 +18,6 @@ namespace Laura
 
 		return m_Frame;
 	}
-
 
 	std::shared_ptr<const Renderer::ParsedScene> Renderer::Parse(const Scene* scene, const Asset::ResourcePool* resourcePool) const
 	{
@@ -96,23 +100,28 @@ namespace Laura
 
 		{
 			// SETTINGS
-			m_SettingsUBO = IUniformBuffer::Create(32, 1, BufferUsageType::DYNAMIC_DRAW);
+			uint32_t meshEntityCount = pScene->MeshEntityLookupTable.size();
 			m_SettingsUBO->Bind();
 			m_SettingsUBO->AddData(0, sizeof(uint32_t), &settings.raysPerPixel);
 			m_SettingsUBO->AddData(4, sizeof(uint32_t), &settings.bouncesPerRay);
 			m_SettingsUBO->AddData(8, sizeof(uint32_t), &settings.maxAABBIntersections);
 			m_SettingsUBO->AddData(12, sizeof(uint32_t), &m_Cache.AccumulatedFrames);
-			m_SettingsUBO->AddData(16, sizeof(bool), &settings.displayBVH);
+			m_SettingsUBO->AddData(16, sizeof(uint32_t), &meshEntityCount);
+			m_SettingsUBO->AddData(20, sizeof(bool), &settings.displayBVH);
 			m_SettingsUBO->Unbind();
 		}
 		{
 			// CAMERA
-			m_CameraUBO = IUniformBuffer::Create(80, 0, BufferUsageType::DYNAMIC_DRAW);
 			m_CameraUBO->Bind();
 			m_CameraUBO->AddData(0, sizeof(glm::mat4), &pScene->CameraTransform);
 			m_CameraUBO->AddData(64, sizeof(float), &pScene->CameraFocalLength);
 			m_CameraUBO->Unbind();
 		}
+
+		//static bool shouldLoadBuffers = true;
+		//if (shouldLoadBuffers)
+		//{
+		//	shouldLoadBuffers = false;
 		{
 			// SKYBOX
 			const unsigned char* data = &resourcePool->TextureBuffer[pScene->SkyboxFirstTexIdx];
@@ -141,6 +150,7 @@ namespace Laura
 			m_NodeBufferSSBO->Unbind();
 		}
 	}
+	//}
 
 	void Renderer::Draw()
 	{

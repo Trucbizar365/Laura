@@ -78,19 +78,19 @@ namespace Laura
 			sponzaMesh.guid = guid;
 		}
 
-		{
-			Entity sponza_e = m_Scene->CreateEntity();
-			std::string& tag = sponza_e.GetComponent<TagComponent>().Tag;
-			tag = std::string("Sponza");
-			MeshComponent& sponzaMesh = sponza_e.AddComponent<MeshComponent>();
-			TransformComponent& sponzaTransform = sponza_e.AddComponent<TransformComponent>();
-			MaterialComponent& sponzaMaterial = sponza_e.AddComponent<MaterialComponent>();
-			// TODO: this should be loaded upon opening the editor - asset manager should keep track of the assets to be loaded (serialize/deserialize them)
-			LR_GUID guid = m_AssetManager->LoadMesh(std::string(EDITOR_RESOURCES_PATH "Models/sponza_scene.glb"));
-			//uint32_t guid = m_AssetManager->LoadMesh(std::string(EDITOR_RESOURCES_PATH "Models/stanford_bunny_pbr.glb"));
-			//uint32_t guid = m_AssetManager->LoadMesh(std::string(EDITOR_RESOURCES_PATH "Models/sponza_scene.glb"));
-			sponzaMesh.guid = guid;
-		}
+		//{
+		//	Entity sponza_e = m_Scene->CreateEntity();
+		//	std::string& tag = sponza_e.GetComponent<TagComponent>().Tag;
+		//	tag = std::string("Sponza");
+		//	MeshComponent& sponzaMesh = sponza_e.AddComponent<MeshComponent>();
+		//	TransformComponent& sponzaTransform = sponza_e.AddComponent<TransformComponent>();
+		//	MaterialComponent& sponzaMaterial = sponza_e.AddComponent<MaterialComponent>();
+		//	// TODO: this should be loaded upon opening the editor - asset manager should keep track of the assets to be loaded (serialize/deserialize them)
+		//	LR_GUID guid = m_AssetManager->LoadMesh(std::string(EDITOR_RESOURCES_PATH "Models/sponza_scene.glb"));
+		//	//uint32_t guid = m_AssetManager->LoadMesh(std::string(EDITOR_RESOURCES_PATH "Models/stanford_bunny_pbr.glb"));
+		//	//uint32_t guid = m_AssetManager->LoadMesh(std::string(EDITOR_RESOURCES_PATH "Models/sponza_scene.glb"));
+		//	sponzaMesh.guid = guid;
+		//}
 
 		// Most of these are default arguments (not necessary to specify but showing them for clarity)
 		m_Renderer->settings.raysPerPixel = 1;
@@ -103,8 +103,9 @@ namespace Laura
 		// Note: These dimensions are different from the size or aspect ratio of the ImGui viewport window in the editor.
 		// The camera's aspect ratio only stretches the image to fit the viewport window correctly
 		m_Renderer->settings.Resolution = glm::uvec2(1200, 800);
-		m_Renderer->settings.ComputeShaderPath = LR_RESOURCES_PATH "Shaders/RayTracingDefault.comp";
+		m_Renderer->settings.ComputeShaderPath = LR_RESOURCES_PATH "Shaders/PathTracing.comp";
 
+		m_Renderer->Init();
 
 		/// ------------- SCRIPTING -------------- /// (just to see how to use the system) will change in the future
 		/* 

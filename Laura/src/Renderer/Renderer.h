@@ -24,7 +24,7 @@ namespace Laura
 		struct Settings /* here are the default ones */
 		{
 			glm::uvec2 Resolution{ 640, 360 }; // nHD 16:9
-			std::filesystem::path ComputeShaderPath = LR_RESOURCES_PATH "Shaders/RayTracingDefault.comp";
+			std::filesystem::path ComputeShaderPath = LR_RESOURCES_PATH "Shaders/PathTracing.comp";
 			uint32_t raysPerPixel = 1;
 			uint32_t bouncesPerRay = 5;
 			bool ShouldAccumulate = false;
@@ -74,7 +74,7 @@ namespace Laura
 		inline static IRendererAPI::API GetAPI() { return IRendererAPI::GetAPI(); } // getter
 		inline static void SetAPI(IRendererAPI::API api) { IRendererAPI::SetAPI(api); } // setter
 
-		inline void Init(){};
+		void Init();
 		std::shared_ptr<IImage2D> Render(const Scene* scene, const Asset::ResourcePool* resourcePool);
 
 		Settings settings{};
