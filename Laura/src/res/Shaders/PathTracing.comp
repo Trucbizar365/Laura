@@ -25,8 +25,10 @@ layout (local_size_x = LOCAL_GROUP_X, local_size_y = LOCAL_GROUP_Y, local_size_z
 /* The following structs MUST be defined exactly as they are on the CPU. */
 // std430 - 32 bytes (CPU side defined in Assets/BVHAccel.h)
 struct Node {
-	vec4 min; // w component leftChild_Or_FirstTri
-	vec4 max; // w component triCount
+	vec3 min;
+    uint leftChild_Or_FirstTri;
+	vec3 max;
+    uint triCount;
 	/*	if primCount == 0: leftChild_Or_FirstTri == leftChild
 		else leftChild_Or_FirstTri == firstTri */
 };
@@ -38,11 +40,11 @@ struct Triangle {
 
 // std430 - 80 bytes (CPU side defined in Renderer/Renderer.h
 struct MeshEntityHandle {
+	mat4 Transform;
 	uint FirstTriIdx;
 	uint TriCount;
 	uint FirstNodeIdx;
 	uint NodeCount;
-	mat4 Transform;
 };
 
 struct Material {
@@ -80,20 +82,25 @@ layout (std140, binding = 1) uniform SettingsUBO {
     uint u_heatmap_color_limit;
     uint u_numAccumulatedFrames;
     uint u_MeshEntityCount;
-    bool u_displayBVH;
+    uint u_displayBVH;
 };
 
-layout (std430, binding = 4) buffer MeshEntityLookupSSBO{
+layout (std430, binding = 4) buffer MeshEntityLookupSSBO {
     MeshEntityHandle MeshEntityLookupTable[];
 };
 
-layout (std430, binding = 5) buffer MeshBufferSSBO{
+layout (std430, binding = 5) buffer MeshBufferSSBO {
     Triangle MeshBuffer[];
 };
 
-layout (std430, binding = 6) buffer NodeBufferSSBO{
+layout (std430, binding = 6) buffer NodeBufferSSBO {
     Node NodeBuffer[];
 };
+
+layout (std430, binding = 7) buffer IndexBufferSSBO {
+    uint IndexBuffer[];
+};
+
 
 /** The function getCurrentState calculates a unique state value based on the texel coordinates and the number of accumulated frames.
  * The state value is used to generate random numbers for sampling in the shader.
@@ -237,7 +244,7 @@ HitInfo RayTriangleIntersection(const Ray ray, const Triangle tri){
     // E1, E2 are triangle edge direction vectors
     const vec3 E1 = tri.v1.xyz - tri.v0.xyz;
     const vec3 E2 = tri.v2.xyz - tri.v0.xyz;
-    vec3 triNormal = normalize(cross(E1, E2));
+    vec3 triNormal = cross(E1, E2);
     const float determinant = -dot(ray.dir, triNormal);
     // Early exit if the ray and triangle are nearly parallel
     if (determinant < 1E-6) {
@@ -266,92 +273,59 @@ HitInfo RayTriangleIntersection(const Ray ray, const Triangle tri){
     return hitInfo;
 }
 
+void BVH_traverse(Ray ray, inout MeshEntityHandle meshEntity, inout HitInfo closestHit, inout uint AABB_intersect_count, inout uint TRI_intersect_count)
+{
+    const Material defaultMaterial = Material(vec4(0.0, 0.0, 0.0, 0.0), vec3(0.8, 0.75, 0.9));
+    int stack[MAX_STACK_SIZE];
+    int stackTop = 0; // -1 when empty
+    stack[stackTop] = 0; // stack_init(0 = root)
 
-//void BVH_traverse(Ray ray, MeshEntityHandle meshEntity, inout HitInfo closestHit, inout uint AABB_intersect_count, inout uint TRI_intersect_count)
-//{
-//    // A stack is initialized to keep track of the BVH nodes that need to be checked.
-//    int stack_elements[MAX_STACK_SIZE];
-//    int stack_top = -1;
-//
-//    if (stack_top < MAX_STACK_SIZE - 1) { // Inlined stack_push
-//        stack_top++;
-//        stack_elements[stack_top] = 0; // The root node of the BVH is pushed onto the stack.
-//    }
-//
-//    float AABB_tMin;
-//    
-//    // The function continues to check nodes as long as there are nodes left on the stack.
-//    while (stack_top >= 0) // Inlined !stack_empty(stack)
-//    {
-//
-//        // The next node to check is popped from the stack.
-//        int current_node_idx;
-//        if (stack_top >= 0) { // Inlined stack_pop
-//            current_node_idx = stack_elements[stack_top];
-//            stack_top--;
-//        }
-//
-//        const BVHNode current_node = continuousBvhs[bvhIndex + current_node_idx];
-//
-//        // The function checks if the ray intersects the bounding box of the current node.
-//        if (RayAABBIntersection(ray, current_node.minVec, current_node.maxVec, AABB_tMin))
-//        {
-//            if (AABB_tMin > closestHit.dst)
-//			{
-//				continue;
-//			}
-//            // If the current node is a leaf node (it has no children), the function 
-//            // checks for intersections with the primitives contained in the node.
-//            if (current_node.child1_idx == -1 && current_node.child2_idx == -1)
-//            {
-//                // The function iterates over each primitive in the leaf node.
-//                for (int i = 0; i < AABB_primitives_limit; i++)
-//                {
-//                    const int triangle_idx = current_node.leaf_primitive_indices[i];
-//                    // If there are no more primitives in the node, the 
-//                    // function breaks out of the loop.
-//                    if (triangle_idx == -1)
-//                    {
-//                        break;
-//                    }
-//
-//                    // The function retrieves the triangle associated with the current primitive.
-//                    const Triangle tri = continuousMeshes[meshIndex + triangle_idx];
-//                                  
-//                    const HitInfo triHitInfo = RayTriangleIntersection(ray, tri);
-//                    
-//                    // If the ray intersects the triangle and the intersection is closer than the
-//                    // closest intersection found so far, the closest intersection is updated.
-//                    if (triHitInfo.didCollide){
-//                    	TRI_intersect_count += 1;
-//                        if (triHitInfo.dst < closestHit.dst)
-//                        {
-//                            closestHit = triHitInfo;
-//                            closestHit.material = tri.material;
-//                            break;
-//                        }
-//                    }
-//                }
-//            }
-//            else
-//            {
-//                AABB_intersect_count += 1;
-//                if (current_node.child1_idx != -1) { // Inlined stack_push
-//                    if (stack_top < MAX_STACK_SIZE - 1) {
-//                        stack_top++;
-//                        stack_elements[stack_top] = current_node.child1_idx;
-//                    }
-//                }
-//                if (current_node.child2_idx != -1) { // Inlined stack_push
-//                    if (stack_top < MAX_STACK_SIZE - 1) {
-//                        stack_top++;
-//                        stack_elements[stack_top] = current_node.child2_idx;
-//                    }
-//                }
-//            }
-//        }
-//    }
-//}
+    int nodeIdx;
+    float AABB_tMin; // intersection dst with AABB
+    while (stackTop >= 0) { // Inlined !stack_empty(stack)
+        // Inlined stack_pop
+        nodeIdx = stack[stackTop];
+        stackTop--;
+
+        const Node node = NodeBuffer[meshEntity.FirstNodeIdx + nodeIdx];
+
+        if (!RayAABBIntersection(ray, node.min, node.max, AABB_tMin))
+            continue;
+
+        if (AABB_tMin > closestHit.dst) 
+            continue;
+
+        // If the current node is a leaf node (has triangle indices),
+        // check triangle intersections
+        if (node.triCount > 0) {
+            for (uint i = 0; i < node.triCount; i++) {
+                // since triCount != 0, leftChild_Or_FirstTri = FirstTri
+                const HitInfo triHitInfo = RayTriangleIntersection(ray, MeshBuffer[meshEntity.FirstTriIdx + IndexBuffer[meshEntity.FirstTriIdx + node.leftChild_Or_FirstTri + i]]);
+                    
+                if (triHitInfo.didCollide) {
+                    TRI_intersect_count += 1;
+                    if (triHitInfo.dst < closestHit.dst) {
+                        closestHit = triHitInfo;
+                        closestHit.material = defaultMaterial;
+                        break;
+                    }
+                }
+            }
+        }
+        else {
+            AABB_intersect_count += 1;
+            // Inlined stack_push children
+            if (stackTop < MAX_STACK_SIZE - 1) {
+                stackTop++;
+                stack[stackTop] = int(node.leftChild_Or_FirstTri+1);
+            }
+            if (stackTop < MAX_STACK_SIZE - 1) {
+                stackTop++;
+                stack[stackTop] = int(node.leftChild_Or_FirstTri);
+            }
+        }
+    }
+}
 
 
 HitInfo CheckRayCollision(Ray ray, inout HitInfo closestHit, inout uint AABB_intersect_count, inout uint TRI_intersect_count) {
@@ -372,8 +346,8 @@ HitInfo CheckRayCollision(Ray ray, inout HitInfo closestHit, inout uint AABB_int
         hitInfo.didCollide = false;
         hitInfo.dst = INF;
 
-        //BVH_traverse(rayLocal, meshEntity, hitInfo, AABB_intersect_count, TRI_intersect_count);
-
+        BVH_traverse(rayLocal, meshEntity, hitInfo, AABB_intersect_count, TRI_intersect_count);
+       
         if (hitInfo.didCollide && hitInfo.dst < closestHit.dst){
             closestHit = hitInfo;
             closestHitTransform = meshEntity.Transform;
@@ -434,7 +408,7 @@ void main() {
         pixelColor += TraceRay(ray, state, AABB_intersect_count, TRI_intersect_count);
     }
 
-    if (u_displayBVH)
+    if (u_displayBVH == 1)
         pixelColor = complexityToRGB(AABB_intersect_count + 3*TRI_intersect_count);
     else
         pixelColor = pixelColor / u_RaysPerPixel;
@@ -443,5 +417,5 @@ void main() {
     float weight = 1.0f / (u_numAccumulatedFrames + 1);
     vec3 outputColor = imageLoad(rayTracingTexture, texelCoords).rgb * (1 - weight) + pixelColor * weight;
     imageStore(rayTracingTexture, texelCoords, vec4(outputColor, 1.0f));
-    barrier(); // wait for all threads to finish
+    //barrier(); // wait for all threads to finish
 };

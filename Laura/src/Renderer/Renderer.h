@@ -13,6 +13,8 @@
 #include "Renderer/IUniformBuffer.h"
 #include "Renderer/IShaderStorageBuffer.h"
 
+#include "Core/Profiler.h"
+
 #include <filesystem>
 
 namespace Laura 
@@ -51,11 +53,11 @@ namespace Laura
 			{
 			}
 
+			glm::mat4 Transform;
 			uint32_t FirstTriIdx;
 			uint32_t TriCount;
 			uint32_t FirstNodeIdx;
 			uint32_t NodeCount;
-			glm::mat4 Transform;
 		};
 
 		struct ParsedScene {
@@ -68,7 +70,10 @@ namespace Laura
 
 
 	public:
-		Renderer() = default;
+		Renderer(std::shared_ptr<Profiler> profiler)
+			: m_Profiler(profiler)
+		{
+		};
 		~Renderer() = default;
 
 		inline static IRendererAPI::API GetAPI() { return IRendererAPI::GetAPI(); } // getter
@@ -89,8 +94,9 @@ namespace Laura
 		std::shared_ptr<ITexture2D> m_SkyboxTexture;
 
 		std::shared_ptr<IUniformBuffer> m_CameraUBO, m_SettingsUBO;
-		std::shared_ptr<IShaderStorageBuffer> m_MeshEntityLookupSSBO, m_MeshBufferSSBO, m_NodeBufferSSBO;
+		std::shared_ptr<IShaderStorageBuffer> m_MeshEntityLookupSSBO, m_MeshBufferSSBO, m_NodeBufferSSBO, m_IndexBufferSSBO;
 		
 		Cache m_Cache;
+		std::shared_ptr<Profiler> m_Profiler;
 	};
 }

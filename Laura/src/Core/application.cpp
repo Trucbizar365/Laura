@@ -5,6 +5,8 @@ namespace Laura
 	void Application::init()
 	{
 		Log::Init();
+		_Profiler = std::make_shared<Profiler>(500);
+
 		_Window = IWindow::createWindow();
 		_LayerStack = std::make_shared<LayerStack>();
 		// make window forward events to the layer stack
@@ -17,9 +19,8 @@ namespace Laura
 		_AssetManager = std::make_shared<Asset::Manager>();
 
 		_RendererAPI = IRendererAPI::Create();
-		_Renderer = std::make_shared<Renderer>();
 
-		_Profiler = std::make_shared<Profiler>(500);
+		_Renderer = std::make_shared<Renderer>(_Profiler);
 	}
 
 	void Application::run()
@@ -29,16 +30,16 @@ namespace Laura
 		{
 			auto t = _Profiler->globalTimer("GLOBAL");
 			{
-				auto t = _Profiler->timer("Window.OnUpdate()");
+				auto t = _Profiler->timer("Window::OnUpdate()");
 				_Window->onUpdate();
 			}
-			{
-				auto t = _Profiler->timer("RendererAPI.Clear()");
-				_RendererAPI->Clear({ 0.98f, 0.24f, 0.97f, 1.0f }); // fill the screen with a color (pink)
-			}
+
+			_RendererAPI->Clear({ 0.98f, 0.24f, 0.97f, 1.0f }); // fill the screen with a color (pink)
+			
 			_LayerStack->onUpdate();
+
 			{
-				auto t = _Profiler->timer("Rendering");
+				auto t = _Profiler->timer("LayerStack::onImGuiRender()");
 				_ImGuiContextManager->BeginFrame();
 				_LayerStack->onImGuiRender(); // all of the rendering onto the screen happens here
 				_ImGuiContextManager->EndFrame();

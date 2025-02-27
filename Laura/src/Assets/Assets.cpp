@@ -43,6 +43,10 @@ namespace Laura::Asset
             for (unsigned int j = 0; j < subMesh->mNumFaces; ++j) {
                 const auto& face = subMesh->mFaces[j];
 
+                if (face.mNumIndices != 3) {
+                    continue;
+                }
+
                 auto idxs = face.mIndices;
                 meshBuffer.emplace_back( Triangle({ 
                     glm::vec4(verts[idxs[0]].x, verts[idxs[0]].y, verts[idxs[0]].z, 0.0f),

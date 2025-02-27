@@ -84,6 +84,7 @@ namespace Laura
 		//	tag = std::string("Sponza");
 		//	MeshComponent& sponzaMesh = sponza_e.AddComponent<MeshComponent>();
 		//	TransformComponent& sponzaTransform = sponza_e.AddComponent<TransformComponent>();
+		//	sponzaTransform.SetTranslation({ 0.0f, 40.0f, 1000.0f });
 		//	MaterialComponent& sponzaMaterial = sponza_e.AddComponent<MaterialComponent>();
 		//	// TODO: this should be loaded upon opening the editor - asset manager should keep track of the assets to be loaded (serialize/deserialize them)
 		//	LR_GUID guid = m_AssetManager->LoadMesh(std::string(EDITOR_RESOURCES_PATH "Models/sponza_scene.glb"));

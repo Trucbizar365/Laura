@@ -1,15 +1,18 @@
 #include "renderer/Renderer.h"
+#include <glm/gtc/matrix_access.hpp>
 
 namespace Laura 
 {
 	void Renderer::Init()
 	{
-		m_SettingsUBO = IUniformBuffer::Create(36, 1, BufferUsageType::DYNAMIC_DRAW);
+		m_SettingsUBO = IUniformBuffer::Create(48, 1, BufferUsageType::DYNAMIC_DRAW);
 		m_CameraUBO = IUniformBuffer::Create(80, 0, BufferUsageType::DYNAMIC_DRAW);
 	}
 
 	std::shared_ptr<IImage2D> Renderer::Render(const Scene* scene, const Asset::ResourcePool* resourcePool)
 	{
+		auto t = m_Profiler->timer("Renderer::Render()");
+
 		const auto pScene = Parse(scene, resourcePool);
 		if (!pScene) // Most likely scene missing camera
 			return nullptr;
@@ -21,6 +24,8 @@ namespace Laura
 
 	std::shared_ptr<const Renderer::ParsedScene> Renderer::Parse(const Scene* scene, const Asset::ResourcePool* resourcePool) const
 	{
+		auto t = m_Profiler->timer("Renderer::Parse()");
+
 		auto pScene = std::make_shared<Renderer::ParsedScene>();
 
 		auto cameraView = scene->GetRegistry()->view<TransformComponent, CameraComponent>();
@@ -83,10 +88,7 @@ namespace Laura
 	// assumes a valid pScene
 	bool Renderer::SetupGPUResources(std::shared_ptr<const ParsedScene> pScene, const Asset::ResourcePool* resourcePool)
 	{
-		if (settings.Resolution != m_Cache.Resolution) {
-			m_Frame = IImage2D::Create(nullptr, settings.Resolution.x, settings.Resolution.y, 0, Image2DType::LR_READ_WRITE);
-			m_Cache.Resolution = settings.Resolution;
-		}
+		m_Profiler->timer("Renderer::SetupGPUResources()");
 
 		if (settings.ComputeShaderPath != m_Cache.ActiveShaderPath) {
 			m_Shader = IComputeShader::Create(settings.ComputeShaderPath.string(), glm::uvec3(1)); // work group sizes set in Draw() before shader->dispatch() 
@@ -96,18 +98,25 @@ namespace Laura
 			m_Cache.ActiveShaderPath = settings.ComputeShaderPath;
 		}
 
+		if (settings.Resolution != m_Cache.Resolution) {
+			m_Frame = IImage2D::Create(nullptr, settings.Resolution.x, settings.Resolution.y, 0, Image2DType::LR_READ_WRITE);
+			m_Cache.Resolution = settings.Resolution;
+		}
+
+
 		m_Cache.AccumulatedFrames = (settings.ShouldAccumulate) ? m_Cache.AccumulatedFrames++ : 0;
 
 		{
 			// SETTINGS
 			uint32_t meshEntityCount = pScene->MeshEntityLookupTable.size();
+			uint32_t displayBVH = static_cast<uint32_t>(settings.displayBVH);
 			m_SettingsUBO->Bind();
 			m_SettingsUBO->AddData(0, sizeof(uint32_t), &settings.raysPerPixel);
 			m_SettingsUBO->AddData(4, sizeof(uint32_t), &settings.bouncesPerRay);
 			m_SettingsUBO->AddData(8, sizeof(uint32_t), &settings.maxAABBIntersections);
 			m_SettingsUBO->AddData(12, sizeof(uint32_t), &m_Cache.AccumulatedFrames);
 			m_SettingsUBO->AddData(16, sizeof(uint32_t), &meshEntityCount);
-			m_SettingsUBO->AddData(20, sizeof(bool), &settings.displayBVH);
+			m_SettingsUBO->AddData(20, sizeof(uint32_t), &displayBVH);
 			m_SettingsUBO->Unbind();
 		}
 		{
@@ -118,15 +127,6 @@ namespace Laura
 			m_CameraUBO->Unbind();
 		}
 
-		//static bool shouldLoadBuffers = true;
-		//if (shouldLoadBuffers)
-		//{
-		//	shouldLoadBuffers = false;
-		{
-			// SKYBOX
-			const unsigned char* data = &resourcePool->TextureBuffer[pScene->SkyboxFirstTexIdx];
-			m_SkyboxTexture = ITexture2D::Create(data, pScene->SkyboxWidth, pScene->SkyboxHeight, 1); // TODO: for some reason Channels are not passed
-		}
 		{
 			// ENTITY LOOKUP TABLE
 			uint32_t sizeBytes = sizeof(MeshEntityHandle) * pScene->MeshEntityLookupTable.size();
@@ -135,25 +135,42 @@ namespace Laura
 			m_MeshEntityLookupSSBO->AddData(0, sizeBytes, pScene->MeshEntityLookupTable.data());
 			m_MeshEntityLookupSSBO->Unbind();
 		}
-		{
-			// RESOURCE POOL 
-			uint32_t meshBuffer_sizeBytes = sizeof(Asset::Triangle) * resourcePool->MeshBuffer.size();
-			m_MeshBufferSSBO = IShaderStorageBuffer::Create(meshBuffer_sizeBytes, 5, BufferUsageType::STATIC_DRAW);
-			m_MeshBufferSSBO->Bind();
-			m_MeshBufferSSBO->AddData(0, meshBuffer_sizeBytes, resourcePool->MeshBuffer.data());
-			m_MeshBufferSSBO->Unbind();
 
-			uint32_t nodeBuffer_sizeBytes = sizeof(Asset::BVHAccel::Node) * resourcePool->NodeBuffer.size();
-			m_NodeBufferSSBO = IShaderStorageBuffer::Create(nodeBuffer_sizeBytes, 6, BufferUsageType::STATIC_DRAW);
-			m_NodeBufferSSBO->Bind();
-			m_NodeBufferSSBO->AddData(0, nodeBuffer_sizeBytes, resourcePool->NodeBuffer.data());
-			m_NodeBufferSSBO->Unbind();
+		static bool shouldLoadBuffers = true;
+		if (shouldLoadBuffers)
+		{
+			shouldLoadBuffers = false;
+			{
+				// SKYBOX
+				const unsigned char* data = &resourcePool->TextureBuffer[pScene->SkyboxFirstTexIdx];
+				m_SkyboxTexture = ITexture2D::Create(data, pScene->SkyboxWidth, pScene->SkyboxHeight, 1); // TODO: for some reason Channels are not passed
+			}
+			{
+				// RESOURCE POOL 
+				uint32_t meshBuffer_sizeBytes = sizeof(Asset::Triangle) * resourcePool->MeshBuffer.size();
+				m_MeshBufferSSBO = IShaderStorageBuffer::Create(meshBuffer_sizeBytes, 5, BufferUsageType::STATIC_DRAW);
+				m_MeshBufferSSBO->Bind();
+				m_MeshBufferSSBO->AddData(0, meshBuffer_sizeBytes, resourcePool->MeshBuffer.data());
+				m_MeshBufferSSBO->Unbind();
+
+				uint32_t nodeBuffer_sizeBytes = sizeof(Asset::BVHAccel::Node) * resourcePool->NodeBuffer.size();
+				m_NodeBufferSSBO = IShaderStorageBuffer::Create(nodeBuffer_sizeBytes, 6, BufferUsageType::STATIC_DRAW);
+				m_NodeBufferSSBO->Bind();
+				m_NodeBufferSSBO->AddData(0, nodeBuffer_sizeBytes, resourcePool->NodeBuffer.data());
+				m_NodeBufferSSBO->Unbind();
+
+				uint32_t indexBuffer_sizeBytes = sizeof(uint32_t) * resourcePool->MeshBuffer.size();
+				m_IndexBufferSSBO = IShaderStorageBuffer::Create(indexBuffer_sizeBytes, 7, BufferUsageType::STATIC_DRAW);
+				m_IndexBufferSSBO->Bind();
+				m_IndexBufferSSBO->AddData(0, indexBuffer_sizeBytes, resourcePool->IndexBuffer.data());
+				m_IndexBufferSSBO->Unbind();
+			}
 		}
 	}
-	//}
 
 	void Renderer::Draw()
 	{
+		auto t = m_Profiler->timer("Renderer::Draw()");
 		m_Shader->Bind();
 		m_Shader->setWorkGroupSizes(
 			glm::uvec3(ceil(settings.Resolution.x / 8), ceil(settings.Resolution.y / 4), 1)
