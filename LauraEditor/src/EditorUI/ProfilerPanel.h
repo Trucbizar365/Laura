@@ -6,7 +6,6 @@
 
 namespace Laura
 {
-
 	class ProfilerPanel
 	{
 	public:

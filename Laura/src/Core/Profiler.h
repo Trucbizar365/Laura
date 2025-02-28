@@ -111,10 +111,12 @@ namespace Laura
 		inline const std::string getGlobalLabel() const { return m_GlobalLabel; }
 		
 		bool globalTimerSet = false;
+		bool isPaused = false;
 	private:
 		std::string m_GlobalLabel = "GLOBAL"; // default
 		std::unordered_map<std::string, ScrollingBuffer> m_Data;
 		const size_t m_Capacity;
+		
 	};
 
 }

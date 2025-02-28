@@ -36,6 +36,9 @@ namespace Laura
 	}
 
 	void Profiler::addTimerValue(const std::string& label, const double elapsed_ms) {
+		if (isPaused)
+			return;
+
 		auto it = m_Data.find(label);
 		assert(it != m_Data.end()); // shouldn't ever happen
 		it->second.push_back(elapsed_ms);
