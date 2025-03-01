@@ -6,6 +6,7 @@
 
 namespace Laura
 {
+
 	class ProfilerPanel
 	{
 	public:
@@ -16,6 +17,13 @@ namespace Laura
 
 		void OnImGuiRender(std::shared_ptr<Profiler> profiler);
 	private:
+		
+		struct plotLineStyle {
+			ImVec4 color;
+			int colormapID;
+			float thickness;
+		};
+
 		std::shared_ptr<EditorState> m_EditorState;
 		std::shared_ptr<ThemeManager> m_ThemeManager;
 	};
