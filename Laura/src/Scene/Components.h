@@ -84,24 +84,4 @@ namespace Laura
 		bool isMain = false;
 		LR_GUID guid = LR_GUID(0); // GUID of the texture
 	};
-
-	/// EXPERIMENTAL SCRIPTING SYSTEM /// (will change in the future)
-	struct Script
-	{	
-		Script() = default;
-
-		virtual void OnCreate() = 0;
-		virtual void OnUpdate() = 0;
-		virtual void OnDestroy() = 0;
-	};
-
-	struct ScriptComponent
-	{
-		ScriptComponent() = default;
-		ScriptComponent(Script* script)
-			: script(script) {}
-
-		Script* script;
-	};
-	///////////////////////////////////////
 }

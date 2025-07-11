@@ -99,6 +99,7 @@ namespace Laura
 		m_Renderer->settings.maxAABBIntersections = 500;
 		m_Renderer->settings.displayBVH = false;
 		m_Renderer->settings.ShouldAccumulate = false;
+
 		// The FRAME_WIDTH and FRAME_HEIGHT define the dimensions of the render frame.
 		// These values represent the actual number of pixels that the renderer will process to produce the final image.
 		// Note: These dimensions are different from the size or aspect ratio of the ImGui viewport window in the editor.
@@ -107,40 +108,7 @@ namespace Laura
 		m_Renderer->settings.ComputeShaderPath = LR_RESOURCES_PATH "Shaders/PathTracing.comp";
 
 		m_Renderer->Init();
-
-		/// ------------- SCRIPTING -------------- /// (just to see how to use the system) will change in the future
-		/* 
-		 Test SCRIPT (will be in its own file in the future)
-		class TestScript : public Script
-		{
-			virtual void OnCreate() override 
-			{
-				LR_EDITOR_INFO("TestScript::OnCreate (called in scene.OnStart())");
-			}
-		
-			virtual void OnUpdate() override
-			{
-				LR_EDITOR_INFO("TestScript::OnUpdate (this should get called every frame)");
-			}
-		
-			virtual void OnDestroy() override
-			{
-				LR_EDITOR_INFO("TestScript::OnDestroy (called once the entity gets destroyed)");
-			}
-		};
-		 Testing the TEST SCRIPT on a TEST ENTITY
-		Entity testEntity = m_Scene->CreateEntity();
-		{
-			std::string& tag = testEntity.GetComponent<TagComponent>().Tag;
-			tag = std::string("TestScript");
-		}
-		testEntity.AddComponent<ScriptComponent>(new TestScript());
-		testEntity.RemoveComponent<ScriptComponent>();
-		m_Scene->DestroyEntity(testEntity); // testing the script's OnDestroy() function
-		*/
-		/// ---------------------------------------- ///
-
-		m_Scene->OnStart(); // calls the onStart() of the scripts
+		m_Scene->OnStart();
 	}
 
 	void EditorLayer::onEvent(Event* event)
