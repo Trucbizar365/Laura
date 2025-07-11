@@ -9,9 +9,9 @@ namespace Laura
 	{
 	public:
 		inline ThemesPanel(std::shared_ptr<EditorState> editorState, std::shared_ptr<ThemeManager> themeManager)
-			: m_EditorState(editorState), m_ThemeManager(themeManager)
-		{
+			: m_EditorState(editorState), m_ThemeManager(themeManager) {
 		}
+
 		~ThemesPanel() = default;
 
 		void OnImGuiRender();
