@@ -67,7 +67,6 @@ namespace Laura
 			state->persistent.doubleConfirmEnabled = node["doubleConfirmation"].as<bool>();
 			state->persistent.viewportMode = node["viewportMode"].as<ViewportMode>();
 			state->persistent.editorThemeFilepath = node["ThemeFilePath"].as<std::string>();
-			return true;
 		}
 		catch (const YAML::RepresentationException& e)
 		{
@@ -79,10 +78,17 @@ namespace Laura
 			LR_EDITOR_CRITICAL("Unknown error occurred while saving file: {0}, error: {1}", filepath, e.what());
 			return false;
 		}
-
+        
         auto [status, errMsg] = state->temp.editorTheme.LoadFromFile(state->persistent.editorThemeFilepath); // deserialize derived state
-        if (!status) {
-            LR_EDITOR_WARN("Unable to deserialize theme: {0}", state->persistent.editorThemeFilepath);
+        if (state->persistent.editorThemeFilepath == "") {
+            LR_EDITOR_INFO("Using default theme");
         }
+        else if (!status) {
+            LR_EDITOR_WARN("Unable to deserialize theme: {0} [Using Default Theme instead]", state->persistent.editorThemeFilepath);
+        }
+        else {
+            LR_EDITOR_INFO("Successfully loaded theme {0}", state->persistent.editorThemeFilepath);
+        }
+		return true;
 	}
 }

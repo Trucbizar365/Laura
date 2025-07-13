@@ -7,11 +7,12 @@
 namespace Laura
 {
 	#define EDITOR_THEME_FILE_EXTENSION ".lrtheme"
+	constexpr size_t MAX_COLORSTACK_SIZE = 50;
 	
 	class EditorTheme {
 	public: 
 		EditorTheme() {
-			LoadDefaultLight();
+			LoadDefaultDark();
 			ApplyThemeToImgui();
 		}
 
@@ -28,6 +29,9 @@ namespace Laura
 		}
 			
 		inline void PushColor(ImGuiCol_ widget, ImVec4 col) {
+			if (m_ColorStack.size() > MAX_COLORSTACK_SIZE) {
+				throw std::runtime_error("ColorStack.size() exceeds MAX_COLORSTACK_SIZE (did you forget to pop?)");
+			}
 			// cache old color on the stack
 			m_ColorStack.push({ widget, ImGui::GetStyle().Colors[widget] });
 			// set new color	
@@ -36,11 +40,11 @@ namespace Laura
 
 		inline void PopColor(size_t count = 1) {
 			if (count == 0) {
-				throw std::runtime_error("Count must be > 0");
+				throw std::runtime_error("PopColor(0) is forbidden (count must be > 0)");
 			}
 
 			if (count > m_ColorStack.size()) {
-				throw std::runtime_error("Tried to PopColor from an empty color stack");
+				throw std::runtime_error("Too many PopColor() calls (ColorStack already empty)");
 			}
 
 			for (size_t i = 0; i < count; i++) {
@@ -57,9 +61,10 @@ namespace Laura
 			name = "Default Dark";
 			PRIMARY_1     = ImVec4{ 0.3f, 0.305f, 0.31f, 1.0f };         // HeaderHovered, ButtonHovered
 			PRIMARY_2     = ImVec4{ 0.15f, 0.1505f, 0.151f, 1.0f };      // HeaderActive, ButtonActive, FrameBgActive
+			PRIMARY_3	  = ImVec4{ 0.01f, 0.01f, 0.01f, 1.0f };		 // MenuBarBg
 			SECONDARY_1   = ImVec4{ 0.078f, 0.078f, 0.078f, 1.0f };      // Header, TabHovered, TabSelected, AddComponentButton
 			SECONDARY_2   = ImVec4{ 0.138f, 0.138f, 0.138f, 1.0f };      // SelectedHeader
-			ACCENT_1      = ImVec4{ 0.491f, 0.811f, 0.419f, 1.0f };      // SliderGrabActive (greenish accent)
+			ACCENT_1	  = ImVec4{ 0.26f, 0.59f, 0.98f, 1.00f };		 // SliderGrabActive, TabDimmedSelectedOverline (blue)
 			ACCENT_2      = ImVec4{ 0.391f, 0.391f, 0.391f, 1.0f };      // CheckMark, SliderGrab
 			TEXT_1        = ImVec4{ 1.0f, 1.0f, 1.0f, 1.0f };            // Text
 			TEXT_2        = ImVec4{ 0.5f, 0.5f, 0.5f, 1.0f };            // TextDisabled
@@ -78,6 +83,7 @@ namespace Laura
 			name = "Default Light";
 			PRIMARY_1     = ImVec4{ 0.85f, 0.85f, 0.86f, 1.0f };          // HeaderHovered, ButtonHovered
 			PRIMARY_2     = ImVec4{ 0.75f, 0.75f, 0.76f, 1.0f };          // HeaderActive, ButtonActive, FrameBgActive
+			PRIMARY_3	  = ImVec4{ 0.9f, 0.9f, 0.9f, 1.0f };			  // MenuBarBg
 			SECONDARY_1   = ImVec4{ 0.93f, 0.93f, 0.93f, 1.0f };          // Header, TabHovered, TabSelected, AddComponentButton
 			SECONDARY_2   = ImVec4{ 0.82f, 0.82f, 0.82f, 1.0f };          // SelectedHeader
 			ACCENT_1      = ImVec4{ 0.2f, 0.6f, 0.15f, 1.0f };            // SliderGrabActive (greenish)
@@ -99,6 +105,7 @@ namespace Laura
 		std::string name;
 		ImVec4 PRIMARY_1;
 		ImVec4 PRIMARY_2;
+		ImVec4 PRIMARY_3;
 		ImVec4 SECONDARY_1;
 		ImVec4 SECONDARY_2;
 		ImVec4 ACCENT_1;
@@ -153,6 +160,7 @@ struct YAML::convert<Laura::EditorTheme> {
 		node["name"]            = rhs.name;
 		node["PRIMARY_1"]       = rhs.PRIMARY_1;
 		node["PRIMARY_2"]       = rhs.PRIMARY_2;
+		node["PRIMARY_3"]		= rhs.PRIMARY_3;
 		node["SECONDARY_1"]     = rhs.SECONDARY_1;
 		node["SECONDARY_2"]     = rhs.SECONDARY_2;
 		node["ACCENT_1"]        = rhs.ACCENT_1;
@@ -177,6 +185,7 @@ struct YAML::convert<Laura::EditorTheme> {
 		if (node["name"])           rhs.name           = node["name"].as<std::string>();
 		if (node["PRIMARY_1"])      rhs.PRIMARY_1      = node["PRIMARY_1"].as<ImVec4>();
 		if (node["PRIMARY_2"])      rhs.PRIMARY_2      = node["PRIMARY_2"].as<ImVec4>();
+		if (node["PRIMARY_3"])		rhs.PRIMARY_3	   = node["PRIMARY_3"].as<ImVec4>();
 		if (node["SECONDARY_1"])    rhs.SECONDARY_1    = node["SECONDARY_1"].as<ImVec4>();
 		if (node["SECONDARY_2"])    rhs.SECONDARY_2    = node["SECONDARY_2"].as<ImVec4>();
 		if (node["ACCENT_1"])       rhs.ACCENT_1       = node["ACCENT_1"].as<ImVec4>();

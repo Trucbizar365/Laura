@@ -58,12 +58,11 @@ namespace Laura
         catch (const std::exception& e) {
             return { false, "Unknown error occurred while loading file: " + filepath.string() + ", error: " + e.what() };
         }
-
-        size_t numPushedColsBeforeLoad = m_ColorStack.size();
+        
+        // move the old colorstack to the new theme (to keep push/pop balance)
+        auto movedColorStack = std::move(m_ColorStack);
         *this = tmpTheme;
-        for (size_t i = 0; i < numPushedColsBeforeLoad; i++) {
-            PushColor(ImGuiCol_Text, TEXT_1); // populate with dummy values ( to prevent push/pop imbalance )
-        }
+        m_ColorStack = std::move(movedColorStack);
 
         return { true, "" };
     }
@@ -97,6 +96,8 @@ namespace Laura
         style.Colors[ImGuiCol_Tab]                  = BACKGROUND_1;
         style.Colors[ImGuiCol_TabHovered]           = SECONDARY_1;
         style.Colors[ImGuiCol_TabActive]            = SECONDARY_1;
+        style.Colors[ImGuiCol_TabSelectedOverline]  = ACCENT_1;
+        style.Colors[ImGuiCol_TabDimmedSelectedOverline] = PRIMARY_1;
         style.Colors[ImGuiCol_TabUnfocused]         = SECONDARY_1;
         style.Colors[ImGuiCol_TabUnfocusedActive]   = SECONDARY_2;
         // Title
@@ -120,5 +121,7 @@ namespace Laura
         style.Colors[ImGuiCol_Button]               = SECONDARY_1;
         style.Colors[ImGuiCol_ButtonHovered]        = SECONDARY_1;
         style.Colors[ImGuiCol_ButtonActive]         = SECONDARY_2;
+
+        style.Colors[ImGuiCol_MenuBarBg]            = PRIMARY_3;
     }
 }
