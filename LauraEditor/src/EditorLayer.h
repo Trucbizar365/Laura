@@ -1,8 +1,7 @@
 #pragma once
-
 #include <Laura.h>
-#include "EditorState.h"
 
+#include "EditorState.h"
 #include "EditorUI/ViewportPanel/ViewportPanel.h"
 #include "EditorUI/SceneHierarchyPanel/SceneHierarchyPanel.h"
 #include "EditorUI/InspectorPanel/InspectorPanel.h"
@@ -14,19 +13,17 @@ namespace Laura
 	class EditorLayer : public ILayer
 	{
 	public:
-		EditorLayer(std::shared_ptr<Renderer> renderer, std::shared_ptr<Asset::ResourcePool> resourcePool, std::shared_ptr<Asset::Manager> assetManager, std::shared_ptr<Profiler> profiler);
+		EditorLayer(std::shared_ptr<Renderer> renderer, 
+					std::shared_ptr<Asset::ResourcePool> resourcePool, 
+					std::shared_ptr<Asset::Manager> assetManager, 
+					std::shared_ptr<Profiler> profiler
+		);
+
 		virtual void onAttach() override;
 		virtual void onDetach() override;
 		virtual void onUpdate() override;
 		virtual void onImGuiRender() override;
 		virtual void onEvent(Event* event) override;
-	
-	private:
-		// EDITOR INDEPENDENT SYSTEMS
-		std::shared_ptr<Renderer> m_Renderer;
-		std::shared_ptr<Asset::ResourcePool> m_ResourcePool;
-		std::shared_ptr<Asset::Manager> m_AssetManager;
-		std::shared_ptr<Profiler> m_Profiler;
 	private:
 		glm::ivec2 prevViewportWindowSize, prevViewportWindowPos, viewportSize;
 		ImVec2 topLeftTextureCoords, bottomRightTextureCoords;
@@ -34,21 +31,18 @@ namespace Laura
 
 	private:
 		// > EDITOR RELATED < //
-		// The Editor Layer owns the Editor State (and deletes it)
 		std::shared_ptr<EditorState> m_EditorState;
-
-		// UI panels
 		SceneHierarchyPanel m_SceneHierarchyPanel;
 		InspectorPanel m_InspectorPanel;
 		ViewportPanel m_ViewportPanel;
 		ThemePanel m_ThemePanel;
 		ProfilerPanel m_ProfilerPanel;
 
-
 		// > ENGINE RELATED < //
-		// The Editor Layer manages the Scenes
-		// It has to manage the LOADING and UNLOADING of scenes
-		// UI panels only work with the active scene
+		std::shared_ptr<Renderer> m_Renderer;
+		std::shared_ptr<Asset::ResourcePool> m_ResourcePool;
+		std::shared_ptr<Asset::Manager> m_AssetManager;
+		std::shared_ptr<Profiler> m_Profiler;
 		std::shared_ptr<Scene> m_Scene;
 	};
 }

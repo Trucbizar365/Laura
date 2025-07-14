@@ -3,13 +3,16 @@
 namespace Laura
 {
 
-	EditorLayer::EditorLayer(std::shared_ptr<Renderer> renderer, std::shared_ptr<Asset::ResourcePool> resourcePool, std::shared_ptr<Asset::Manager> assetManager, std::shared_ptr<Profiler> profiler)
+	EditorLayer::EditorLayer(std::shared_ptr<Renderer> renderer, 
+							 std::shared_ptr<Asset::ResourcePool> resourcePool,
+							 std::shared_ptr<Asset::Manager> assetManager, 
+							 std::shared_ptr<Profiler> profiler)
 		: m_Renderer(renderer),
 		m_ResourcePool(resourcePool),
 		m_AssetManager(assetManager),
 		m_Profiler(profiler),
-		m_EditorState(std::make_shared<EditorState>()),
 
+		m_EditorState(std::make_shared<EditorState>()),
 		m_InspectorPanel(m_EditorState),
 		m_SceneHierarchyPanel(m_EditorState),
 		m_ThemePanel(m_EditorState),
@@ -31,7 +34,6 @@ namespace Laura
 			camera.GetComponent<TagComponent>().Tag = std::string("Camera");
 			camera.AddComponent<TransformComponent>().SetTranslation({ 0.0f, 40.0f, -200.0f });
 			camera.AddComponent<CameraComponent>().fov = 30.0f;
-
 		}
 		{
 			Entity dragon = m_Scene->CreateEntity();
@@ -64,7 +66,6 @@ namespace Laura
 		// The camera's aspect ratio only stretches the image to fit the viewport window correctly
 		m_Renderer->settings.Resolution = glm::uvec2(1200, 800);
 		m_Renderer->settings.ComputeShaderPath = LR_RESOURCES_PATH "Shaders/PathTracing.comp";
-
 		m_Renderer->Init();
 		m_Scene->OnStart();
 	}
@@ -78,45 +79,30 @@ namespace Laura
 
 	// main rendering function called every frame
 	void EditorLayer::onImGuiRender() {
-		// DOCKSPACE
 		ImGui::DockSpaceOverViewport(0, ImGui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode);
-		
-		// MAIN MENU
 		if (ImGui::BeginMainMenuBar()) {
 			if (ImGui::BeginMenu("View")) {
-
-				bool themePanelDisabled = m_EditorState->temp.ThemeSettingsPanelOpen;
+				bool themePanelDisabled = m_EditorState->temp.isThemePanelOpen;
 				if (themePanelDisabled)			 { ImGui::BeginDisabled(); }
-				if (ImGui::MenuItem("Themes"  )) { m_EditorState->temp.ThemeSettingsPanelOpen = true; }
+				if (ImGui::MenuItem("Themes"  )) { m_EditorState->temp.isThemePanelOpen = true; }
 				if (themePanelDisabled)			 { ImGui::EndDisabled(); }
-
-				bool profilerPanelDisabled = m_EditorState->temp.ProfilerPanelOpen;
+				bool profilerPanelDisabled = m_EditorState->temp.isProfilerPanelOpen;
 				if (profilerPanelDisabled)		 { ImGui::BeginDisabled(); }
-				if (ImGui::MenuItem("Profiler")) { m_EditorState->temp.ProfilerPanelOpen = true; }
+				if (ImGui::MenuItem("Profiler")) { m_EditorState->temp.isProfilerPanelOpen = true; }
 				if (profilerPanelDisabled)		 { ImGui::EndDisabled(); }
-
 				ImGui::EndMenu();
 			}
 			ImGui::EndMainMenuBar();
 		}
-		
-		// DEMO WINDOW PANEL
 		bool showDemo = true;
 		ImGui::ShowDemoWindow(&showDemo);
 
-		// SCENE HIERARCHY PANEL
 		m_SceneHierarchyPanel.OnImGuiRender(m_Scene);
-		// INSPECTOR PANEL
 		m_InspectorPanel.OnImGuiRender(m_Scene);
-		// THEMES PANEL
-		if (m_EditorState->temp.ThemeSettingsPanelOpen) { m_ThemePanel.OnImGuiRender(); }
-		
+		m_ThemePanel.OnImGuiRender();
 		// RENDERER RENDERING // -> WILL BE MOVED TO THE RUNTIME LAYER
 		std::shared_ptr<IImage2D> RenderedFrame = m_Renderer->Render(m_Scene.get(), m_ResourcePool.get());
-
-		// VIEWPORT PANEL
 		m_ViewportPanel.OnImGuiRender(RenderedFrame, m_EditorState);
-		// PROFILER PANEL
 		m_ProfilerPanel.OnImGuiRender(m_Profiler);
 	}
 

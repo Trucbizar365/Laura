@@ -7,7 +7,7 @@ namespace Laura {
     void ProfilerPanel::OnImGuiRender(std::shared_ptr<Profiler> profiler) {
         EditorTheme& theme = m_EditorState->temp.editorTheme;
 
-        if (!m_EditorState->temp.ProfilerPanelOpen)
+        if (!m_EditorState->temp.isProfilerPanelOpen)
             return;
 
         if (!profiler->globalTimerSet) {
@@ -19,7 +19,7 @@ namespace Laura {
 
         ImPlot::PushColormap(ImPlotColormap_Deep);
         theme.PushColor(ImGuiCol_Button, EditorCol_Secondary2);
-        ImGui::Begin(ICON_FA_STOPWATCH " Profiler", &m_EditorState->temp.ProfilerPanelOpen);
+        ImGui::Begin(ICON_FA_STOPWATCH " Profiler", &m_EditorState->temp.isProfilerPanelOpen);
 
         const char* playLabel = (profiler->isPaused) ? ICON_FA_PLAY : ICON_FA_PAUSE;
         theme.PopColor();

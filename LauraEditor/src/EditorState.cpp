@@ -2,55 +2,44 @@
 
 namespace Laura
 {
-    bool serializeState(const std::shared_ptr<const EditorState>& state)
-    {
+    bool serializeState(const std::shared_ptr<const EditorState>& state) {
         std::string filepath = EDITOR_STATE_FILE_PATH;
-        if (!filepath.ends_with(".yaml"))
-        {
-            LOG_EDITOR_CRITICAL("Invalid file extension for theme file: {0}", filepath);
-            return false;
-        }
 
         // Create a file and Check for permission issues, non-existent directory, or another I/O error
         std::ofstream fout(filepath);
-        if (!fout.is_open())
-        {
+        if (!fout.is_open()) {
             LOG_EDITOR_CRITICAL("Could not open file for writing: {0}", filepath);
             return false;
         }
 
-        try 
-        {
+        try {
             YAML::Node node;
-            node["doubleConfirmation"] = state->persistent.doubleConfirmEnabled;
-            node["viewportMode"] = state->persistent.viewportMode;
-            node["ThemeFilePath"] = state->persistent.editorThemeFilepath.string();
+            node["doubleConfirmation"]  = state->persistent.doubleConfirmEnabled;
+            node["viewportMode"]        = state->persistent.viewportMode;
+            node["editorThemeFilepath"] = state->persistent.editorThemeFilepath.string();
 
             std::ofstream fout(EDITOR_STATE_FILE_PATH);
             fout << node;
             return true;
         }
-        catch (const YAML::RepresentationException& e)
-        {
+        catch (const YAML::RepresentationException& e) {
             LOG_EDITOR_CRITICAL("YAML representation error (invalid syntax?): {0}, error: {1}", EDITOR_STATE_FILE_PATH, e.what());
             return false;
         }
-        catch (const std::exception& e)
-        {
+        catch (const std::exception& e) {
             LOG_EDITOR_CRITICAL("Unknown error occurred while saving file: {0}, error: {1}", EDITOR_STATE_FILE_PATH, e.what());
             return false;
         }
     }
 
-	bool deserializeState(const std::shared_ptr<EditorState>& state)
-	{
+	bool deserializeState(const std::shared_ptr<EditorState>& state){
         std::string filepath = EDITOR_STATE_FILE_PATH;
 
         try {
 			YAML::Node node = YAML::LoadFile(filepath);
 			state->persistent.doubleConfirmEnabled  = node["doubleConfirmation"].as<bool>();
 			state->persistent.viewportMode          = node["viewportMode"].as<ViewportMode>();
-            state->persistent.editorThemeFilepath   = std::filesystem::path{ node["ThemeFilePath"].as<std::string>() };
+            state->persistent.editorThemeFilepath   = std::filesystem::path{ node["editorThemeFilepath"].as<std::string>() };
 		}
 		catch (const YAML::RepresentationException& e) {
 			LOG_EDITOR_CRITICAL("YAML representation error (make sure the file is valid): {0}, error: {1}", filepath, e.what());

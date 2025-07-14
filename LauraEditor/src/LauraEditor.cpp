@@ -7,28 +7,23 @@
 namespace Laura
 {
 
-	class LauraEditor : public Application
-	{
+	class LauraEditor : public Application {
 	public:
 		LauraEditor()
-			: Application()
-		{
+			: Application() {
 		}
 
-		void init() override
-		{
+		void init() override {
 			IRendererAPI::SetAPI(IRendererAPI::API::OpenGL);
 			Application::init();
 			_LayerStack->PushLayer(std::make_shared<EditorLayer>(_Renderer, _ResourcePool, _AssetManager, _Profiler));
 		}
 
-		~LauraEditor()
-		{
+		~LauraEditor() {
 		}
 	};
 
-	Application* CreateApplication()
-	{
+	Application* CreateApplication() {
 		return new LauraEditor();
 	}
 

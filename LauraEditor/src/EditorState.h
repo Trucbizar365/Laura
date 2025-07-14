@@ -10,26 +10,25 @@
 namespace Laura
 {
 	enum struct ViewportMode {
-		FIT_TO_VIEWPORT,
-		STRETCH_TO_VIEWPORT,
-		CENTERED
+		FitToViewport,
+		StretchToViewport,
+		CenterToViewport
 	};
 
 	struct EditorState {
 		struct {
 			entt::entity selectedEntity = entt::null;
-			bool ViewportSettingsPanelOpen = false;
-			bool ThemeSettingsPanelOpen = false;
-			bool ProfilerPanelOpen = true;
+			bool isViewportSettingsPanelOpen = false;
+			bool isThemePanelOpen = false;
+			bool isProfilerPanelOpen = true;
 			EditorTheme editorTheme;
 		} temp;
 
 		// TO ADD new persistent entries, add them here and update the SERIALIZE and DESERIALIZE functions 
 		// (if the type is custom, also create a YAML::convert template specialization)
-		struct
-		{
+		struct {
 			bool doubleConfirmEnabled = false;
-			ViewportMode viewportMode = ViewportMode::FIT_TO_VIEWPORT;
+			ViewportMode viewportMode = ViewportMode::FitToViewport;
 			std::filesystem::path editorThemeFilepath = "";
 		} persistent;
 	};
@@ -40,26 +39,20 @@ namespace Laura
 }
 
 template<>
-struct YAML::convert<Laura::ViewportMode>
-{
-	static YAML::Node encode(const Laura::ViewportMode& rhs)
-	{
-		switch (rhs)
-		{
-		case Laura::ViewportMode::FIT_TO_VIEWPORT: return Node("FIT_TO_VIEWPORT");
-		case Laura::ViewportMode::STRETCH_TO_VIEWPORT: return Node("STRETCH_TO_VIEWPORT");
-		case Laura::ViewportMode::CENTERED: return Node("CENTERED");
+struct YAML::convert<Laura::ViewportMode> {
+	static YAML::Node encode(const Laura::ViewportMode& rhs) {
+		switch (rhs) {
+			case Laura::ViewportMode::StretchToViewport:	return Node("StretchToViewport");
+			case Laura::ViewportMode::CenterToViewport:		return Node("CenterToViewport");
+			default:										return Node("FitToViewport");
 		}
-		return YAML::Node("FIT_TO_VIEWPORT");
 	}
 
-	static bool decode(const YAML::Node& node, Laura::ViewportMode& rhs)
-	{
+	static bool decode(const YAML::Node& node, Laura::ViewportMode& rhs) {
 		std::string value = node.as<std::string>();
-		if (value == "FIT_TO_VIEWPORT") rhs = Laura::ViewportMode::FIT_TO_VIEWPORT;
-		else if (value == "STRETCH_TO_VIEWPORT") rhs = Laura::ViewportMode::STRETCH_TO_VIEWPORT;
-		else if (value == "CENTERED") rhs = Laura::ViewportMode::CENTERED;
-		else rhs = Laura::ViewportMode::FIT_TO_VIEWPORT;
+		if (value == "StretchToViewport")		{ rhs = Laura::ViewportMode::StretchToViewport; }
+		else if (value == "CenterToViewport")	{ rhs = Laura::ViewportMode::CenterToViewport;	}
+		else									{ rhs = Laura::ViewportMode::FitToViewport;		}
 		return true;
 	}
 };

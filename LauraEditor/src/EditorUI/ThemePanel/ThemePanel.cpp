@@ -6,16 +6,17 @@
 
 namespace Laura
 {
-	void ThemePanel::OnImGuiRender()
-	{
+	void ThemePanel::OnImGuiRender() {
+		if (!m_EditorState->temp.isThemePanelOpen) {
+			return;
+		}
+
 		static std::string errorMessage = "";
 		auto& theme = m_EditorState->temp.editorTheme;
-
 		ImGuiWindowFlags ThemePanelFlags = ImGuiWindowFlags_NoDocking;
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(10, 10));
 		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(3, 3));
-		ImGui::Begin(ICON_FA_BRUSH " Themes", &m_EditorState->temp.ThemeSettingsPanelOpen, ThemePanelFlags);
-
+		ImGui::Begin(ICON_FA_BRUSH " Themes", &m_EditorState->temp.isThemePanelOpen, ThemePanelFlags);
 
 		if (ImGui::BeginTabBar("##tabs", ImGuiTabBarFlags_None)) {
 			float lineHeight = GImGui->Font->FontSize + GImGui->Style.FramePadding.y * 2.0f;
@@ -49,7 +50,6 @@ namespace Laura
 
 				ImGui::SameLine(ImGui::GetContentRegionAvail().x - lineHeight);
 				if (ImGui::Button(ICON_FA_ROTATE, ImVec2(lineHeight, lineHeight))) {
-					// if exists a non default themepath
 					if (m_EditorState->persistent.editorThemeFilepath != "") {
 						auto [success, errMsg] = theme.LoadFromFile(m_EditorState->persistent.editorThemeFilepath);
 						errorMessage = errMsg;
