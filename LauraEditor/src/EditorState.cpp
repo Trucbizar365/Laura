@@ -24,7 +24,7 @@ namespace Laura
             YAML::Node node;
             node["doubleConfirmation"] = state->persistent.doubleConfirmEnabled;
             node["viewportMode"] = state->persistent.viewportMode;
-            node["ThemeFilePath"] = state->persistent.editorThemeFilepath;
+            node["ThemeFilePath"] = state->persistent.editorThemeFilepath.string();
 
             std::ofstream fout(EDITOR_STATE_FILE_PATH);
             fout << node;
@@ -45,36 +45,18 @@ namespace Laura
 	bool deserializeState(const std::shared_ptr<EditorState>& state)
 	{
         std::string filepath = EDITOR_STATE_FILE_PATH;
-        // Check for the correct file extension
-        if (!filepath.ends_with(".yaml"))
-        {
-            LOG_EDITOR_CRITICAL("Invalid file extension for theme file: {0}", filepath);
-            return false;
-        }
 
-        // Check if the file exists and can be opened
-        std::ifstream file(filepath);
-        if (!file.is_open())
-        {
-            LOG_EDITOR_WARN("Could not open file (Does it exit?): {0}", filepath);
-            return false;
-        }
-        file.close();
-
-        try
-		{
+        try {
 			YAML::Node node = YAML::LoadFile(filepath);
-			state->persistent.doubleConfirmEnabled = node["doubleConfirmation"].as<bool>();
-			state->persistent.viewportMode = node["viewportMode"].as<ViewportMode>();
-			state->persistent.editorThemeFilepath = node["ThemeFilePath"].as<std::string>();
+			state->persistent.doubleConfirmEnabled  = node["doubleConfirmation"].as<bool>();
+			state->persistent.viewportMode          = node["viewportMode"].as<ViewportMode>();
+            state->persistent.editorThemeFilepath   = std::filesystem::path{ node["ThemeFilePath"].as<std::string>() };
 		}
-		catch (const YAML::RepresentationException& e)
-		{
+		catch (const YAML::RepresentationException& e) {
 			LOG_EDITOR_CRITICAL("YAML representation error (make sure the file is valid): {0}, error: {1}", filepath, e.what());
 			return false;
 		}
-		catch (const std::exception& e)
-		{
+		catch (const std::exception& e) {
 			LOG_EDITOR_CRITICAL("Unknown error occurred while saving file: {0}, error: {1}", filepath, e.what());
 			return false;
 		}
@@ -84,10 +66,10 @@ namespace Laura
             LOG_EDITOR_INFO("Using default theme");
         }
         else if (!status) {
-            LOG_EDITOR_WARN("Unable to deserialize theme: {0} [Using Default Theme instead]", state->persistent.editorThemeFilepath);
+            LOG_EDITOR_WARN("Unable to deserialize theme: {0} [Using Default Theme instead]", state->persistent.editorThemeFilepath.string());
         }
         else {
-            LOG_EDITOR_INFO("Successfully loaded theme {0}", state->persistent.editorThemeFilepath);
+            LOG_EDITOR_INFO("Successfully loaded theme {0}", state->persistent.editorThemeFilepath.string());
         }
 		return true;
 	}

@@ -1,26 +1,23 @@
 #pragma once
 #include <yaml-cpp/yaml.h>
+#include <filesystem>
+#include <cassert>
 #include "Laura.h"
-#include "EditorUI\EditorTheme\Theme.h"
+#include "EditorTheme.h"
 
 #define EDITOR_STATE_FILE_PATH EDITOR_RESOURCES_PATH "EditorStatePersistent.yaml"
 
 namespace Laura
 {
-	enum struct ViewportMode
-	{
+	enum struct ViewportMode {
 		FIT_TO_VIEWPORT,
 		STRETCH_TO_VIEWPORT,
 		CENTERED
 	};
 
-	struct EditorState
-	{
-		// TO ADD new temporary entries, simply add them here (these are not serialized/deserialized)
-		struct
-		{
+	struct EditorState {
+		struct {
 			entt::entity selectedEntity = entt::null;
-			// panels
 			bool ViewportSettingsPanelOpen = false;
 			bool ThemeSettingsPanelOpen = false;
 			bool ProfilerPanelOpen = true;
@@ -33,16 +30,15 @@ namespace Laura
 		{
 			bool doubleConfirmEnabled = false;
 			ViewportMode viewportMode = ViewportMode::FIT_TO_VIEWPORT;
-			std::string editorThemeFilepath = "";
+			std::filesystem::path editorThemeFilepath = "";
 		} persistent;
 	};
 
 	bool serializeState(const std::shared_ptr<const EditorState>& state);
-	//deserializes derived state (EditorTheme from editorThemeFilepath)
+	// also deserializes derived state (EditorTheme from editorThemeFilepath)
 	bool deserializeState(const std::shared_ptr<EditorState>& state); 
 }
 
-// tell yaml-cpp how to convert the ViewportMode enum to and from a string when serializing and deserializing
 template<>
 struct YAML::convert<Laura::ViewportMode>
 {

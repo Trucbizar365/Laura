@@ -1,5 +1,5 @@
-#include "EditorUI/Inspector/InspectorPanel.h"
-#include "EditorUI/Inspector/TransformUI.h"
+#include "EditorUI/InspectorPanel/InspectorPanel.h"
+#include "EditorUI/InspectorPanel/TransformUI.h"
 
 
 namespace Laura
@@ -76,7 +76,7 @@ namespace Laura
 		ImGui::SetCursorPosX(panelDims.x / 6);
 		bool popupOpened = false;
 		
-		theme.PushColor(ImGuiCol_Button, theme.SECONDARY_2);
+		theme.PushColor(ImGuiCol_Button, EditorCol_Secondary2);
 		float buttonWidth = panelDims.x * (2.0f / 3.0f);
 		if (ImGui::Button("Add Component", { buttonWidth, lineHeight })) {
 			popupOpened = true;

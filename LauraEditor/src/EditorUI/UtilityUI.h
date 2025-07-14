@@ -1,6 +1,6 @@
 #pragma once
 #include "Laura.h"
-#include "EditorUI/EditorTheme/ThemePanel.h"
+#include "EditorUI/ThemePanel/ThemePanel.h"
 #include "EditorState.h"
 
 namespace Laura
@@ -39,7 +39,7 @@ namespace Laura
 			float buttonWidth = panelWidth * 0.5f - 5.0f;
 			ImGui::Dummy({ 5.0f, 0.0f });
 
-			theme.PushColor(ImGuiCol_Button, theme.SECONDARY_2);
+			theme.PushColor(ImGuiCol_Button, EditorCol_Secondary2);
 			{
 				if (ImGui::Button("Yes", ImVec2(buttonWidth, 0))) {
 					onConfirm();

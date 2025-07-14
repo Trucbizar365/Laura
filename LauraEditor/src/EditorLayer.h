@@ -3,12 +3,11 @@
 #include <Laura.h>
 #include "EditorState.h"
 
-/// --- PANELS --- ///
-#include "EditorUI/ViewportPanel.h"
-#include "EditorUI/SceneHierarchyPanel.h"
-#include "EditorUI/Inspector/InspectorPanel.h"
-#include "EditorUI/ProfilerPanel.h"
-#include "EditorUI/EditorTheme/ThemePanel.h"
+#include "EditorUI/ViewportPanel/ViewportPanel.h"
+#include "EditorUI/SceneHierarchyPanel/SceneHierarchyPanel.h"
+#include "EditorUI/InspectorPanel/InspectorPanel.h"
+#include "EditorUI/ProfilerPanel/ProfilerPanel.h"
+#include "EditorUI/ThemePanel/ThemePanel.h"
 
 namespace Laura
 {

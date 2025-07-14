@@ -29,9 +29,9 @@ namespace Laura
 		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{ 0, 0 });
 		{ // adding a scope for clarity
 			ImGui::SetNextItemWidth(lineheight);
-			theme.PushColor(ImGuiCol_Button, theme.SECONDARY_2);
-			theme.PushColor(ImGuiCol_ButtonHovered, theme.SECONDARY_2);
-			theme.PushColor(ImGuiCol_ButtonActive, theme.X_COLOR);
+			theme.PushColor(ImGuiCol_Button, EditorCol_Secondary2);
+			theme.PushColor(ImGuiCol_ButtonHovered, EditorCol_Secondary2);
+			theme.PushColor(ImGuiCol_ButtonActive, EditorCol_X);
 
 				if (ImGui::Button("X", btnSize)) {
 					setVector(glm::vec3(0.0f, vector.y, vector.z));
@@ -45,7 +45,7 @@ namespace Laura
 				ImGui::PopItemWidth();
 
 				ImGui::SetNextItemWidth(lineheight);
-			theme.PushColor(ImGuiCol_ButtonActive, theme.Y_COLOR);
+			theme.PushColor(ImGuiCol_ButtonActive, EditorCol_Y);
 				if (ImGui::Button("Y", btnSize)) {
 					setVector(glm::vec3(vector.x, 0.0f, vector.z));
 				}
@@ -58,7 +58,7 @@ namespace Laura
 				ImGui::PopItemWidth();
 
 				ImGui::SetNextItemWidth(lineheight);
-			theme.PushColor(ImGuiCol_ButtonActive, theme.Z_COLOR);
+			theme.PushColor(ImGuiCol_ButtonActive, EditorCol_Z);
 				if (ImGui::Button("Z", btnSize)) {
 					setVector(glm::vec3(vector.x, vector.y, 0.0f));
 				}

@@ -1,4 +1,4 @@
-#include "EditorUI/SceneHierarchyPanel.h"
+#include "EditorUI/SceneHierarchyPanel/SceneHierarchyPanel.h"
 #include "EditorUI/UtilityUI.h"
 #include <IconsFontAwesome6.h>
 
@@ -47,7 +47,7 @@ namespace Laura
 
             // display selected entity
             if (entityID == m_EditorState->temp.selectedEntity) {
-                theme.PushColor(ImGuiCol_Header, theme.SECONDARY_2);
+                theme.PushColor(ImGuiCol_Header, EditorCol_Secondary2);
 
                 entityChildrenOpen = ImGui::TreeNodeEx((void*)(uint64_t)entityID, flags, tag.c_str());
                 ImGui::SameLine(panelDims.x - lineHeight * 0.5);

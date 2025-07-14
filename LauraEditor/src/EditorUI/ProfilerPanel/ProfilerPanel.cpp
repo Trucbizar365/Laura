@@ -18,7 +18,7 @@ namespace Laura {
         auto t = profiler->timer("ProfilerPanel");
 
         ImPlot::PushColormap(ImPlotColormap_Deep);
-        theme.PushColor(ImGuiCol_Button, theme.SECONDARY_2);
+        theme.PushColor(ImGuiCol_Button, EditorCol_Secondary2);
         ImGui::Begin(ICON_FA_STOPWATCH " Profiler", &m_EditorState->temp.ProfilerPanelOpen);
 
         const char* playLabel = (profiler->isPaused) ? ICON_FA_PLAY : ICON_FA_PAUSE;
@@ -28,7 +28,7 @@ namespace Laura {
             profiler->isPaused = !profiler->isPaused;
         }
 
-        theme.PushColor(ImGuiCol_Button, theme.SECONDARY_2);
+        theme.PushColor(ImGuiCol_Button, EditorCol_Secondary2);
 
         const ScrollingBuffer& buff = profiler->getGlobalBuffer();
         if (!buff.empty()) {
