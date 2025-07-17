@@ -37,6 +37,7 @@ namespace Laura::Asset
 
         auto metadataExtension = std::make_shared<MeshMetadataExtension>();
         metadataExtension->sourcePath = path;
+        metadataExtension->fileSizeInBytes = std::filesystem::file_size(path);
         
         meshBuffer.reserve(meshBuffer.size() + metadata->TriCount);
 
@@ -99,6 +100,7 @@ namespace Laura::Asset
 
         auto metadataExtension = std::make_shared<TextureMetadataExtension>();
         metadataExtension->sourcePath = path;
+        metadataExtension->fileSizeInBytes = std::filesystem::file_size(path);
 
         const size_t totalBytes = metadata->width * metadata->height * metadata->channels;
         textureBuffer.reserve(textureBuffer.size() + totalBytes);

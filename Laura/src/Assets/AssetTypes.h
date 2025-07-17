@@ -44,6 +44,7 @@ namespace Laura::Asset {
     struct MetadataExtension {
         float loadTimeMs = -1;
         std::filesystem::path sourcePath = "";
+        uintmax_t fileSizeInBytes = 0;
         virtual ~MetadataExtension() = default;
     };
 
