@@ -1,11 +1,12 @@
 #include "EditorUI\AssetsPanel\AssetsPanel.h"
+#include <format>
 
 
 namespace Laura {
 	void AssetsPanel::OnImGuiRender() {
         EditorTheme& theme = m_EditorState->temp.editorTheme;
 
-        ImGui::Begin(ICON_FA_CUBES " Assets");
+        ImGui::Begin(ICON_FA_CUBE " Assets");
 
         theme.PushColor(ImGuiCol_Button, EditorCol_Secondary2);
         if (ImGui::Button("Import..")) {
@@ -36,11 +37,9 @@ namespace Laura {
                 ImGui::Indent(manualSpacing);
                 for (const auto& [guid, metadataPair] : m_ResourcePool->Metadata) {
                     const auto& [metadata, metadataExtension] = metadataPair;
-                    const std::filesystem::path& assetPath = metadataExtension->sourcePath;
-                    DrawAssetTile(guid, ICON_FA_CUBE, assetPath.filename().string().c_str());
+                    std::string filename = metadataExtension->sourcePath.filename().string();
+                    DrawAssetTile(guid, filename.c_str());
                     float last_assetTile_x2 = ImGui::GetItemRectMax().x;
-                
-
                     if (last_assetTile_x2 + ImGui::GetItemRectSize().x < column_x2)
                         ImGui::SameLine(0, manualSpacing);
                 }
@@ -48,26 +47,29 @@ namespace Laura {
             }
             ImGui::EndChild();
 
-
             ImGui::TableNextColumn();
-            static LR_GUID m_SelectedAsset = LR_GUID::INVALID;
-            if (m_SelectedAsset != LR_GUID::INVALID) {
-                ImGui::Text("Asset selected.");
-            } else {
-                ImGui::Text("No asset selected.");
-            }
+            DrawAssetMetadata();
             ImGui::EndTable();
         }
         ImGui::End();
     }
 
 
-    void AssetsPanel::DrawAssetTile(LR_GUID guid, const char* icon, const char* title) {
+    void AssetsPanel::DrawAssetTile(LR_GUID guid, const char* title) {
+        // determine the icon
+        std::string icon;
+        if (m_ResourcePool->Get<Asset::MeshMetadata>(guid) != nullptr) {
+            icon = ICON_FA_CUBE;
+        }
+        else if (m_ResourcePool->Get<Asset::TextureMetadata>(guid) != nullptr) {
+            icon = ICON_FA_FILE_IMAGE;
+        }
+
         ImGui::PushID((uint64_t)guid);
         EditorTheme& theme = m_EditorState->temp.editorTheme;
         ImDrawList* drawlist = ImGui::GetWindowDrawList();
 
-        if (ImGui::IsMouseDown(0) && ImGui::IsWindowHovered()) {
+        if (ImGui::IsMouseDown(0) && ImGui::IsWindowHovered() && !ImGui::IsAnyItemHovered()) {
             m_SelectedTile = LR_GUID::INVALID;
 		} 
         // Render the Selectable
@@ -93,14 +95,14 @@ namespace Laura {
             fontSize,    // size in pixels
             FLT_MAX,     // no wrapping
             0.0f,        // extra spacing between glyphs
-            icon         // the text
+            icon.c_str() // the text
         );
 
         ImVec2 iconPos  = {
             tileCoordsTopLeft.x + (tileDims.x - iconDims.x) * 0.5f,
             tileCoordsTopLeft.y + (tileDims.x - iconDims.y) * 0.5f
         };
-        drawlist->AddText(nullptr, BASE_TILE_ICON_FONT_SIZE*m_TileScalar, iconPos, ImGui::GetColorU32(theme[EditorCol_Text1]), icon);
+        drawlist->AddText(nullptr, BASE_TILE_ICON_FONT_SIZE*m_TileScalar, iconPos, ImGui::GetColorU32(theme[EditorCol_Text1]), icon.c_str());
 
         // Render Title with wrapping
         ImVec2 titlePos = {
@@ -125,5 +127,81 @@ namespace Laura {
 
         ImGui::PopID();
     }
+    
+    void AssetsPanel::DrawAssetMetadata() {
+        ImGui::PushTextWrapPos(ImGui::GetCursorPosX() + ImGui::GetContentRegionAvail().x);
+        EditorTheme theme = m_EditorState->temp.editorTheme;
 
+        auto DrawLabelValue = [&theme](const char* label, auto value) {
+            theme.PushColor(ImGuiCol_Text, EditorCol_Text2);
+            ImGui::Text("%s", label);
+            theme.PopColor();
+            ImGui::SameLine(150);
+            ImGui::Text("%s", std::format("{}", value).c_str());
+        };
+        
+        // No asset selected
+        if (m_SelectedTile == LR_GUID::INVALID) {
+            return;
+        }
+
+        // Check (asset missing in resource pool but editor UI displays it)
+        const auto& it = m_ResourcePool->Metadata.find(m_SelectedTile);
+        if (it == m_ResourcePool->Metadata.end()) {
+            theme.PushColor(ImGuiCol_Text, EditorCol_Error);
+            ImGui::Text("[ERROR] Invalid Asset");
+            theme.PopColor();
+            ImGui::PopTextWrapPos();
+            return;
+        }
+
+        // Asset Selected (Draw its info)
+
+        const auto& [metadata, metadataExtension] = it->second;
+        DrawLabelValue("Source Path:", metadataExtension->sourcePath.string());
+        
+        // File size formatter (GB > MB > KB > B)
+        auto ConvertFileSize = [](uintmax_t fileSizeInBytes) -> std::string {
+            constexpr double KB = 1024.0;
+            constexpr double MB = 1024.0 * KB;
+            constexpr double GB = 1024.0 * MB;
+
+            if (fileSizeInBytes >= static_cast<uintmax_t>(GB)) {
+                return std::format("{:.2f} GB", fileSizeInBytes / GB);
+            } else if (fileSizeInBytes >= static_cast<uintmax_t>(MB)) {
+                return std::format("{:.2f} MB", fileSizeInBytes / MB);
+            } else if (fileSizeInBytes >= static_cast<uintmax_t>(KB)) {
+                return std::format("{:.2f} KB", fileSizeInBytes / KB);
+            } else {
+                return std::format("{} Bytes", fileSizeInBytes);
+            }
+        };
+
+        DrawLabelValue("File Size:", ConvertFileSize(metadataExtension->fileSizeInBytes));
+        DrawLabelValue("Load Time:", std::format( "{:.2f} ms", metadataExtension->loadTimeMs ));
+        ImGui::Separator();
+
+        // AssetType specific data
+
+        // Try cast to MeshMetadata
+        if (auto meshMetadata = dynamic_cast<Asset::MeshMetadata*>(metadata.get())) {
+            theme.PushColor(ImGuiCol_Text, EditorCol_Accent1);
+            ImGui::Text("Mesh Metadata");
+            theme.PopColor();
+            DrawLabelValue("Triangle Count", meshMetadata->TriCount);
+            DrawLabelValue("BVH Node Count", meshMetadata->nodeCount);
+        }
+
+        // Try cast to TextureMetadata
+        else if (auto texMetadata = dynamic_cast<Asset::TextureMetadata*>(metadata.get())) {
+            theme.PushColor(ImGuiCol_Text, EditorCol_Accent1);
+            ImGui::Text("Texture Metadata");
+            theme.PopColor();
+            DrawLabelValue("Width:", texMetadata->width);
+            DrawLabelValue("Height:", texMetadata->height);
+            DrawLabelValue("Channels:", texMetadata->channels);
+        }
+
+        ImGui::PopTextWrapPos();
+    }
 }

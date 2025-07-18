@@ -22,5 +22,6 @@
 #include "Scene/Components.h"
 
 #include "Assets/Assets.h"
+#include "Assets/AssetTypes.h"
 
 

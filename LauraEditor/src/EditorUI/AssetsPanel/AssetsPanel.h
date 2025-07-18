@@ -20,7 +20,8 @@ namespace Laura
 		void OnImGuiRender();
 
 	private:
-		void DrawAssetTile(LR_GUID guid, const char* icon, const char* title);
+		void DrawAssetTile(LR_GUID guid, const char* title);
+		void DrawAssetMetadata();
 		
 		std::shared_ptr<EditorState> m_EditorState;
 		std::shared_ptr<Asset::Manager> m_AssetManager;
@@ -31,9 +32,9 @@ namespace Laura
 		const float BASE_TILE_ICON_FONT_SIZE = 0.3f;
 		const float BASE_TILE_TITLE_FONT_SIZE = 13.0f;
 		const float TILE_SCALAR_MIN = 75.0f;
-
 		const float TILE_SCALAR_MAX = 110.0f;
+
 		LR_GUID m_SelectedTile = LR_GUID::INVALID;
-		float m_TileScalar = TILE_SCALAR_MIN;
+		float m_TileScalar = TILE_SCALAR_MAX;
 	};
 }
