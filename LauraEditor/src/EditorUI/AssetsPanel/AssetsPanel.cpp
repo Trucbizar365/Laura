@@ -57,22 +57,15 @@ namespace Laura {
 
 
     void AssetsPanel::DrawAssetTile(LR_GUID guid, const char* title) {
-        // determine the icon
-        std::string icon;
-        if (m_ResourcePool->Get<Asset::MeshMetadata>(guid) != nullptr) {
-            icon = ICON_FA_CUBE;
-        }
-        else if (m_ResourcePool->Get<Asset::TextureMetadata>(guid) != nullptr) {
-            icon = ICON_FA_FILE_IMAGE;
-        }
-
         ImGui::PushID((uint64_t)guid);
         EditorTheme& theme = m_EditorState->temp.editorTheme;
         ImDrawList* drawlist = ImGui::GetWindowDrawList();
-
+        
+        // Deselect on click outside a tile
         if (ImGui::IsMouseDown(0) && ImGui::IsWindowHovered() && !ImGui::IsAnyItemHovered()) {
             m_SelectedTile = LR_GUID::INVALID;
 		} 
+
         // Render the Selectable
         EditorCol_ tileBg = (m_SelectedTile == guid) ? EditorCol_Secondary2 : EditorCol_Primary3;
         theme.PushColor(ImGuiCol_Header, tileBg);
@@ -80,62 +73,69 @@ namespace Laura {
             m_SelectedTile = guid;
         }
         theme.PopColor();
+        
+        // decide on the icon and drag and drop destination based on asset type
+        const char* icon = nullptr;
+        const char* dndPayloadType = nullptr;
+        if (m_ResourcePool->Get<Asset::MeshMetadata>(guid) != nullptr) {
+            icon = ICON_FA_CUBE;
+            dndPayloadType = DNDPayloadTypes::MESH;
+        }
+        else if (m_ResourcePool->Get<Asset::TextureMetadata>(guid) != nullptr) {
+            icon = ICON_FA_FILE_IMAGE;
+            dndPayloadType = DNDPayloadTypes::TEXTURE;
+        }
 
         if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_None)) {
 
-            DNDMeshPayload payload;
-            m_DNDMeshPayload.guid = guid;
-            strncpy(m_DNDMeshPayload.title, title, sizeof(m_DNDMeshPayload.title));
-            m_DNDMeshPayload.title[sizeof(m_DNDMeshPayload.title) - 1] = '\0'; // add null terminator
+                DNDPayload payload;
+                m_DNDPayload.guid = guid;
+                strncpy(m_DNDPayload.title, title, sizeof(m_DNDPayload.title));
+                m_DNDPayload.title[sizeof(m_DNDPayload.title) - 1] = '\0'; // add null terminator
 
-            ImGui::SetDragDropPayload("DNDMeshPayload", &m_DNDMeshPayload, sizeof(DNDMeshPayload));
-            theme.PushColor(ImGuiCol_Text, EditorCol_Text2);
-            ImGui::Text("Dragging: %s", title);
-            theme.PopColor();
-            ImGui::EndDragDropSource();
-        }
+                ImGui::SetDragDropPayload(dndPayloadType, &m_DNDPayload, sizeof(DNDPayload));
+                theme.PushColor(ImGuiCol_Text, EditorCol_Text2);
+                ImGui::Text("%s %s", icon, title);
+                theme.PopColor();
+                ImGui::EndDragDropSource();
+            }
 
         // Render ICON
         ImVec2 tileCoordsTopLeft = ImGui::GetItemRectMin();
         ImVec2 tileCoordsBottomRight = ImGui::GetItemRectMax();
         ImVec2 tileDims = ImGui::GetItemRectSize(); // more precise than { m_TileScalar*BASE_TILE_WH_RATIO, m_TileScalar}
-
         if (m_SelectedTile != guid) {
             drawlist->PushClipRect(tileCoordsTopLeft, tileCoordsBottomRight, true);
         }
-
         ImFont* font     = ImGui::GetFont();
         float   fontSize = BASE_TILE_ICON_FONT_SIZE * m_TileScalar;
         ImVec2 iconDims = font->CalcTextSizeA(
             fontSize,    // size in pixels
             FLT_MAX,     // no wrapping
             0.0f,        // extra spacing between glyphs
-            icon.c_str() // the text
+            icon         // the text
         );
-
         ImVec2 iconPos  = {
             tileCoordsTopLeft.x + (tileDims.x - iconDims.x) * 0.5f,
             tileCoordsTopLeft.y + (tileDims.x - iconDims.y) * 0.5f
         };
-        drawlist->AddText(nullptr, BASE_TILE_ICON_FONT_SIZE*m_TileScalar, iconPos, ImGui::GetColorU32(theme[EditorCol_Text1]), icon.c_str());
+        drawlist->AddText(nullptr, BASE_TILE_ICON_FONT_SIZE*m_TileScalar, iconPos, ImGui::GetColorU32(theme[EditorCol_Text1]), icon);
 
         // Render Title with wrapping
         ImVec2 titlePos = {
             tileCoordsTopLeft.x,
             tileCoordsTopLeft.y + tileDims.y * BASE_TILE_WH_RATIO
         };
-
         float wrapWidth = tileDims.x;
         drawlist->AddText(
-            ImGui::GetFont(),                     // font
-            BASE_TILE_TITLE_FONT_SIZE,                        // font size
-            titlePos,                              // position
-            ImGui::GetColorU32(theme[EditorCol_Text1]),                            // color
-            title,                                // text
-            nullptr,                              // text_end (nullptr = strlen)
-            wrapWidth                             // wrap width
+            ImGui::GetFont(),                           // font
+            BASE_TILE_TITLE_FONT_SIZE,                  // font size
+            titlePos,                                   // position
+            ImGui::GetColorU32(theme[EditorCol_Text1]), // color
+            title,                                      // text
+            nullptr,                                    // text_end (nullptr = strlen)
+            wrapWidth                                   // wrap width
         );
-        
         if (m_SelectedTile != guid) {
             drawlist->PopClipRect();
         }

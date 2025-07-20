@@ -38,6 +38,6 @@ namespace Laura
 		LR_GUID m_SelectedTile = LR_GUID::INVALID;
 		float m_TileScalar = TILE_SCALAR_MAX;
 
-		DNDMeshPayload m_DNDMeshPayload;
+		DNDPayload m_DNDPayload;
 	};
 }

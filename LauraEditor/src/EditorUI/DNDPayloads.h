@@ -5,7 +5,12 @@
 
 namespace Laura {
 
-	struct DNDMeshPayload {
+	namespace DNDPayloadTypes {
+		inline constexpr const char* MESH = "DND_PAYLOAD_MESH";
+		inline constexpr const char* TEXTURE = "DND_PAYLOAD_TEXTURE";
+	}
+
+	struct DNDPayload {
 		LR_GUID guid;
 		char title[256];
 	};

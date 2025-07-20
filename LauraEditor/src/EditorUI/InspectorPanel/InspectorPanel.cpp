@@ -75,9 +75,9 @@ namespace Laura
 				ImGui::Selectable(sourceName.c_str(), true);
 				theme.PopColor();
                 if (ImGui::BeginDragDropTarget()) {
-                    if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("DNDMeshPayload")) {
-						IM_ASSERT(payload->DataSize == sizeof(DNDMeshPayload));
-						auto& meshPayload = *static_cast<DNDMeshPayload*>(payload->Data);
+                    if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(DNDPayloadTypes::MESH)) {
+						IM_ASSERT(payload->DataSize == sizeof(DNDPayload));
+						auto& meshPayload = *static_cast<DNDPayload*>(payload->Data);
 						sourceName = meshPayload.title; // copy char title[256] into std::string
 						entity.GetComponent<MeshComponent>().guid = meshPayload.guid;
                     }
