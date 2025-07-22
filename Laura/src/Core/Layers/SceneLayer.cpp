@@ -22,7 +22,7 @@ namespace Laura
 		// no rendering in this layer
 	}
 
-	void SceneLayer::onEvent(Event* event) {
+	void SceneLayer::onEvent(std::shared_ptr<IEvent> event) {
 		// no events should get here 
 	}
 }

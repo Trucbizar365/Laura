@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Core/Events/events.h"
+#include "Core/Events/IEvent.h"
 #include "Core/IWindow.h"
 
 namespace Laura 
@@ -13,14 +13,7 @@ namespace Laura
 		virtual void onDetach() {};
 		virtual void onUpdate() {};
 		virtual void onImGuiRender() {};
-		virtual void onEvent(Event* event) {};
-
-		inline void setLayerName(const std::string& name) { m_LayerName = name; }
-		inline std::string getLayerName() const { return m_LayerName; }
-
-	protected:
-		IWindow* m_Window = nullptr;
-		std::string m_LayerName = "";
+		virtual void onEvent(std::shared_ptr<IEvent> event) {};
 	};
 
 }

@@ -12,7 +12,7 @@ namespace Laura
 		_Window = IWindow::createWindow();
 		_LayerStack = std::make_shared<LayerStack>();
 		// make window forward events to the layerStack
-		_Window->setEventCallback([this](Event* event) { _LayerStack->dispatchEvent(event); });
+		_Window->setEventCallback([this](std::shared_ptr<IEvent> event) { _LayerStack->dispatchEvent(event); });
 		_ImGuiContextManager = std::make_shared<ImGuiContext>(_Window);
 		_ImGuiContextManager->Init();
 

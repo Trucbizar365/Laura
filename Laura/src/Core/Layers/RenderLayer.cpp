@@ -41,7 +41,7 @@ namespace Laura
 		// no rendering in this layer
 	}
 
-	void RenderLayer::onEvent(Event* event) {
+	void RenderLayer::onEvent(std::shared_ptr<IEvent> event) {
 		// no events should get here 
 	}
 }

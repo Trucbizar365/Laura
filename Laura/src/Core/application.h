@@ -10,7 +10,7 @@
 #include "Renderer/Renderer.h"
 #include "Renderer/IRendererAPI.h"
 #include "Assets/Assets.h"
-#include "Events/Events.h"
+#include "Events/IEvent.h"
 #include "Core/Profiler.h"
 
 namespace Laura 

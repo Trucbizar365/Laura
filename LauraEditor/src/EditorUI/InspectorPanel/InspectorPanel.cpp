@@ -13,7 +13,7 @@ namespace Laura
 		EditorTheme& theme = m_EditorState->temp.editorTheme;
 
 		ImGui::SetNextWindowSizeConstraints({ 350, 50 }, {FLT_MAX, FLT_MAX});
-        if (m_EditorState->temp.selectedEntity == entt::null) {
+        if (scene == nullptr || m_EditorState->temp.selectedEntity == entt::null) {
 			ImGui::Begin(ICON_FA_CIRCLE_INFO " Inspector");
 			ImGui::End();
 			return;

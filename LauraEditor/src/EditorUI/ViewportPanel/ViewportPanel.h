@@ -2,7 +2,6 @@
 
 #include "Laura.h"
 #include "EditorState.h"
-//#include "IconsFontAwesome6.h"
 
 namespace Laura 
 {

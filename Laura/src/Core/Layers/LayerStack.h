@@ -7,7 +7,7 @@ namespace Laura {
 	// passed to layers to only access dispatchEvent() without access to the entire layerstack
 	class IEventDispatcher { 
 	public:
-		virtual void dispatchEvent(Event* event) = 0;
+		virtual void dispatchEvent(std::shared_ptr<IEvent> event) = 0;
 		virtual ~IEventDispatcher() = default;
 	};
 
@@ -21,7 +21,7 @@ namespace Laura {
 
 		void onUpdate();
 		void onImGuiRender();
-		virtual void dispatchEvent(Event* event) override;
+		virtual void dispatchEvent(std::shared_ptr<IEvent> event) override;
 
 	private:
 		std::vector<std::shared_ptr<ILayer>> m_Layers;

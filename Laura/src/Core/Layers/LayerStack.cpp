@@ -24,14 +24,12 @@ namespace Laura
 		}
 	}
 
-	void LayerStack::dispatchEvent(Event* event) {
+	void LayerStack::dispatchEvent(std::shared_ptr<IEvent> event) {
 		for (std::shared_ptr<ILayer> layer : m_Layers) {
 			layer->onEvent(event);
-			/* consuming of events in the future
-			if (event.consumed) {
+			if (event->IsConsumed()) {
 				break;
 			}
-			*/
 		}
 	}
 

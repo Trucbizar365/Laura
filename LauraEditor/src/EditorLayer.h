@@ -15,7 +15,8 @@ namespace Laura
 	class EditorLayer : public ILayer
 	{
 	public:
-		EditorLayer(std::shared_ptr<Renderer> renderer, 
+		EditorLayer(std::weak_ptr<IEventDispatcher> eventDispatcher,
+					std::shared_ptr<Renderer> renderer, 
 					std::shared_ptr<Asset::ResourcePool> resourcePool, 
 					std::shared_ptr<Asset::Manager> assetManager, 
 					std::shared_ptr<Profiler> profiler
@@ -25,14 +26,18 @@ namespace Laura
 		virtual void onDetach() override;
 		virtual void onUpdate() override;
 		virtual void onImGuiRender() override;
-		virtual void onEvent(Event* event) override;
+		virtual void onEvent(std::shared_ptr<IEvent> event) override;
+
 	private:
+		void DrawMainMenu();
+
 		glm::ivec2 prevViewportWindowSize, prevViewportWindowPos, viewportSize;
 		ImVec2 topLeftTextureCoords, bottomRightTextureCoords;
 		float aspectRatio;
 
 	private:
 		// > ENGINE RELATED < //
+		std::weak_ptr<IEventDispatcher> m_EventDispatcher;
 		std::shared_ptr<Renderer> m_Renderer;
 		std::shared_ptr<Asset::ResourcePool> m_ResourcePool;
 		std::shared_ptr<Asset::Manager> m_AssetManager;

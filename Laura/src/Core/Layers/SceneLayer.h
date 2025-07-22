@@ -3,7 +3,7 @@
 
 #include "Scene/Scene.h"
 #include "Core/Layers/ILayer.h"
-#include "Core/Events/Events.h"
+#include "Core/Events/IEvent.h"
 
 namespace Laura
 {
@@ -18,7 +18,7 @@ namespace Laura
 		virtual void onDetach() override;
 		virtual void onUpdate() override;
 		virtual void onImGuiRender() override;
-		virtual void onEvent(Event* event) override;
+		virtual void onEvent(std::shared_ptr<IEvent> event) override;
 	private:
 		std::shared_ptr<Scene> m_Scene;
 	};

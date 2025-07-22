@@ -1,13 +1,16 @@
 #include "EditorLayer.h"
+#include "imgui.h"
 
 namespace Laura
 {
 
-	EditorLayer::EditorLayer(std::shared_ptr<Renderer> renderer,
+	EditorLayer::EditorLayer(std::weak_ptr<IEventDispatcher> eventDispatcher,
+							 std::shared_ptr<Renderer> renderer,
 							 std::shared_ptr<Asset::ResourcePool> resourcePool,
 							 std::shared_ptr<Asset::Manager> assetManager,
 							 std::shared_ptr<Profiler> profiler)
-		:	m_Renderer(renderer),
+		:	m_EventDispatcher(eventDispatcher),
+			m_Renderer(renderer),
 			m_ResourcePool(resourcePool),
 			m_AssetManager(assetManager),
 			m_Profiler(profiler),
@@ -18,9 +21,7 @@ namespace Laura
 			m_ThemePanel(m_EditorState),
 			m_ProfilerPanel(m_EditorState),
 			m_RenderSettingsPanel(m_EditorState),
-			m_AssetsPanel(m_EditorState, m_AssetManager, m_ResourcePool)
-	{
-		setLayerName("EditorLayer");
+			m_AssetsPanel(m_EditorState, m_AssetManager, m_ResourcePool){
 	}
 
 
@@ -56,6 +57,7 @@ namespace Laura
 			meshComponent.guid = m_AssetManager->LoadAsset(EDITOR_RESOURCES_PATH "Models/stanford_bunny_pbr.glb");
 			meshComponent.sourceName = "stanford_bunny_pbr.glb";
 		}
+
 */
 		// Most of these are default arguments (not necessary to specify but showing them for clarity)
 		m_Renderer->settings.skyboxGuid = m_AssetManager->LoadAsset(EDITOR_RESOURCES_PATH "Skyboxes/kloofendal_48d_partly_cloudy_puresky_4k.hdr");
@@ -75,17 +77,30 @@ namespace Laura
 		m_Scene->OnStart();
 	}
 
-	void EditorLayer::onEvent(Event* event) {
+	void EditorLayer::onEvent(std::shared_ptr<IEvent> event) {
+		std::cout << event->GetType() << std::endl;
 	}
+
 
 	void EditorLayer::onUpdate() {
 		m_Scene->OnUpdate();
 	}
 
-	// main rendering function called every frame
-	void EditorLayer::onImGuiRender() {
-		ImGui::DockSpaceOverViewport(0, ImGui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode);
+	void EditorLayer::DrawMainMenu() {
 		if (ImGui::BeginMainMenuBar()) {
+			if (ImGui::BeginMenu("File")) {
+				if (ImGui::BeginMenu("Scene")) {
+					if (ImGui::MenuItem("New"))   {
+
+					}
+					if (ImGui::MenuItem("Close")) {
+
+					}
+					ImGui::EndMenu();
+				}
+				ImGui::EndMenu();
+			}
+
 			if (ImGui::BeginMenu("View")) {
 				bool themePanelDisabled = m_EditorState->temp.isThemePanelOpen;
 				if (themePanelDisabled)			 { ImGui::BeginDisabled(); }
@@ -99,6 +114,13 @@ namespace Laura
 			}
 			ImGui::EndMainMenuBar();
 		}
+	}
+
+	// main rendering function called every frame
+	void EditorLayer::onImGuiRender() {
+		ImGui::DockSpaceOverViewport(0, ImGui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode);
+		DrawMainMenu();
+
 		bool showDemo = true;
 		ImGui::ShowDemoWindow(&showDemo);
 

@@ -4,7 +4,7 @@
 #include "Scene/Scene.h"
 #include "Core/Layers/ILayer.h"
 #include "Core/Layers/LayerStack.h"
-#include "Core/Events/Events.h"
+#include "Core/Events/IEvent.h"
 #include "Renderer/Renderer.h"
 #include "Assets\Assets.h"
 
@@ -24,7 +24,7 @@ namespace Laura
 		// onUpdate RenderLayer dispatches an event with the rendered texture
 		virtual void onUpdate() override;
 		virtual void onImGuiRender() override;
-		virtual void onEvent(Event* event) override;
+		virtual void onEvent(std::shared_ptr<IEvent> event) override;
 
 		inline void SetScene(std::shared_ptr<const Scene> scene) { m_Scene = scene; }
 
