@@ -2,7 +2,7 @@
 
 namespace Laura
 {
-	RenderLayer::RenderLayer(std::weak_ptr<IEventDispatcher> eventDispatcher, 
+	RenderLayer::RenderLayer(std::shared_ptr<IEventDispatcher> eventDispatcher, 
 							 std::shared_ptr<Profiler> profiler,
 							 std::shared_ptr<Asset::ResourcePool> resourcePool)
 		:	m_EventDispatcher(eventDispatcher), 

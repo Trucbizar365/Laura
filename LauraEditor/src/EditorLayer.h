@@ -36,16 +36,17 @@ namespace Laura
 		float aspectRatio;
 
 	private:
-		// > ENGINE RELATED < //
-		std::weak_ptr<IEventDispatcher> m_EventDispatcher;
+		// Engine
+		std::shared_ptr<IEventDispatcher> m_EventDispatcher;
 		std::shared_ptr<Renderer> m_Renderer;
 		std::shared_ptr<Asset::ResourcePool> m_ResourcePool;
 		std::shared_ptr<Asset::Manager> m_AssetManager;
 		std::shared_ptr<Profiler> m_Profiler;
-		std::shared_ptr<Scene> m_Scene;
 
-		// > EDITOR RELATED < //
-		std::shared_ptr<EditorState> m_EditorState;
+		std::weak_ptr<Scene> m_Scene; // editor does not own the scene
+
+		// Editor
+		std::shared_ptr<EditorState> m_EditorState; // shared across panels
 		SceneHierarchyPanel m_SceneHierarchyPanel;
 		InspectorPanel m_InspectorPanel;
 		ViewportPanel m_ViewportPanel;

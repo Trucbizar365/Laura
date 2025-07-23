@@ -29,36 +29,6 @@ namespace Laura
 		deserializeState(m_EditorState);
 		m_AssetManager->SetResourcePool(m_ResourcePool.get());
 
-		//m_Scene = std::make_shared<Scene>();
-		m_Scene = nullptr;
-/*
-		/// STARTING SCENE FOR THE MOMENT DEFINED IN HERE //////////////////////////////////////
-		{
-			Entity camera = m_Scene->CreateEntity();
-			camera.GetComponent<TagComponent>().Tag = std::string("Camera");
-			camera.AddComponent<TransformComponent>().SetTranslation({ 0.0f, 40.0f, -200.0f });
-			camera.AddComponent<CameraComponent>().fov = 30.0f;
-		}
-		{
-			Entity dragon = m_Scene->CreateEntity();
-			dragon.GetComponent<TagComponent>().Tag = "Dragon";
-			dragon.AddComponent<TransformComponent>(); // Add if you want to set translation/scale
-			dragon.AddComponent<MaterialComponent>();
-			auto& meshComponent = dragon.AddComponent<MeshComponent>();
-			meshComponent.guid = m_AssetManager->LoadAsset(EDITOR_RESOURCES_PATH "Models/stanford_dragon_pbr.glb");
-			meshComponent.sourceName = "stanford_dragon_pbr.glb";
-		}
-		{
-			Entity bunny = m_Scene->CreateEntity();
-			bunny.GetComponent<TagComponent>().Tag = "Bunny";
-			bunny.AddComponent<TransformComponent>();
-			bunny.AddComponent<MaterialComponent>();
-			auto& meshComponent = bunny.AddComponent<MeshComponent>();
-			meshComponent.guid = m_AssetManager->LoadAsset(EDITOR_RESOURCES_PATH "Models/stanford_bunny_pbr.glb");
-			meshComponent.sourceName = "stanford_bunny_pbr.glb";
-		}
-
-*/
 		// Most of these are default arguments (not necessary to specify but showing them for clarity)
 		m_Renderer->settings.skyboxGuid = m_AssetManager->LoadAsset(EDITOR_RESOURCES_PATH "Skyboxes/kloofendal_48d_partly_cloudy_puresky_4k.hdr");
 		m_Renderer->settings.raysPerPixel = 1;
@@ -74,27 +44,29 @@ namespace Laura
 		m_Renderer->settings.Resolution = glm::uvec2(1200, 800);
 		m_Renderer->settings.ComputeShaderPath = LR_RESOURCES_PATH "Shaders/PathTracing.comp";
 		m_Renderer->Init();
-		m_Scene->OnStart();
+		if (auto scene = m_Scene.lock()) { scene->OnStart(); }
 	}
 
 	void EditorLayer::onEvent(std::shared_ptr<IEvent> event) {
 		std::cout << event->GetType() << std::endl;
+		if (event->GetType() == EventType::SCENE_LOADED_EVENT) {
+			m_Scene = std::dynamic_pointer_cast<SceneLoadedEvent>(event)->scene;
+		}
 	}
 
 
 	void EditorLayer::onUpdate() {
-		m_Scene->OnUpdate();
 	}
 
 	void EditorLayer::DrawMainMenu() {
 		if (ImGui::BeginMainMenuBar()) {
 			if (ImGui::BeginMenu("File")) {
 				if (ImGui::BeginMenu("Scene")) {
-					if (ImGui::MenuItem("New"))   {
-
+					if (ImGui::MenuItem("New")) {
+						m_EventDispatcher->dispatchEvent(std::make_shared<SceneCreateEvent>());
 					}
 					if (ImGui::MenuItem("Close")) {
-
+						m_EventDispatcher->dispatchEvent(std::make_shared<SceneCloseEvent>());
 					}
 					ImGui::EndMenu();
 				}
@@ -129,14 +101,17 @@ namespace Laura
 		m_ThemePanel.OnImGuiRender();
 		m_AssetsPanel.OnImGuiRender();
 		m_RenderSettingsPanel.OnImGuiRender();
-		// RENDERER RENDERING // -> WILL BE MOVED TO THE RUNTIME LAYER
-		std::shared_ptr<IImage2D> RenderedFrame = m_Renderer->Render(m_Scene.get(), m_ResourcePool.get());
+
+		// RENDERER RENDERING // 
+		std::shared_ptr<IImage2D> RenderedFrame = nullptr;
+		if (auto scene = m_Scene.lock()) {
+			RenderedFrame = m_Renderer->Render(scene.get(), m_ResourcePool.get());
+		}
 		m_ViewportPanel.OnImGuiRender(RenderedFrame, m_EditorState);
 		m_ProfilerPanel.OnImGuiRender(m_Profiler);
 	}
 
 	void EditorLayer::onDetach() {
-		m_Scene->OnShutdown();
 		serializeState(m_EditorState);
 	}
 }

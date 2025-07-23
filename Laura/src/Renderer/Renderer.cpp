@@ -34,7 +34,7 @@ namespace Laura
 		// find a main camera
 		auto cameraView = scene->GetRegistry()->view<TransformComponent, CameraComponent>();
 		for (auto entity : cameraView) {
-			Entity e(entity, scene->GetRegistry());
+			EntityHandle e(entity, scene->GetRegistry());
 
 			if (!e.GetComponent<CameraComponent>().isMain)
 				continue;
@@ -51,7 +51,7 @@ namespace Laura
 		auto renderableView = scene->GetRegistry()->view<TransformComponent, MeshComponent>();
 		pScene->MeshEntityLookupTable.reserve(renderableView.size_hint());
 		for (auto entity : renderableView) {
-			Entity e(entity, scene->GetRegistry());
+			EntityHandle e(entity, scene->GetRegistry());
 
 			LR_GUID& guid = e.GetComponent<MeshComponent>().guid;
 

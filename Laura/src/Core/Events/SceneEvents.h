@@ -16,8 +16,8 @@ namespace Laura
 	};
 
 	struct SceneLoadedEvent : public IEvent {
-		std::shared_ptr<Scene> scene;
-		SceneLoadedEvent(std::shared_ptr<Scene> scene) : scene(std::move(scene)){}
+		std::weak_ptr<Scene> scene; // only the scene layer owns the scene
+		SceneLoadedEvent(std::weak_ptr<Scene> scene) : scene(std::move(scene)){}
 		inline EventType GetType() const override { return EventType::SCENE_LOADED_EVENT; }
 	};
 }

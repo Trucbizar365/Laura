@@ -7,6 +7,8 @@
 #include "Core/Events/IEvent.h"
 #include "Core/Events/KeyEvents.h"
 #include "Core/Events/MouseEvents.h"
+#include "Core/Events/SceneEvents.h"
+#include "Core/Events/RenderEvents.h"
 
 #include "Core/GUID.h"
 #include "Core/Profiler.h"

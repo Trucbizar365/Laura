@@ -22,7 +22,7 @@ namespace Laura
 		_RendererAPI = IRendererAPI::Create();
 		_Renderer = std::make_shared<Renderer>(_Profiler);
 
-		_SceneLayer = std::make_shared<SceneLayer>();
+		_SceneLayer = std::make_shared<SceneLayer>(_LayerStack);
 		_RenderLayer = std::make_shared<RenderLayer>(_LayerStack, _Profiler, _ResourcePool);
 
 		_RenderLayer->SetScene(_SceneLayer->GetScene());

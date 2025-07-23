@@ -13,7 +13,7 @@ namespace Laura
 
 	class RenderLayer : public ILayer {
 	public:
-		RenderLayer(std::weak_ptr<IEventDispatcher> eventDispatcher,
+		RenderLayer(std::shared_ptr<IEventDispatcher> eventDispatcher,
 					std::shared_ptr<Profiler> profiler, // will go in the future
 					std::shared_ptr<Asset::ResourcePool>
 		);
@@ -29,7 +29,7 @@ namespace Laura
 		inline void SetScene(std::shared_ptr<const Scene> scene) { m_Scene = scene; }
 
 	private:
-		std::weak_ptr<IEventDispatcher> m_EventDispatcher;
+		std::shared_ptr<IEventDispatcher> m_EventDispatcher;
 		std::shared_ptr<Profiler> m_Profiler;
 		std::shared_ptr<Renderer> m_Renderer;
 		std::shared_ptr<const Asset::ResourcePool> m_ResourcePool;
