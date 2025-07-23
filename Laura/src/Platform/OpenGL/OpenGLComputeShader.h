@@ -3,7 +3,8 @@
 #include "lrpch.h"
 #include "renderer/IComputeShader.h"
 
-namespace Laura {
+namespace Laura 
+{
 
 	class OpenGLComputeShader : public IComputeShader {
 	public:
@@ -31,5 +32,4 @@ namespace Laura {
 		void CreateShader();
 		std::string ParseShaderFile();
 	};
-
 }

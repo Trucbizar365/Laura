@@ -2,8 +2,8 @@
 
 namespace Laura 
 {
-	void Application::init()
-	{
+
+	void Application::init() {
 		Log::Init();
 		LOG_ENGINE_INFO("C++ version: {0}", __cplusplus);
 		
@@ -31,7 +31,7 @@ namespace Laura
 
 	void Application::run() {
 		init();
-		// <ENGINE MAINLOOP> //
+		// mainloop
 		while (!_Window->shouldClose()) {
 			auto t = _Profiler->globalTimer("GLOBAL");
 			{

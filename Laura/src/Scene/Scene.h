@@ -1,13 +1,13 @@
 #pragma once
-#include "entt/entt.hpp"
 
+#include "entt/entt.hpp"
 #include "Scene/Entity.h"
 #include "Scene/Components.h"
 
 namespace Laura
 {
-	class Scene
-	{
+
+	class Scene {
 	public:
 		Scene();
 		~Scene();

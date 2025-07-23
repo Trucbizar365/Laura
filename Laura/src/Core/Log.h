@@ -1,13 +1,12 @@
 #pragma once
 
 #include "lrpch.h"
-
 #include "spdlog/spdlog.h"
 
-namespace Laura {
+namespace Laura 
+{
 
-	class Log
-	{
+	class Log {
 	public:
 		static void Init();
 

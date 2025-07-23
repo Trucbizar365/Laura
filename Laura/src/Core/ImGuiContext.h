@@ -3,10 +3,10 @@
 #include "Core/Layers/ILayer.h"
 #include "Core/IWindow.h"
 
-namespace Laura {
+namespace Laura 
+{
 
-	class ImGuiContext
-	{
+	class ImGuiContext {
 	public:
 		ImGuiContext(std::shared_ptr<IWindow> window);
 		virtual ~ImGuiContext();

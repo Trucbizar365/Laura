@@ -3,7 +3,9 @@
 #include "lrpch.h"
 #include "Core/Layers/ILayer.h"
 
-namespace Laura {
+namespace Laura 
+{
+
 	// passed to layers to only access dispatchEvent() without access to the entire layerstack
 	class IEventDispatcher { 
 	public:

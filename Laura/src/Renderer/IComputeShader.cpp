@@ -2,15 +2,17 @@
 #include "Renderer/IRendererAPI.h"
 #include "platform/OpenGL/OpenGLComputeShader.h"
 
-namespace Laura {
+namespace Laura 
+{
 
-	std::shared_ptr<IComputeShader> IComputeShader::Create(const std::string& filepath, const glm::uvec3& workGroupSizes)
-	{
-		switch (IRendererAPI::GetAPI())
-		{
-		case IRendererAPI::API::None: LOG_ENGINE_CRITICAL("RendererAPI::None - UNSUPPORTED"); return nullptr;
-		case IRendererAPI::API::OpenGL: return std::make_shared<OpenGLComputeShader>(filepath, workGroupSizes);
+	std::shared_ptr<IComputeShader> IComputeShader::Create(const std::string& filepath, const glm::uvec3& workGroupSizes) {
+		switch (IRendererAPI::GetAPI()) {
+			case IRendererAPI::API::None: 
+				LOG_ENGINE_CRITICAL("RendererAPI::None - UNSUPPORTED"); 
+				return nullptr;
+			case IRendererAPI::API::OpenGL: 
+				return std::make_shared<OpenGLComputeShader>(filepath, workGroupSizes);
 		}
+		return nullptr;
 	}
-
 }

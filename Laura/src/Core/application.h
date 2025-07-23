@@ -1,7 +1,6 @@
 #pragma once
 
 #include "lrpch.h"
-
 #include "Core/IWindow.h"
 #include "Core/Layers/LayerStack.h"
 #include "Core/Layers/SceneLayer.h"
@@ -22,6 +21,7 @@ namespace Laura
         //Application(WindowProps windowProps);
         virtual ~Application() = default;
         void run();
+        
     protected:
         std::shared_ptr<IWindow>        _Window;
 

@@ -4,6 +4,7 @@
 
 namespace Laura 
 {
+
 	enum struct EventType {
 		// InputEvents.h
 		KEY_PRESS_EVENT,

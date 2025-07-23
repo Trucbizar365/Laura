@@ -1,14 +1,13 @@
 #pragma once
 
 #include <GLFW/glfw3.h>
-
 #include "core/IWindow.h"
 #include "platform/OpenGL/OpenGLContext.h"
 
-namespace Laura {
+namespace Laura 
+{
 
-	class GLFWWindowIMPL : public IWindow
-	{
+	class GLFWWindowIMPL : public IWindow {
 	public:
 		GLFWWindowIMPL(const WindowProps& windowProps);
 		~GLFWWindowIMPL();
@@ -29,10 +28,7 @@ namespace Laura {
 		std::pair<float, float> getMousePosition() override;
 		bool shouldClose() override;
 
-
 		void setEventCallback(const std::function<void(std::shared_ptr<IEvent>)>& callback) override;
-
-
 
 	private:
 		GLFWwindow* m_NativeWindow;
@@ -48,5 +44,4 @@ namespace Laura {
 		static void GLFWMouseButtonCallback(GLFWwindow* window, int button, int action, int mods);
 		static void GLFWScrollCallback(GLFWwindow* window, double xoffset, double yoffset);
 	};
-
 }

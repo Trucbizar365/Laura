@@ -1,22 +1,20 @@
 #pragma once
-#include "Core/GUID.h"
 
+#include "Core/GUID.h"
 #include <glm/glm.hpp>
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/euler_angles.hpp>
 
-
 namespace Laura
 {
-	struct GUIDComponent
-	{
+
+	struct GUIDComponent {
 		LR_GUID guid;
 	};
 
-	struct TagComponent
-	{
+	struct TagComponent {
 		TagComponent() = default;
 		TagComponent(const std::string& tag)
 			: Tag(tag) {};
@@ -24,8 +22,7 @@ namespace Laura
 		std::string Tag;
 	};
 
-	struct TransformComponent
-	{
+	struct TransformComponent {
 	public:
 		TransformComponent();
 		operator glm::mat4() const;
@@ -54,22 +51,20 @@ namespace Laura
 		glm::vec3 m_Scale;
 	};
 
-	struct MeshComponent
-	{
+	struct MeshComponent {
 		LR_GUID guid = LR_GUID::INVALID;
 		std::string sourceName = "";
 	};
 
-	struct MaterialComponent
-	{
+	struct MaterialComponent {
 		LR_GUID guid = LR_GUID::INVALID;
 	};
 
-	struct CameraComponent
-	{
+	struct CameraComponent {
 		CameraComponent() = default;
 		CameraComponent(float fov)
-			: fov(fov) {};
+			: fov(fov) {
+		};
 		
 		bool isMain{ false };
 		float fov{ 90.0f };

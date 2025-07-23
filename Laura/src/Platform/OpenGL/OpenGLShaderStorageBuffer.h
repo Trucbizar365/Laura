@@ -6,8 +6,7 @@
 namespace Laura
 {
 
-	class OpenGLShaderStorageBuffer : public IShaderStorageBuffer
-	{
+	class OpenGLShaderStorageBuffer : public IShaderStorageBuffer {
 	public:
 		OpenGLShaderStorageBuffer(uint32_t size, uint32_t bindingPoint, BufferUsageType type);
 
@@ -24,5 +23,4 @@ namespace Laura
 		uint32_t m_ID, m_Size, m_BindingPoint;
 		BufferUsageType m_UsageType;
 	};
-
 }

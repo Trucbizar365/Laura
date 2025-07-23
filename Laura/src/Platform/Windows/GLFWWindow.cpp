@@ -5,7 +5,8 @@
 #include "Core/Events/MouseEvents.h"
 #include "core/Log.h"
 
-namespace Laura {
+namespace Laura 
+{
 
 	GLFWWindowIMPL::GLFWWindowIMPL(const WindowProps& windowProps)
 		: m_WindowProps(windowProps) {

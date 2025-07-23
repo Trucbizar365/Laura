@@ -1,29 +1,25 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
-
 #include "platform/OpenGL/OpenGLContext.h"
 #include "core/Log.h"
 
-namespace Laura {
+namespace Laura 
+{ 
 
-	void OpenGLContext::setWindowHints()
-	{
+	void OpenGLContext::setWindowHints() {
 		glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
 		glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
 		glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 	}
 
 	OpenGLContext::OpenGLContext(GLFWwindow* window)
-		: m_NativeWindow(window)
-	{
+		: m_NativeWindow(window){
 	}
 
-	void OpenGLContext::init()
-	{
+	void OpenGLContext::init() {
 		glfwMakeContextCurrent(m_NativeWindow);
 
-		if (glewInit() != GLEW_OK)
-		{
+		if (glewInit() != GLEW_OK) {
 			LOG_ENGINE_CRITICAL("[ERROR] Failed to initialize GLEW!");
 		}
 
@@ -31,8 +27,7 @@ namespace Laura {
 		LOG_ENGINE_INFO("(OpenGLContext.cpp) Successfully initialized OpenGL context and GLEW!");
 	}
 
-	void OpenGLContext::swapBuffers()
-	{
+	void OpenGLContext::swapBuffers() {
 		glfwSwapBuffers(m_NativeWindow);
 	}
 

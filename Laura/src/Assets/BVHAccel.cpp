@@ -2,14 +2,13 @@
 
 namespace Laura::Asset
 {
+
 	BVHAccel::BVHAccel(const std::vector<Triangle>& meshBuffer, const uint32_t firstTriIdx, const uint32_t triCount) 
 	: m_MeshBuff(meshBuffer), m_FirstTriIdx(firstTriIdx), m_TriCount(triCount) {
 		m_Centroids = PrecomputeCentroids();
 	}
 
-
-	void BVHAccel::Build(std::vector<Node>& nodeBuffer, std::vector<uint32_t>& indexBuffer, uint32_t& firstNodeIdx, uint32_t& nodeCount)
-	{
+	void BVHAccel::Build(std::vector<Node>& nodeBuffer, std::vector<uint32_t>& indexBuffer, uint32_t& firstNodeIdx, uint32_t& nodeCount) {
 		const size_t N = m_TriCount; // for convenience
 
 		size_t oldSize = nodeBuffer.size();
@@ -23,8 +22,9 @@ namespace Laura::Asset
 
 		m_NodeBuff = &nodeBuffer[firstNodeIdx];
 		m_IdxBuff = &indexBuffer[m_FirstTriIdx];
-		for (int i = 0; i < N; i++) 
+		for (int i = 0; i < N; i++) {
 			m_IdxBuff[i] = i;
+		}
 
 		m_NodesUsed = 0;
 		Node& root = m_NodeBuff[m_NodesUsed++];
@@ -38,14 +38,12 @@ namespace Laura::Asset
 		nodeBuffer.resize(oldSize + m_NodesUsed); // Erase the unused space ( if we used less than 2N-1 nodes)
 	}
 
-	void BVHAccel::UpdateAABB(Node& node)
-	{
+	void BVHAccel::UpdateAABB(Node& node) {
 		node.min = glm::vec3( FLT_MAX );
 		node.max = glm::vec3( -FLT_MAX );
 
 		// iterate over primitives contained by the Node
-		for (size_t i = 0; i < node.triCount; i++) // every 3rd vertex is new triangle
-		{
+		for (size_t i = 0; i < node.triCount; i++) { // every 3rd vertex is new triangle
 			const Triangle& t = m_MeshBuff[m_FirstTriIdx + m_IdxBuff[node.leftChild_Or_FirstTri + i]];
 			// find minimum & maximum coordinates
 			node.min = glm::min(node.min, glm::vec3(t.v0));
@@ -57,36 +55,38 @@ namespace Laura::Asset
 		}
 	}
 
-	void BVHAccel::SubDivide(Node& node)
-	{
+	void BVHAccel::SubDivide(Node& node) {
 		// Found Leaf Node
-		if (node.triCount <= 2)
+		if (node.triCount <= 2) {
 			return;
-		
+		}
+
 		// naive splitting
 		glm::vec3 AABB = node.max - node.min;
 		int splitAxis = 0;
-		if (AABB.y > AABB.x) splitAxis = 1;
-		if (AABB.z > AABB.y) splitAxis = 2;
+		if (AABB.y > AABB.x) { splitAxis = 1; }
+		if (AABB.z > AABB.y) { splitAxis = 2; }
 		double splitPoint = node.min[splitAxis] + AABB[splitAxis] * 0.5;
 
 		uint32_t leftPtr = node.leftChild_Or_FirstTri; // points to the firstTri in node's triangles
 		uint32_t rightPtr = node.leftChild_Or_FirstTri + node.triCount - 1; // points to the lastTri
 
 		// partition/sort the triangles (quicksort partition)
-		while (leftPtr <= rightPtr)
-		{
-			if (m_Centroids[m_IdxBuff[leftPtr]][splitAxis] < splitPoint) 
+		while (leftPtr <= rightPtr) {
+			if (m_Centroids[m_IdxBuff[leftPtr]][splitAxis] < splitPoint) {
 				leftPtr++;
-			else 
+			}
+			else {
 				Swap(leftPtr, rightPtr--); // swap and decrement right
+			}
 		}
 
 		int leftTriCount = leftPtr - node.leftChild_Or_FirstTri; // distance between firstTri and partition point
 		
 		// couldn't partition
-		if (leftTriCount == 0 || leftTriCount == node.triCount) 
+		if (leftTriCount == 0 || leftTriCount == node.triCount) {
 			return;
+		}
 
 		// find indices for the new child nodes
 		int leftChildIdx = m_NodesUsed++;

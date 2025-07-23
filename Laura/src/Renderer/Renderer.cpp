@@ -3,22 +3,21 @@
 
 namespace Laura 
 {
-	void Renderer::Init()
-	{
+
+	void Renderer::Init() {
 		m_SettingsUBO = IUniformBuffer::Create(48, 1, BufferUsageType::DYNAMIC_DRAW);
 		m_CameraUBO = IUniformBuffer::Create(80, 0, BufferUsageType::DYNAMIC_DRAW);
 	}
 
-	std::shared_ptr<IImage2D> Renderer::Render(const Scene* scene, const Asset::ResourcePool* resourcePool)
-	{
+	std::shared_ptr<IImage2D> Renderer::Render(const Scene* scene, const Asset::ResourcePool* resourcePool) {
 		auto t = m_Profiler->timer("Renderer::Render()");
 
 		const auto pScene = Parse(scene, resourcePool);
-		if (!pScene) // Most likely scene missing camera
+		if (!pScene) { // Most likely scene missing camera
 			return nullptr;
+		}
 		SetupGPUResources(pScene, resourcePool);
 		Draw();
-
 		return m_Frame;
 	}
 
@@ -36,8 +35,9 @@ namespace Laura
 		for (auto entity : cameraView) {
 			EntityHandle e(entity, scene->GetRegistry());
 
-			if (!e.GetComponent<CameraComponent>().isMain)
+			if (!e.GetComponent<CameraComponent>().isMain) {
 				continue;
+			}
 
 			pScene->hasValidCamera = true;
 			pScene->CameraTransform = e.GetComponent<TransformComponent>().GetMatrix();
@@ -45,8 +45,9 @@ namespace Laura
 			break;
 		}
 
-		if (!pScene->hasValidCamera)
+		if (!pScene->hasValidCamera) {
 			return nullptr;
+		}
 
 		auto renderableView = scene->GetRegistry()->view<TransformComponent, MeshComponent>();
 		pScene->MeshEntityLookupTable.reserve(renderableView.size_hint());
@@ -56,10 +57,11 @@ namespace Laura
 			LR_GUID& guid = e.GetComponent<MeshComponent>().guid;
 
 			std::shared_ptr<Asset::MeshMetadata> metadata = resourcePool->Get<Asset::MeshMetadata>(guid);
-			if (!metadata)
+			if (!metadata) {
 				continue;
+			}
 
-			pScene->MeshEntityLookupTable.emplace_back(
+			pScene->MeshEntityLookupTable.emplace_back (
 				metadata->firstTriIdx,
 				metadata->TriCount,
 				metadata->firstNodeIdx,
@@ -72,14 +74,14 @@ namespace Laura
 
 	// returns false if error occured, else true
 	// assumes a valid pScene
-	bool Renderer::SetupGPUResources(std::shared_ptr<const ParsedScene> pScene, const Asset::ResourcePool* resourcePool)
-	{
+	bool Renderer::SetupGPUResources(std::shared_ptr<const ParsedScene> pScene, const Asset::ResourcePool* resourcePool) {
 		m_Profiler->timer("Renderer::SetupGPUResources()");
 
 		if (settings.ComputeShaderPath != m_Cache.ActiveShaderPath) {
 			m_Shader = IComputeShader::Create(settings.ComputeShaderPath.string(), glm::uvec3(1)); // work group sizes set in Draw() before shader->dispatch() 
-			if (!m_Shader)
+			if (!m_Shader) {
 				return false;
+			}
 			m_Shader->Bind();
 			m_Cache.ActiveShaderPath = settings.ComputeShaderPath;
 		}
@@ -89,9 +91,7 @@ namespace Laura
 			m_Cache.Resolution = settings.Resolution;
 		}
 
-
 		m_Cache.AccumulatedFrames = (settings.ShouldAccumulate) ? m_Cache.AccumulatedFrames++ : 0;
-
 		{
 			// SETTINGS
 			uint32_t meshEntityCount = pScene->MeshEntityLookupTable.size();
@@ -112,9 +112,8 @@ namespace Laura
 			m_CameraUBO->AddData(64, sizeof(float), &pScene->CameraFocalLength);
 			m_CameraUBO->Unbind();
 		}
-
-		// ENTITY LOOKUP TABLE - updated every frame (transforms...)
 		{
+			// ENTITY LOOKUP TABLE - updated every frame (transforms...)
 			uint32_t sizeBytes = sizeof(MeshEntityHandle) * pScene->MeshEntityLookupTable.size();
 			m_MeshEntityLookupSSBO = IShaderStorageBuffer::Create(sizeBytes, 4, BufferUsageType::DYNAMIC_DRAW);
 			m_MeshEntityLookupSSBO->Bind();
@@ -127,8 +126,8 @@ namespace Laura
 		static uint32_t prevNodeBuffVersion = 0;
 		static uint32_t prevIndexBuffVersion = 0;
 
-		// TEXTURE BUFFER
 		{
+			// TEXTURE BUFFER
     		uint32_t currTexBuffVersion = resourcePool->GetUpdateVersion(Asset::ResourceType::TextureBuffer);
     		if (prevTexBuffVersion != currTexBuffVersion) {
         		prevTexBuffVersion = currTexBuffVersion;
@@ -186,8 +185,7 @@ namespace Laura
 		}
 	}
 
-	void Renderer::Draw()
-	{
+	void Renderer::Draw() {
 		auto t = m_Profiler->timer("Renderer::Draw()");
 		m_Shader->Bind();
 		m_Shader->setWorkGroupSizes(

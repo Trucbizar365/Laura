@@ -1,11 +1,12 @@
 #pragma once
+
 #include "renderer/IRenderingContext.h"
 #include "core/IWindow.h"
 
-namespace Laura {
+namespace Laura 
+{
 
-	class OpenGLContext : public IRenderingContext
-	{
+	class OpenGLContext : public IRenderingContext {
 	public:
 		static void setWindowHints();
 
@@ -15,5 +16,4 @@ namespace Laura {
 	private:
 		GLFWwindow* m_NativeWindow;
 	};
-
 }

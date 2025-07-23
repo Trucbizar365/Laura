@@ -4,9 +4,11 @@
 
 namespace Laura 
 {
+
 	using KeyCode = uint16_t;
 	namespace Key
 	{
+
 		enum : KeyCode {
 			// From glfw3.h
 			SPACE = 32,
