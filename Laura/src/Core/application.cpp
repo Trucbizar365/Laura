@@ -2,8 +2,8 @@
 
 namespace Laura 
 {
-	void Application::init()
-	{
+
+	void Application::init() {
 		Log::Init();
 		LOG_ENGINE_INFO("C++ version: {0}", __cplusplus);
 		
@@ -13,8 +13,6 @@ namespace Laura
 		_LayerStack = std::make_shared<LayerStack>();
 		// make window forward events to the layerStack
 		_Window->setEventCallback([this](std::shared_ptr<IEvent> event) { _LayerStack->dispatchEvent(event); });
-		_ImGuiContextManager = std::make_shared<ImGuiContext>(_Window);
-		_ImGuiContextManager->Init();
 
 		_ResourcePool = std::make_shared<Asset::ResourcePool>();
 		_AssetManager = std::make_shared<Asset::Manager>();
@@ -31,7 +29,7 @@ namespace Laura
 
 	void Application::run() {
 		init();
-		// <ENGINE MAINLOOP> //
+		// mainloop
 		while (!_Window->shouldClose()) {
 			auto t = _Profiler->globalTimer("GLOBAL");
 			{
@@ -42,9 +40,7 @@ namespace Laura
 			_LayerStack->onUpdate();
 			{
 				auto t = _Profiler->timer("LayerStack::onImGuiRender()");
-				_ImGuiContextManager->BeginFrame();
 				_LayerStack->onImGuiRender(); // all of the rendering onto the screen happens here
-				_ImGuiContextManager->EndFrame();
 			}
 		}
 		shutdown();

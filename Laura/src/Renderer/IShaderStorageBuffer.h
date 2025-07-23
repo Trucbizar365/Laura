@@ -10,8 +10,7 @@ namespace Laura
 	// DYNAMIC_DRAW: The data store contents will be modified repeatedly and used many times.
 	#ifndef BUFFER_USAGE_TYPE_STRUCT
 	#define BUFFER_USAGE_TYPE_STRUCT
-		enum class BufferUsageType
-		{
+		enum class BufferUsageType {
 			STATIC_DRAW = 0,
 			DYNAMIC_DRAW = 1
 		};

@@ -2,13 +2,12 @@
 #pragma once
 
 #include "lrpch.h"
-
 #include "Assets/AssetTypes.h"
 
 namespace Laura::Asset 
 {
-	class BVHAccel
-	{
+
+	class BVHAccel {
 	public:
 		// according to std430 - 32 bytes (allows packing of vec3, uint into 16 bytes)
 		struct Node {

@@ -3,7 +3,9 @@
 
 namespace Laura
 {
+
 	EditorLayer::EditorLayer(std::weak_ptr<IEventDispatcher> eventDispatcher,
+							 std::shared_ptr<ImGuiContext> imGuiContext,
 							 std::shared_ptr<Asset::ResourcePool> resourcePool,
 							 std::shared_ptr<Asset::Manager> assetManager,
 							 std::shared_ptr<Profiler> profiler)
@@ -13,6 +15,7 @@ namespace Laura
 			m_Profiler(profiler),
 
 			m_EditorState(std::make_shared<EditorState>()),
+			m_ImGuiContext(imGuiContext),
 			m_InspectorPanel(m_EditorState),
 			m_SceneHierarchyPanel(m_EditorState),
 			m_ThemePanel(m_EditorState),
@@ -70,23 +73,25 @@ namespace Laura
 		}
 	}
 
-	// main rendering function called every frame
 	void EditorLayer::onImGuiRender() {
-		ImGui::DockSpaceOverViewport(0, ImGui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode);
-		DrawMainMenu();
+		m_ImGuiContext->BeginFrame();
+		{
+			ImGui::DockSpaceOverViewport(0, ImGui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode);
+			DrawMainMenu();
 
-		bool showDemo = true;
-		ImGui::ShowDemoWindow(&showDemo);
-		m_SceneHierarchyPanel.OnImGuiRender(m_Scene);
-		m_InspectorPanel.OnImGuiRender(m_Scene);
-		m_ThemePanel.OnImGuiRender();
-		m_AssetsPanel.OnImGuiRender();
-		m_RenderSettingsPanel.OnImGuiRender();
-		m_ViewportPanel.OnImGuiRender(m_LatestFrameRender, m_EditorState);
-		m_ProfilerPanel.OnImGuiRender(m_Profiler);
+			bool showDemo = true;
+			ImGui::ShowDemoWindow(&showDemo);
+			m_SceneHierarchyPanel.OnImGuiRender(m_Scene);
+			m_InspectorPanel.OnImGuiRender(m_Scene);
+			m_ThemePanel.OnImGuiRender();
+			m_AssetsPanel.OnImGuiRender();
+			m_RenderSettingsPanel.OnImGuiRender();
+			m_ViewportPanel.OnImGuiRender(m_LatestFrameRender, m_EditorState);
+			m_ProfilerPanel.OnImGuiRender(m_Profiler);
+		}
+		m_ImGuiContext->EndFrame();
 	}
 
 	void EditorLayer::onUpdate() {
 	}
-
 }

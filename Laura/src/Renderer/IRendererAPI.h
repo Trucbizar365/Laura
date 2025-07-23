@@ -1,20 +1,18 @@
 #pragma once
 
 #include "lrpch.h"
-
 #include "renderer/IComputeShader.h"
 
-namespace Laura {
+namespace Laura 
+{
 
-	class IRendererAPI
-	{
+	class IRendererAPI {
 	public:
-		enum class API
-		{
+		enum class API {
 			None = 0,
 			OpenGL = 1,
-			//Vulkan = 2, // !!! Not IMPLEMENTED YET !!!
 		};
+
 	public:
 		virtual void Init() = 0;
 		virtual void Clear(const glm::vec4& color) = 0;
@@ -28,5 +26,4 @@ namespace Laura {
 	private:
 		static API s_API;
 	};
-
 }

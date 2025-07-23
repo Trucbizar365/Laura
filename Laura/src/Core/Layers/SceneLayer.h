@@ -4,7 +4,6 @@
 #include "Core/Layers/ILayer.h"
 #include "Core/Layers/LayerStack.h"
 #include "Core/Events/IEvent.h"
-
 #include "Scene/Scene.h"
 
 namespace Laura

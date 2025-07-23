@@ -4,8 +4,8 @@
 
 namespace Laura
 {
-	class ScrollingBuffer
-	{
+
+	class ScrollingBuffer {
 	public:
 		ScrollingBuffer(size_t capacity) : m_Capacity(capacity) {
 			m_Data.resize(2 * m_Capacity);
@@ -69,11 +69,9 @@ namespace Laura
 
 
 
-	class Profiler
-	{
+	class Profiler {
 	public:
-		class ScopeTimer
-		{
+		class ScopeTimer {
 		public:
 			ScopeTimer(Profiler* profiler, const std::string& label);
 			~ScopeTimer();
@@ -101,7 +99,7 @@ namespace Laura
 		}
 
 		inline void clear() {
-			for (auto& it : m_Data){
+			for (auto& it : m_Data) {
 				it.second.clear();
 			}
 		}
@@ -116,7 +114,5 @@ namespace Laura
 		std::string m_GlobalLabel = "GLOBAL"; // default
 		std::unordered_map<std::string, ScrollingBuffer> m_Data;
 		const size_t m_Capacity;
-		
 	};
-
 }

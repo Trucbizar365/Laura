@@ -1,12 +1,13 @@
 #pragma once
+
 #include "lrpch.h"
 
 namespace Laura
 {
+
 	// Globally Unique IDentifier
 	// A wrapper for a uint64_t
-	class LR_GUID
-	{
+	class LR_GUID {
 	public:
 		static const LR_GUID INVALID;
 

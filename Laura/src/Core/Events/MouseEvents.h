@@ -4,9 +4,11 @@
 
 namespace Laura 
 {
+
 	using MouseCode = uint16_t;
 	namespace Mouse
 	{
+
 		enum : MouseCode {
 			// From glfw3.h
 			MOUSE_BUTTON_1 = 0,

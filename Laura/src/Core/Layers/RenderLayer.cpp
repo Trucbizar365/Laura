@@ -4,6 +4,7 @@
 
 namespace Laura
 {
+
 	RenderLayer::RenderLayer(std::shared_ptr<IEventDispatcher> eventDispatcher, 
 							 std::shared_ptr<Profiler> profiler,
 							 std::shared_ptr<Asset::Manager> assetManager,

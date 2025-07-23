@@ -1,19 +1,17 @@
 #pragma once
 
 #include "lrpch.h"
-
 #include "Core/GUID.h"
-
 #include <filesystem>
 
-namespace Laura::Asset {
+namespace Laura::Asset
+{
 
 	// According to std430 - 48 bytes
 	// For simplicity - storing one extra padding float per vertex ( not ideal but might use the space for some other data in the future)
 	struct Triangle {
 		glm::vec4 v0 = {}, v1 = {}, v2 = {};
 	};
-
 
 	struct Metadata {
         virtual ~Metadata() = default;
@@ -35,12 +33,8 @@ namespace Laura::Asset {
         ~TextureMetadata() override = default;
     };
 
-
-    /*
-        ///////////////////////
-        extensions to provide more detailed information about assets
-        generally not needed for rendering
-    */
+    // extensions with additional metadata of assets
+    // renderer is not fed these
     struct MetadataExtension {
         float loadTimeMs = -1;
         std::filesystem::path sourcePath = "";

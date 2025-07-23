@@ -1,35 +1,28 @@
-#include "core/ImGuiContext.h"
-
+#include "lrpch.h"
 #include <imgui.h>
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
 #include <IconsFontAwesome6.h>
 #include <iconsFontAwesome6Brands.h>
 #include <GLFW\glfw3.h>
-
 #include <implot.h>
+#include "ImGuiContext.h"
 
-#include "lrpch.h"
-
-#include "core/Events/IEvent.h"
-
-namespace Laura {
+namespace Laura 
+{
 
     ImGuiContext::ImGuiContext(std::shared_ptr<IWindow> window)
-        : m_Window(window)
-    {
+        : m_Window(window) {
     }
 
-    ImGuiContext::~ImGuiContext()
-    {
+    ImGuiContext::~ImGuiContext() {
         ImPlot::DestroyContext();
         ImGui_ImplOpenGL3_Shutdown();
         ImGui_ImplGlfw_Shutdown();
         ImGui::DestroyContext();
     }
 
-    void ImGuiContext::Init()
-    {
+    void ImGuiContext::Init() {
         IMGUI_CHECKVERSION();
         ImGui::CreateContext();
         ImPlot::CreateContext();
@@ -59,8 +52,7 @@ namespace Laura {
 
         // When viewports are enabled we tweak WindowRounding/WindowBg so platform windows can look identical to regular ones.
         ImGuiStyle& style = ImGui::GetStyle();
-        if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
-        {
+        if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
             style.WindowRounding = 0.0f;
             style.TabRounding = 0.0f;
             style.Colors[ImGuiCol_WindowBg].w = 1.0f;
@@ -73,23 +65,20 @@ namespace Laura {
         ImGui_ImplOpenGL3_Init("#version 460");
     }
 
-    void ImGuiContext::BeginFrame()
-    {
+    void ImGuiContext::BeginFrame() {
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
     }
 
-    void ImGuiContext::EndFrame()
-    {
+    void ImGuiContext::EndFrame() {
         ImGuiIO& io = ImGui::GetIO();
         io.DisplaySize = ImVec2((float)m_Window->getWidth(), (float)m_Window->getHeight());
 
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
-        if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
-        {
+        if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
             GLFWwindow* backup_current_context = glfwGetCurrentContext();
             ImGui::UpdatePlatformWindows();
             ImGui::RenderPlatformWindowsDefault();

@@ -1,30 +1,23 @@
 #pragma once
 
 #include "lrpch.h"
-
 #include "Scene/Scene.h"
-
 #include "Assets/Assets.h"
-
 #include "Renderer/IRendererAPI.h"
 #include "Renderer/IComputeShader.h"
 #include "Renderer/ITexture2D.h"
 #include "Renderer/IImage2D.h"
 #include "Renderer/IUniformBuffer.h"
 #include "Renderer/IShaderStorageBuffer.h"
-
 #include "Core/Profiler.h"
-
 #include <filesystem>
 
 namespace Laura 
 {
 
-	class Renderer
-	{
+	class Renderer {
 	private:
-		struct Settings /* here are the default ones */
-		{
+		struct Settings { /* here are the default ones */
 			LR_GUID skyboxGuid = 0;
 			glm::uvec2 Resolution{ 640, 360 }; // nHD 16:9
 			std::filesystem::path ComputeShaderPath = LR_RESOURCES_PATH "Shaders/PathTracing.comp";
@@ -35,23 +28,20 @@ namespace Laura
 			uint32_t maxAABBIntersections;
 		};
 
-		struct Cache
-		{
+		struct Cache {
 			glm::uvec2 Resolution{0};
 			std::filesystem::path ActiveShaderPath{};
 			uint32_t AccumulatedFrames = 0;
 		};
 
 		// Under the std430 - 80 bytes
-		struct MeshEntityHandle 
-		{
+		struct MeshEntityHandle { 
 			MeshEntityHandle(uint32_t firstTriIdx = 0, uint32_t triCount = 0, uint32_t firstNodeIdx = 0, uint32_t nodeCount = 0, glm::mat4 transform = {}) 
 			:	FirstTriIdx(firstTriIdx),
 				TriCount(triCount),
 				FirstNodeIdx(firstNodeIdx),
 				NodeCount(nodeCount),
-				Transform(transform)
-			{
+				Transform(transform) {
 			}
 
 			glm::mat4 Transform;
@@ -69,11 +59,9 @@ namespace Laura
 			glm::mat4 CameraTransform{};
 		};
 
-
 	public:
 		Renderer(std::shared_ptr<Profiler> profiler)
-			: m_Profiler(profiler)
-		{
+			: m_Profiler(profiler) {
 		};
 		~Renderer() = default;
 

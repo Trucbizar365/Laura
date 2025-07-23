@@ -22,7 +22,6 @@ add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/Thirdparty/glew-cmake")			# OpenGL
 add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/Thirdparty/stb_image")			# Loading textures/images
 add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/Thirdparty/stb_truetype")		    # Loading ttf fonts
 add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/Thirdparty/glm")				    # Math
-add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/Thirdparty/imgui-docking")		# UI
 add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/Thirdparty/assimp")				# Model loading
 add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/Thirdparty/spdlog")				# Logging/Debugging
 add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/Thirdparty/entt")				    # ECS
@@ -42,7 +41,7 @@ target_precompile_headers(lrpchLib PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/src/lrpch
 target_link_libraries(lrpchLib PUBLIC glm spdlog::spdlog)
 
 # only these should be public
-target_link_libraries(LauraEngine PUBLIC glm imgui spdlog::spdlog entt fontAwesome yaml-cpp implot) 
+target_link_libraries(LauraEngine PUBLIC glm spdlog::spdlog entt fontAwesome yaml-cpp implot) 
 # these should be private but it does not work with private for some reason
 target_link_libraries(LauraEngine PUBLIC assimp glfw libglew_static stb_image stb_truetype) 
 

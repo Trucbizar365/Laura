@@ -2,10 +2,10 @@
 
 #include "lrpch.h"
 
-namespace Laura {
+namespace Laura 
+{
 
-	class IComputeShader
-	{
+	class IComputeShader {
 	public:
 		static std::shared_ptr<IComputeShader> Create(const std::string& filepath, const glm::uvec3& workGroupSizes);
 
@@ -22,5 +22,4 @@ namespace Laura {
 		virtual glm::uvec3 getWorkGroupSizes() = 0;
 		virtual std::string getFilePath() = 0;
 	};
-
 }

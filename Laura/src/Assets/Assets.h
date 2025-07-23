@@ -1,12 +1,9 @@
 #pragma once
 
 #include "lrpch.h"
-
 #include "Assets/AssetTypes.h"
 #include "Assets/BVHAccel.h"
-
 #include "Core/GUID.h"
-
 #include <array>
 #include <filesystem>
 
@@ -15,6 +12,7 @@ constexpr const char* SUPPORTED_TEXTURE_FILE_FORMATS[]	= { ".png", ".jpg", ".jpe
 
 namespace Laura::Asset
 {
+
 	enum struct ResourceType {
 		Metadata,
 		MeshBuffer,
@@ -34,7 +32,6 @@ namespace Laura::Asset
 		std::vector<uint32_t> IndexBuffer; // indirection between BVHAccel::Node and triangles in ResourcePool::meshBuffer
 		std::vector<BVHAccel::Node> NodeBuffer;
 		std::vector<unsigned char> TextureBuffer;
-
 
 		template <typename T>
 		std::shared_ptr<T> Get(const LR_GUID& guid) const {
@@ -61,7 +58,6 @@ namespace Laura::Asset
 		std::array<uint32_t, static_cast<size_t>(ResourceType::COUNT)> m_UpdateVersions = {}; // initialize with 0s
 	};
 
-	//////////////////////////////////////////
 
 	class Manager {
 	public:

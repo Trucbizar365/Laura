@@ -3,6 +3,7 @@
 
 namespace Laura
 {
+
 	SceneLayer::SceneLayer(std::shared_ptr<IEventDispatcher> eventDispatcher)
 		: m_EventDispatcher(eventDispatcher), m_Scene(std::make_shared<Scene>()) {
 	}

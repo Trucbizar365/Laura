@@ -1,14 +1,13 @@
 #pragma once
 
 #include "lrpch.h"
-
 #include "Events/KeyEvents.h"
 #include "Events/MouseEvents.h"
 
-namespace Laura {
+namespace Laura
+{
 
-	struct WindowProps
-	{
+	struct WindowProps {
 		std::string title;
 		int width;
 		int height;
@@ -18,13 +17,11 @@ namespace Laura {
 			int width = 1280,
 			int height = 720,
 			bool VSync = true)
-			: width(width), height(height), title(title), VSync(VSync)
-		{
+			: width(width), height(height), title(title), VSync(VSync) {
 		}
 	};
 
-	class IWindow
-	{
+	class IWindow {
 	public:
 		virtual ~IWindow() = default;
 

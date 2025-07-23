@@ -1,12 +1,10 @@
 #pragma once
 
 #include "lrpch.h"
-
 #include "Core/IWindow.h"
 #include "Core/Layers/LayerStack.h"
 #include "Core/Layers/SceneLayer.h"
 #include "Core/Layers/RenderLayer.h"
-#include "Core/ImGuiContext.h"
 #include "Renderer/Renderer.h"
 #include "Renderer/IRendererAPI.h"
 #include "Assets/Assets.h"
@@ -22,11 +20,11 @@ namespace Laura
         //Application(WindowProps windowProps);
         virtual ~Application() = default;
         void run();
+        
     protected:
         std::shared_ptr<IWindow>        _Window;
 
         std::shared_ptr<LayerStack>     _LayerStack;
-        std::shared_ptr<ImGuiContext>   _ImGuiContextManager;
         std::shared_ptr<IRendererAPI>   _RendererAPI;
         std::shared_ptr<Profiler>       _Profiler;
 
