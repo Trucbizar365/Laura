@@ -2,6 +2,7 @@
 
 #include <Laura.h>
 #include "EditorState.h"
+#include "ImGuiContext.h"
 #include "EditorUI/ViewportPanel/ViewportPanel.h"
 #include "EditorUI/SceneHierarchyPanel/SceneHierarchyPanel.h"
 #include "EditorUI/InspectorPanel/InspectorPanel.h"
@@ -16,6 +17,7 @@ namespace Laura
 	class EditorLayer : public ILayer {
 	public:
 		EditorLayer(std::weak_ptr<IEventDispatcher> eventDispatcher,
+					std::shared_ptr<ImGuiContext> imGuiContext,
 					std::shared_ptr<Asset::ResourcePool> resourcePool, 
 					std::shared_ptr<Asset::Manager> assetManager, 
 					std::shared_ptr<Profiler> profiler
@@ -41,7 +43,9 @@ namespace Laura
 		std::weak_ptr<IImage2D> m_LatestFrameRender;
 
 		// Editor
-		std::shared_ptr<EditorState> m_EditorState; // shared across panels
+		std::shared_ptr<EditorState> m_EditorState;
+		std::shared_ptr<ImGuiContext> m_ImGuiContext;
+
 		SceneHierarchyPanel m_SceneHierarchyPanel;
 		InspectorPanel m_InspectorPanel;
 		ViewportPanel m_ViewportPanel;

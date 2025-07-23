@@ -1,5 +1,3 @@
-#include "core/ImGuiContext.h"
-
 #include "lrpch.h"
 #include <imgui.h>
 #include <imgui_impl_glfw.h>
@@ -8,7 +6,7 @@
 #include <iconsFontAwesome6Brands.h>
 #include <GLFW\glfw3.h>
 #include <implot.h>
-#include "core/Events/IEvent.h"
+#include "ImGuiContext.h"
 
 namespace Laura 
 {
