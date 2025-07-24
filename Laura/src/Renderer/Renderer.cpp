@@ -27,18 +27,15 @@ namespace Laura
 		}
 
 		auto t = m_Profiler->timer("Renderer::Parse()");
-
 		auto pScene = std::make_shared<Renderer::ParsedScene>();
 	
-		// find a main camera
+		// MAIN CAMERA
 		auto cameraView = scene->GetRegistry()->view<TransformComponent, CameraComponent>();
 		for (auto entity : cameraView) {
 			EntityHandle e(entity, scene->GetRegistry());
-
 			if (!e.GetComponent<CameraComponent>().isMain) {
 				continue;
 			}
-
 			pScene->hasValidCamera = true;
 			pScene->CameraTransform = e.GetComponent<TransformComponent>().GetMatrix();
 			pScene->CameraFocalLength = e.GetComponent<CameraComponent>().GetFocalLength();
@@ -53,14 +50,11 @@ namespace Laura
 		pScene->MeshEntityLookupTable.reserve(renderableView.size_hint());
 		for (auto entity : renderableView) {
 			EntityHandle e(entity, scene->GetRegistry());
-
 			LR_GUID& guid = e.GetComponent<MeshComponent>().guid;
-
 			std::shared_ptr<Asset::MeshMetadata> metadata = resourcePool->Get<Asset::MeshMetadata>(guid);
 			if (!metadata) {
 				continue;
 			}
-
 			pScene->MeshEntityLookupTable.emplace_back (
 				metadata->firstTriIdx,
 				metadata->TriCount,
@@ -69,6 +63,9 @@ namespace Laura
 				e.GetComponent<TransformComponent>().GetMatrix()
 			);
 		}
+
+		pScene->skyboxGUID = scene->GetSkyboxGUID();
+
 		return pScene;
 	}
 
@@ -127,13 +124,12 @@ namespace Laura
 		static uint32_t prevIndexBuffVersion = 0;
 
 		{
-			// TEXTURE BUFFER
+			// SKYBOX
     		uint32_t currTexBuffVersion = resourcePool->GetUpdateVersion(Asset::ResourceType::TextureBuffer);
     		if (prevTexBuffVersion != currTexBuffVersion) {
         		prevTexBuffVersion = currTexBuffVersion;
 
-        		// SKYBOX
-        		std::shared_ptr<Asset::TextureMetadata> metadata = resourcePool->Get<Asset::TextureMetadata>(settings.skyboxGuid);
+        		auto metadata = resourcePool->Get<Asset::TextureMetadata>(pScene->skyboxGUID);
         		if (metadata) {
             		const uint32_t SKYBOX_TEXTURE_UNIT = 1;
             		const unsigned char* data = &resourcePool->TextureBuffer[metadata->texStartIdx];

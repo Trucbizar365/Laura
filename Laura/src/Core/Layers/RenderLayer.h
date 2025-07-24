@@ -15,7 +15,6 @@ namespace Laura
 	public:
 		RenderLayer(std::shared_ptr<IEventDispatcher> eventDispatcher,
 					std::shared_ptr<Profiler> profiler, // will go in the future
-					std::shared_ptr<Asset::Manager> assetManager,
 					std::shared_ptr<Asset::ResourcePool> resourcePool
 		);
 
@@ -24,7 +23,6 @@ namespace Laura
 
 		// onUpdate RenderLayer dispatches an event with the rendered texture
 		virtual void onUpdate() override;
-		virtual void onImGuiRender() override;
 		virtual void onEvent(std::shared_ptr<IEvent> event) override;
 
 	private:
@@ -32,7 +30,6 @@ namespace Laura
 		std::shared_ptr<Profiler> m_Profiler;
 		std::shared_ptr<Renderer> m_Renderer;
 
-		std::shared_ptr<Asset::Manager> m_AssetManager;
 		std::shared_ptr<const Asset::ResourcePool> m_ResourcePool;
 
 		std::weak_ptr<const Scene> m_Scene;

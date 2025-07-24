@@ -18,7 +18,6 @@ namespace Laura
 	class Renderer {
 	private:
 		struct Settings { /* here are the default ones */
-			LR_GUID skyboxGuid = 0;
 			glm::uvec2 Resolution{ 640, 360 }; // nHD 16:9
 			std::filesystem::path ComputeShaderPath = LR_RESOURCES_PATH "Shaders/PathTracing.comp";
 			uint32_t raysPerPixel = 1;
@@ -52,11 +51,13 @@ namespace Laura
 		};
 
 		struct ParsedScene {
-			std::vector<MeshEntityHandle> MeshEntityLookupTable;
-			uint32_t SkyboxFirstTexIdx = 0, SkyboxWidth = 0, SkyboxHeight = 0, SkyboxChannels = 0;
+			std::vector<MeshEntityHandle> MeshEntityLookupTable; // only renderable entities in the scene
+
 			bool hasValidCamera = false;
 			float CameraFocalLength = 0;
 			glm::mat4 CameraTransform{};
+
+			LR_GUID skyboxGUID = LR_GUID::INVALID;
 		};
 
 	public:

@@ -33,10 +33,4 @@ namespace Laura
 			}
 		}
 	}
-
-	void LayerStack::onImGuiRender() {
-		for (std::shared_ptr<ILayer> layer : m_Layers) {
-			layer->onImGuiRender();
-		}
-	}
 }

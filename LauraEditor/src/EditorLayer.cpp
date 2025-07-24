@@ -33,7 +33,10 @@ namespace Laura
 	}
 
 	void EditorLayer::onEvent(std::shared_ptr<IEvent> event) {
-		std::cout << event->GetType() << std::endl;
+		if (event->GetType() != EventType::NEW_FRAME_RENDERED_EVENT) {
+			std::cout << event->GetType() << std::endl;
+		}
+
 		if (event->GetType() == EventType::SCENE_LOADED_EVENT) {
 			m_Scene = std::dynamic_pointer_cast<SceneLoadedEvent>(event)->scene;
 		}
@@ -73,7 +76,7 @@ namespace Laura
 		}
 	}
 
-	void EditorLayer::onImGuiRender() {
+	void EditorLayer::onUpdate() {
 		m_ImGuiContext->BeginFrame();
 		{
 			ImGui::DockSpaceOverViewport(0, ImGui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode);
@@ -90,8 +93,5 @@ namespace Laura
 			m_ProfilerPanel.OnImGuiRender(m_Profiler);
 		}
 		m_ImGuiContext->EndFrame();
-	}
-
-	void EditorLayer::onUpdate() {
 	}
 }
