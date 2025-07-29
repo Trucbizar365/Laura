@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Core/Events/IEvent.h"
-#include "Scene/Scene.h"
+#include "Project/Scene/Scene.h"
 
 namespace Laura 
 {

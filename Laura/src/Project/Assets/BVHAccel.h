@@ -2,7 +2,7 @@
 #pragma once
 
 #include "lrpch.h"
-#include "Assets/AssetTypes.h"
+#include "Project/Assets/AssetTypes.h"
 
 namespace Laura::Asset 
 {

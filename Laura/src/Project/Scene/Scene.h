@@ -3,8 +3,8 @@
 #include <filesystem>
 #include <yaml-cpp/yaml.h>
 #include "entt/entt.hpp"
-#include "Scene/Entity.h"
-#include "Scene/Components.h"
+#include "Project/Scene/Entity.h"
+#include "Project/Scene/Components.h"
 
 #define SCENE_FILE_EXTENSION ".lrscn"
 

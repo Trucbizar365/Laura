@@ -21,12 +21,12 @@
 #include "Renderer/IUniformBuffer.h"
 #include "Renderer/ITexture2D.h"
 
-#include "Scene/Scene.h" 
-#include "Scene/Entity.h"
-#include "Scene/Components.h"
+#include "Project/Scene/Scene.h" 
+#include "Project/Scene/Entity.h"
+#include "Project/Scene/Components.h"
 
-#include "Assets/Assets.h"
-#include "Assets/AssetTypes.h"
+#include "Project/Assets/Assets.h"
+#include "Project/Assets/AssetTypes.h"
 
 #include "lrpch.h"
 

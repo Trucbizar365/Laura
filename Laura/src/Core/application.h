@@ -7,7 +7,7 @@
 #include "Core/Layers/RenderLayer.h"
 #include "Renderer/Renderer.h"
 #include "Renderer/IRendererAPI.h"
-#include "Assets/Assets.h"
+#include "Project/Assets/Assets.h"
 #include "Events/IEvent.h"
 #include "Core/Profiler.h"
 

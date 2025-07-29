@@ -1,8 +1,8 @@
 #pragma once
 
 #include "lrpch.h"
-#include "Scene/Scene.h"
-#include "Assets/Assets.h"
+#include "Project/Scene/Scene.h"
+#include "Project/Assets/Assets.h"
 #include "Renderer/IRendererAPI.h"
 #include "Renderer/IComputeShader.h"
 #include "Renderer/ITexture2D.h"

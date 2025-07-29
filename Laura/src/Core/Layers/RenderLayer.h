@@ -1,12 +1,12 @@
 #pragma once
 
 #include "lrpch.h"
-#include "Scene/Scene.h"
+#include "Project/Scene/Scene.h"
 #include "Core/Layers/ILayer.h"
 #include "Core/Layers/LayerStack.h"
 #include "Core/Events/IEvent.h"
 #include "Renderer/Renderer.h"
-#include "Assets/Assets.h"
+#include "Project/Assets/Assets.h"
 
 namespace Laura
 {

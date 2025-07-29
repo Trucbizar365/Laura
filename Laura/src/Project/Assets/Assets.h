@@ -1,8 +1,8 @@
 #pragma once
 
 #include "lrpch.h"
-#include "Assets/AssetTypes.h"
-#include "Assets/BVHAccel.h"
+#include "Project/Assets/AssetTypes.h"
+#include "Project/Assets/BVHAccel.h"
 #include "Core/GUID.h"
 #include <array>
 #include <filesystem>
