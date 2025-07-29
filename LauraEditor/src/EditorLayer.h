@@ -3,6 +3,7 @@
 #include <Laura.h>
 #include "EditorState.h"
 #include "ImGuiContext.h"
+#include "EditorUI/Launcher/Launcher.h"
 #include "EditorUI/ViewportPanel/ViewportPanel.h"
 #include "EditorUI/SceneHierarchyPanel/SceneHierarchyPanel.h"
 #include "EditorUI/InspectorPanel/InspectorPanel.h"
@@ -45,6 +46,7 @@ namespace Laura
 		std::shared_ptr<EditorState> m_EditorState;
 		std::shared_ptr<ImGuiContext> m_ImGuiContext;
 
+		Launcher m_Launcher;
 		SceneHierarchyPanel m_SceneHierarchyPanel;
 		InspectorPanel m_InspectorPanel;
 		ViewportPanel m_ViewportPanel;

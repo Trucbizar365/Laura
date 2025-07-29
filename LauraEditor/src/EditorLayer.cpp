@@ -17,6 +17,8 @@ namespace Laura
 
 			m_EditorState(std::make_shared<EditorState>()),
 			m_ImGuiContext(imGuiContext),
+
+			m_Launcher(m_EditorState),
 			m_InspectorPanel(m_EditorState),
 			m_SceneHierarchyPanel(m_EditorState),
 			m_ThemePanel(m_EditorState),
@@ -129,7 +131,13 @@ namespace Laura
 
 	void EditorLayer::onUpdate() {
 		m_ImGuiContext->BeginFrame();
-		{
+		std::filesystem::path projectRoot = "";
+		if (projectRoot.string() == "") {
+			bool showDemo = true;
+			ImGui::ShowDemoWindow(&showDemo);
+			m_Launcher.OnImGuiRender();
+		}
+		else {
 			ImGui::DockSpaceOverViewport(0, ImGui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode);
 			DrawMainMenu();
 
