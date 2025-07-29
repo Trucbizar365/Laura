@@ -20,8 +20,8 @@ namespace Laura
 
 		_RendererAPI = IRendererAPI::Create();
 
-		_SceneLayer = std::make_shared<SceneLayer>(_LayerStack);
-		_RenderLayer = std::make_shared<RenderLayer>(_LayerStack, _Profiler, _AssetManager, _ResourcePool);
+		_SceneLayer = std::make_shared<SceneLayer>(_LayerStack, _AssetManager);
+		_RenderLayer = std::make_shared<RenderLayer>(_LayerStack, _Profiler, _ResourcePool);
 
 		_LayerStack->PushLayer(_RenderLayer);
 		_LayerStack->PushLayer(_SceneLayer);
@@ -37,10 +37,9 @@ namespace Laura
 				_Window->onUpdate();
 			}
 			_RendererAPI->Clear({ 0.98f, 0.24f, 0.97f, 1.0f }); // fill the screen with a color (pink)
-			_LayerStack->onUpdate();
 			{
-				auto t = _Profiler->timer("LayerStack::onImGuiRender()");
-				_LayerStack->onImGuiRender(); // all of the rendering onto the screen happens here
+				auto t = _Profiler->timer("LayerStack::onUpdate()");
+				_LayerStack->onUpdate();
 			}
 		}
 		shutdown();

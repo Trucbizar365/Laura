@@ -26,7 +26,6 @@ namespace Laura
 		virtual void onAttach() override;
 		virtual void onDetach() override;
 		virtual void onUpdate() override;
-		virtual void onImGuiRender() override;
 		virtual void onEvent(std::shared_ptr<IEvent> event) override;
 
 	private:
