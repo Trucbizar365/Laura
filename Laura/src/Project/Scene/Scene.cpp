@@ -3,14 +3,6 @@
 namespace Laura
 {
 
-	Scene::Scene() {
-		m_Registry = new entt::registry();
-	}
-
-	Scene::~Scene() {
-		delete m_Registry;
-	}
-
 	EntityHandle Scene::CreateEntity() {
 		entt::entity entityID = m_Registry->create();
 		EntityHandle entity(entityID, m_Registry);
@@ -40,6 +32,8 @@ namespace Laura
 
 		YAML::Emitter out;
 		out << YAML::BeginMap;
+		out << YAML::Key << "SceneGUID" << YAML::Value << (uint64_t)m_SceneGUID;
+		out << YAML::Key << "SceneName" << YAML::Value << m_SceneName;
 		out << YAML::Key << "SkyboxGUID" << YAML::Value << (uint64_t)m_SkyboxGUID;
 
 		// Write entities
@@ -126,7 +120,12 @@ namespace Laura
 		}
 
 		m_Registry->clear();
-
+		if (root["SceneGUID"]) {
+			m_SceneGUID = (LR_GUID)root["SkyboxGUID"].as<uint64_t>();
+		}
+		if (root["SceneName"]) {
+			m_SceneGUID = root["SkyboxGUID"].as<std::string>();
+		}
 		if (root["SkyboxGUID"]) {
 			m_SkyboxGUID = (LR_GUID)root["SkyboxGUID"].as<uint64_t>();
 		}
