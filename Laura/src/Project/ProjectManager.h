@@ -12,14 +12,11 @@ namespace Laura
 
 	class ProjectManager {
 	public:
-		ProjectManager() 
-			: m_SceneManager(std::make_shared<SceneManager>()),
-			  m_AssetManager(std::make_shared<AssetManager>()) {
-		}
+		ProjectManager() = default;
 		~ProjectManager() = default;
 
-		void NewProject(std::filesystem::path projectRoot);
-		bool OpenProject(std::filesystem::path projectRoot);
+		void NewProject(std::filesystem::path projectFolderpath);
+		bool OpenProject(std::filesystem::path projectFolderpath);
 		bool SaveProject();
 		void CloseProject();
 
@@ -33,8 +30,8 @@ namespace Laura
 		inline std::weak_ptr<AssetManager> GetAssetManager() { return m_AssetManager; }
 
 	private:
-		bool SerializeProjFile() const;
-		bool DeserializeProjFile();
+		bool SerializeProjFile(const std::filesystem::path& projectFolderpath) const;
+		bool DeserializeProjFile(const std::filesystem::path& projectFolderpath);
 
 		std::filesystem::path m_ProjectFolderpath;
 		LR_GUID m_BootSceneGUID = LR_GUID::INVALID;

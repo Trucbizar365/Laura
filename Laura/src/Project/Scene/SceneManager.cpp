@@ -44,7 +44,7 @@ namespace Laura
         return nullptr;
     }
 
-    bool SceneManager::SaveScenes(const std::filesystem::path& projectRoot) const {
+    bool SceneManager::SerializeScenes(const std::filesystem::path& projectRoot) const {
        bool successAll = true;
 
 		// Remove orphaned scene files
@@ -77,7 +77,7 @@ namespace Laura
 		return successAll; 
     }
 
-    bool SceneManager::LoadScenes(const std::filesystem::path& projectRoot) {
+    bool SceneManager::DeserializeScenes(const std::filesystem::path& projectRoot) {
         bool successAll = true;
         for (const auto& scenepath : FindFilesInFolder(projectRoot, SCENE_FILE_EXTENSION)) {
             auto scene = std::make_shared<Scene>();
@@ -90,22 +90,6 @@ namespace Laura
             m_Scenes[scene->GetGUID()] = scene;
         }
         return successAll;
-    }
-
-    static std::vector<std::filesystem::path> SceneManager::FindFilesInFolder(
-            const std::filesystem::path& folder, 
-            const std::string& extension) {
-        std::vector<std::filesystem::path> result;
-		if (!std::filesystem::exists(folder) || !std::filesystem::is_directory(folder)) {
-            LOG_ENGINE_WARN("Folder does not exists or is not a directory {0}", folder);
-			return result;
-		}
-		for (const auto& entry : std::filesystem::directory_iterator(folder)) {
-			if (entry.is_regular_file() && entry.path().extension() == extension) {
-				result.push_back(entry.path());
-			}
-		}
-		return result; 
     }
 
     std::filesystem::path SceneManager::SceneFilepathFromGuid(const std::filesystem::path& projectRoot, LR_GUID guid) {

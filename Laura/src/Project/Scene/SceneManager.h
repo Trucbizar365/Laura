@@ -3,6 +3,7 @@
 #include "lrpch.h"
 #include <filesystem>
 #include "Project/Scene/Scene.h"
+#include "Project/ProjectUtilities.h"
 #include "Core/GUID.h"
 
 namespace Laura
@@ -10,7 +11,7 @@ namespace Laura
 
     class SceneManager {
     public:
-        SceneManager() = default;
+        SceneManager() = default; 
         ~SceneManager() = default;
 
         LR_GUID NewScene(const std::string& name);
@@ -19,8 +20,8 @@ namespace Laura
         bool SetActiveScene(LR_GUID guid);
         std::shared_ptr<Scene> GetActiveScene() const;
 
-        bool SaveScenes(const std::filesystem::path& projectRoot) const;
-        bool LoadScenes(const std::filesystem::path& projectRoot);
+        bool SerializeScenes(const std::filesystem::path& projectRoot) const;
+        bool DeserializeScenes(const std::filesystem::path& projectRoot);
 
     private:
         std::unordered_map<LR_GUID, std::shared_ptr<Scene>> m_Scenes;
@@ -28,9 +29,6 @@ namespace Laura
         LR_GUID m_BootSceneGUID = LR_GUID::INVALID;
         
         // helper funcs
-        static std::vector<std::filesystem::path> FindFilesInFolder(
-            const std::filesystem::path& folder, const std::string& extension);
-
         static LR_GUID GuidFromSceneFilepath(const std::filesystem::path& filepath);
         static std::filesystem::path SceneFilepathFromGuid(const std::filesystem::path& projectRoot, LR_GUID guid);
     };

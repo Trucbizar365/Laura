@@ -17,11 +17,11 @@ namespace Laura
 		std::shared_ptr<Metadata>, 
 		std::shared_ptr<MetadataExtension>
 	>;
-	struct ResourcePool { 
+	struct AssetPool { 
 	public:
 		std::unordered_map<LR_GUID, MetadataPair> Metadata; // polymorphic type
 		std::vector<Triangle> MeshBuffer;
-		std::vector<uint32_t> IndexBuffer; // indirection between BVHAccel::Node and triangles in ResourcePool::meshBuffer
+		std::vector<uint32_t> IndexBuffer; // indirection between BVHAccel::Node and triangles in AssetPool::meshBuffer
 		std::vector<BVHAccel::Node> NodeBuffer;
 		std::vector<unsigned char> TextureBuffer;
 
@@ -56,17 +56,23 @@ namespace Laura
 
 	class AssetManager {
 	public:
-		AssetManager() : m_ResourcePool(std::make_shared<ResourcePool>()) {}
+		AssetManager() 
+			  : m_AssetPool(std::make_shared<AssetPool>()) {
+		}
+
 		~AssetManager() = default;
 		
-		LR_GUID LoadAsset(const std::filesystem::path& path);
+		LR_GUID AddIntoAssetPool(const std::filesystem::path& assetpath);
 
-		inline std::weak_ptr<const ResourcePool> GetResourcePool() const { return m_ResourcePool; }
+		bool SerializeAssetPool(const std::filesystem::path& projectFolderpath); // on saving project
+		bool DeserializeAssetPool(const std::filesystem::path& projectFolderpath); // on opening project 
+
+		inline std::weak_ptr<const AssetPool> GetAssetPool() const { return m_AssetPool; }
 
 	private:
-		std::shared_ptr<ResourcePool> m_ResourcePool;
+		std::shared_ptr<AssetPool> m_AssetPool;
 
-		LR_GUID LoadMesh(const std::filesystem::path& path);
-		LR_GUID LoadTexture(const std::filesystem::path& path, const int channels = 0);
+		LR_GUID LoadMesh(const std::filesystem::path& assetpath);
+		LR_GUID LoadTexture(const std::filesystem::path& assetpath, const int channels = 0);
 	};
 } 
