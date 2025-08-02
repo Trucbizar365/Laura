@@ -3,183 +3,176 @@
 namespace Laura
 {
 
+	
 	EntityHandle Scene::CreateEntity() {
 		entt::entity entityID = m_Registry->create();
 		EntityHandle entity(entityID, m_Registry);
-		entity.AddComponent<TagComponent>("Empty Entity");
-		entity.AddComponent<GUIDComponent>();
+		entity.GetOrAddComponent<TagComponent>("Empty Entity");
+		entity.GetOrAddComponent<GUIDComponent>();
 		return entity;
 	}
+
 
 	void Scene::DestroyEntity(EntityHandle entity) {
 		m_Registry->destroy(entity.GetID());
 	}
 
+
 	void Scene::OnStart() {
 	}
+
 
 	void Scene::OnUpdate() {
 	}
 
+
 	void Scene::OnShutdown() {
 	}
 
-	bool Laura::Scene::Serialize(const std::filesystem::path& filepath) {
-		LOG_ENGINE_INFO("Serializing: {0}", filepath.string());
-		if (filepath.extension() != SCENE_FILE_EXTENSION) {
+
+	bool SaveSceneFile(const std::filesystem::path& scenepath, std::shared_ptr<const Scene> scene) {
+		if (!(scenepath.has_extension() && scenepath.extension() == SCENE_FILE_EXTENSION)) {
+			LOG_ENGINE_WARN("SaveSceneFile: invalid file extension '{}'.", scenepath.string());
+			return false;
+		}
+
+		if (!std::filesystem::exists(scenepath.parent_path())) {
+			LOG_ENGINE_WARN("SaveSceneFile: parent directory '{}' does not exist.", scenepath.parent_path().string());
 			return false;
 		}
 
 		YAML::Emitter out;
-		out << YAML::BeginMap;
-		out << YAML::Key << "SceneGUID" << YAML::Value << (uint64_t)m_SceneGUID;
-		out << YAML::Key << "SceneName" << YAML::Value << m_SceneName;
-		out << YAML::Key << "SkyboxGUID" << YAML::Value << (uint64_t)m_SkyboxGUID;
-
-		// Write entities
-		out << YAML::Key << "Entities" << YAML::Value << YAML::BeginSeq;
-		for (auto& e : m_Registry->view<entt::entity>()) {
-			EntityHandle entity{ e, m_Registry };
+		out << YAML::BeginMap
+		<< YAML::Key << "SceneGUID"  << YAML::Value << static_cast<uint64_t>(scene->GetGuid())
+		<< YAML::Key << "SceneName"  << YAML::Value << scene->GetName()
+		<< YAML::Key << "SkyboxGUID" << YAML::Value << static_cast<uint64_t>(scene->GetSkyboxGuid())
+		<< YAML::Key << "Entities" << YAML::Value << YAML::BeginSeq;
+		// iterate over all entities
+		for (auto& e : scene->GetRegistry()->view<entt::entity>()) {
+			EntityHandle entity{ e, scene->GetRegistry() };
 			out << YAML::BeginMap;
 
-			// TAG COMPONENT
+			// Tag component 
 			if (entity.HasComponent<TagComponent>()) {
 				out << YAML::Key << "TagComponent" << YAML::Value << entity.GetComponent<TagComponent>().Tag;
 			}
 
-			// TRANSFORM COMPONENT
+			// Transform component 
 			if (entity.HasComponent<TransformComponent>()) {
 				auto& tc = entity.GetComponent<TransformComponent>();
-				out << YAML::Key << "TransformComponent" << YAML::Value << YAML::BeginMap;
+				glm::vec3 translation	= tc.GetTranslation();
+				glm::vec3 rotation		= tc.GetRotation();
+				glm::vec3 scale			= tc.GetScale();
 
-				glm::vec3 translation = tc.GetTranslation();
-				out << YAML::Key << "Translation" << YAML::Value << YAML::Flow
-					<< YAML::BeginSeq << translation.x << translation.y << translation.z << YAML::EndSeq;
+				out << YAML::Key << "TransformComponent" << YAML::Value 
+				<< YAML::BeginMap
+					<< YAML::Key << "Translation" << YAML::Value << YAML::Flow
+					<< YAML::BeginSeq << translation.x << translation.y << translation.z << YAML::EndSeq
 
-				glm::vec3 rotation = tc.GetRotation();
-				out << YAML::Key << "Rotation" << YAML::Value << YAML::Flow
-					<< YAML::BeginSeq << rotation.x << rotation.y << rotation.z << YAML::EndSeq;
+					<< YAML::Key << "Rotation" << YAML::Value << YAML::Flow
+					<< YAML::BeginSeq << rotation.x << rotation.y << rotation.z << YAML::EndSeq
 
-				glm::vec3 scale = tc.GetScale();
-				out << YAML::Key << "Scale" << YAML::Value << YAML::Flow
+					<< YAML::Key << "Scale" << YAML::Value << YAML::Flow
 					<< YAML::BeginSeq << scale.x << scale.y << scale.z << YAML::EndSeq;
-
-				out << YAML::EndMap;
+				<< YAML::EndMap;
 			}
 
-			// CAMERA COMPONENT
+			// Camera component 
 			if (entity.HasComponent<CameraComponent>()) {
 				auto& cc = entity.GetComponent<CameraComponent>();
-				out << YAML::Key << "CameraComponent" << YAML::Value << YAML::BeginMap;
-
-				out << YAML::Key << "IsMain" << YAML::Value << cc.isMain;
-				out << YAML::Key << "FOV" << YAML::Value << cc.fov;
-
-				out << YAML::EndMap;
+				out << YAML::Key << "CameraComponent" << YAML::Value 
+				<< YAML::BeginMap
+					<< YAML::Key << "IsMain" << YAML::Value << cc.isMain
+					<< YAML::Key << "FOV"    << YAML::Value << cc.fov 
+				<< YAML::EndMap;
 			}
 
-			// MESH COMPONENT
+			// Mesh component 
 			if (entity.HasComponent<MeshComponent>()) {
 				auto& mc = entity.GetComponent<MeshComponent>();
-				out << YAML::Key << "MeshComponent" << YAML::Value << YAML::BeginMap;
-				
-				out << YAML::Key << "SourceName" << YAML::Value << mc.sourceName;
-				out << YAML::Key << "MeshGUID" << YAML::Value << (uint64_t)mc.guid;
-
-				out << YAML::EndMap;
+				out << YAML::Key << "MeshComponent" << YAML::Value 
+				<< YAML::BeginMap
+					<< YAML::Key << "SourceName" << YAML::Value << mc.sourceName
+					<< YAML::Key << "MeshGUID"   << YAML::Value << static_cast<uint64_t>(mc.guid)
+				<< YAML::EndMap;
 			}
 			out << YAML::EndMap;
 		}
-
 		out << YAML::EndSeq;
 		out << YAML::EndMap;
 
-		std::ofstream fout(filepath);
+		// write to scenefile
+		std::ofstream fout(scenepath);
 		if (!fout) {
+			LOG_ENGINE_WARN("SaveSceneFile: failed to open file '{}'.", scenepath.string());
 			return false;
 		}
-
 		fout << out.c_str();
+		LOG_ENGINE_INFO("SaveSceneFile: successfully saved scene to {0}", scenepath.string());
 		return true;
 	}
 
-	bool Laura::Scene::Deserialize(const std::filesystem::path& filepath) {
-		LOG_ENGINE_INFO("Deserializing: {0}", filepath.string());
 
-		if (filepath.extension() != SCENE_FILE_EXTENSION) {
-			return false;
+	std::shared_ptr<Scene> LoadSceneFile(const std::filesystem::path& scenepath){
+		auto deserializeVec3 = [](const YAML::Node& node) -> glm::vec3 {
+			return { node[0].as<float>(), node[1].as<float>(), node[2].as<float>() };
+		};
+
+		LOG_ENGINE_INFO("Deserializing: {0}", scenepath.string());
+
+		if (!(std::filesystem::exists(scenepath) && std::filesystem::is_regular_file(scenepath) && 
+			scenepath.has_extension() && scenepath.extension() == SCENE_FILE_EXTENSION))
+		{
+			LOG_ENGINE_WARN("LoadSceneFile: invalid or missing scene file: {0}", scenepath.string());
+			return nullptr;
 		}
 
 		YAML::Node root;
 		try {
-			root = YAML::LoadFile(filepath.string());
+			root = YAML::LoadFile(scenepath.string());
+			auto scene = std::make_shared<Scene>();
+
+			scene->m_SceneGUID	= static_cast<LR_GUID>(root["SceneGUID"].as<uint64_t>());
+			scene->m_SceneName	= root["SceneName"].as<std::string>();
+			scene->m_SkyboxGUID = static_cast<LR_GUID>(root["SkyboxGUID"].as<uint64_t>());
+
+			auto entitiesNode = root["Entities"];
+			if (entitiesNode && entitiesNode.IsSequence()) {
+				for (auto& entityNode : entitiesNode) {
+					EntityHandle entity = scene->CreateEntity();
+					
+					auto tag = entityNode["TagComponent"].as<std::string>();
+					entity.GetOrAddComponent<TagComponent>().Tag = tag;
+
+					if (entityNode["TransformComponent"]) {
+						auto& tc = entity.GetOrAddComponent<TransformComponent>();
+						auto tnode = entityNode["TransformComponent"];
+						tc.SetTranslation(deserializeVec3(tnode["Translation"]));
+						tc.SetRotation	 (deserializeVec3(tnode["Rotation"]));
+						tc.SetScale		 (deserializeVec3(tnode["Scale"]));
+					}
+
+					if (entityNode["CameraComponent"]) {
+						auto& cc = entity.GetOrAddComponent<CameraComponent>();
+						auto cnode = entityNode["CameraComponent"];
+						cc.isMain      = cnode["IsMain"].as<bool>();
+						cc.fov         = cnode["FOV"].as<float>();
+					}
+
+					if (entityNode["MeshComponent"]) {
+						auto& mc = entity.GetOrAddComponent<MeshComponent>();
+						auto mnode = entityNode["MeshComponent"];
+						mc.sourceName = mnode["SourceName"].as<std::string>();
+						mc.guid       = static_cast<LR_GUID>(mnode["MeshGUID"].as<uint64_t>());
+					}
+				}
+			}
+			LOG_ENGINE_INFO("LoadSceneFile: successfully loaded scene from {0}", scenepath.string());
+			return scene;
 		}
 		catch (const YAML::ParserException& e) {
-			LOG_ENGINE_ERROR("YAML parse error: {}", e.what());
-			return false;
+			LOG_ENGINE_ERROR("LoadSceneFile: YAML parse error while reading {0}: {1}", scenepath.string(), e.what());
+			return nullptr;
 		}
-
-		m_Registry->clear();
-		if (root["SceneGUID"]) {
-			m_SceneGUID = (LR_GUID)root["SceneGUID"].as<uint64_t>();
-		}
-		if (root["SceneName"]) {
-			m_SceneGUID = root["SceneName"].as<std::string>();
-		}
-		if (root["SkyboxGUID"]) {
-			m_SkyboxGUID = (LR_GUID)root["SkyboxGUID"].as<uint64_t>();
-		}
-
-		auto entitiesNode = root["Entities"];
-		if (entitiesNode && entitiesNode.IsSequence()) {
-			for (auto entityNode : entitiesNode) {
-				EntityHandle entity = CreateEntity();
-
-				if (entityNode["TagComponent"]) {
-					auto tag = entityNode["TagComponent"].as<std::string>();
-					entity.GetComponent<TagComponent>().Tag = tag;
-				}
-
-				if (entityNode["TransformComponent"]) {
-					auto& tc = entity.HasComponent<TransformComponent>()
-									 ? entity.GetComponent<TransformComponent>()
-									 : entity.AddComponent<TransformComponent>();
-
-					auto tnode = entityNode["TransformComponent"];
-					auto pos = tnode["Translation"];
-					tc.SetTranslation({ pos[0].as<float>(), pos[1].as<float>(), pos[2].as<float>() });
-
-					auto rot = tnode["Rotation"];
-					tc.SetRotation({ rot[0].as<float>(), rot[1].as<float>(), rot[2].as<float>() });
-
-					auto scl = tnode["Scale"];
-					tc.SetScale({ scl[0].as<float>(), scl[1].as<float>(), scl[2].as<float>() });
-				}
-
-				// CameraComponent
-				if (entityNode["CameraComponent"]) {
-					auto& cc = entity.HasComponent<CameraComponent>()
-									? entity.GetComponent<CameraComponent>()
-									: entity.AddComponent<CameraComponent>();
-
-					auto cnode = entityNode["CameraComponent"];
-					cc.isMain      = cnode["IsMain"].as<bool>();
-					cc.fov         = cnode["FOV"].as<float>();
-				}
-
-				// MeshComponent
-				if (entityNode["MeshComponent"]) {
-					auto& mc = entity.HasComponent<MeshComponent>()
-									? entity.GetComponent<MeshComponent>()
-									: entity.AddComponent<MeshComponent>();
-
-					auto mnode = entityNode["MeshComponent"];
-					mc.sourceName = mnode["SourceName"].as<std::string>();
-					mc.guid       = (LR_GUID)mnode["MeshGUID"].as<uint64_t>();
-				}
-
-			}
-		}
-		return true;
 	}
 }

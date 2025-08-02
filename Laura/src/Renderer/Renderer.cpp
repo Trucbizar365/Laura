@@ -64,7 +64,7 @@ namespace Laura
 			);
 		}
 
-		pScene->skyboxGUID = scene->GetSkyboxGUID();
+		pScene->skyboxGUID = scene->GetSkyboxGuid();
 
 		return pScene;
 	}

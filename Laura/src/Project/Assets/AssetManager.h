@@ -33,7 +33,7 @@ namespace Laura
 		std::vector<unsigned char> TextureBuffer;
 
 		template <typename T>
-		std::shared_ptr<T> Get(const LR_GUID& guid) const {
+		std::shared_ptr<T> find(const LR_GUID& guid) const {
 			auto it = Metadata.find(guid);
 			if (it == Metadata.end()) {
 				return nullptr;
@@ -68,6 +68,7 @@ namespace Laura
 	// Used internally by the AssetManager to persist asset identity (GUIDs).
 	// ============================================================================
 	#define ASSET_META_FILE_EXTENSION ".lrmeta"
+
 	struct AssetMetafile {
 		AssetMetafile(LR_GUID guid) : guid(guid) {}
 		LR_GUID guid;
@@ -75,11 +76,11 @@ namespace Laura
 
 	/// Serialize the 'assetMetafile' as-is at the location 'metapath'.
 	/// Returns true on success.
-	bool SaveMetafile(const std::filesystem::path& metapath, const AssetMetafile& assetMetafile);
+	bool SaveMetaFile(const std::filesystem::path& metapath, const AssetMetafile& assetMetafile);
 
 	/// Deserialize from 'metapath' and return 'AssetMetafile'.
 	/// Returns std::nullopt if unsuccessful.
-	std::optional<AssetMetafile> LoadMetafile(const std::filesystem::path& metapath);
+	std::optional<AssetMetafile> LoadMetaFile(const std::filesystem::path& metapath);
 
 
 
@@ -102,11 +103,12 @@ namespace Laura
 		/// - Returns the new asset LR_GUID on success
 		/// - Returns LR_GUID::INVALID if unsuccessful
 		LR_GUID ImportAsset(const std::filesystem::path& assetpath);
+		bool RemoveAsset(LR_GUID guid);
 
 		/// Writes current metadata (not asset files) back into .lrmeta files.
 		/// Removes orphaned .lrmeta files that no longer have corresponding assets.
 		/// Logs warnings/errors but never throws or fails.
-		void SaveAssetPoolToFolder(const std::filesystem::path& folderpath);
+		void SaveAssetPoolToFolder(const std::filesystem::path& folderpath) const;
 
 		/// Loads assets with their .lrmeta files in the folder.
 		/// Skips and warns if matching asset files are missing.

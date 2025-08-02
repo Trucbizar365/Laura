@@ -57,7 +57,7 @@ namespace Laura
 				if (ImGui::BeginPopup("ComponentSettings")) {
 					if (ImGui::MenuItem("Reset")) {
 						entity.RemoveComponent<T>();
-						entity.AddComponent<T>();
+						entity.GetOrAddComponent<T>();
 					}
 					ImGui::EndPopup();
 				}
@@ -84,7 +84,7 @@ namespace Laura
 			if (entity.HasComponent<T>()) { ImGui::BeginDisabled(); }
 
 			if (ImGui::Selectable((icon + std::string(" ") + label).c_str(), false)) { 
-				entity.AddComponent<T>(); 
+				entity.GetOrAddComponent<T>(); 
 				return; // avoid calling EndDisabled()
 			}
 

@@ -56,7 +56,7 @@ namespace Laura
 	
 	void ProjectManager::CloseProject() {
 		m_ProjectFolderpath = "";
-		m_BootSceneGUID = LR_GUID::INVALID;
+		m_BootSceneGuid = LR_GUID::INVALID;
 		m_AssetManager = nullptr;
 		m_SceneManager = nullptr;
 	}
@@ -67,7 +67,7 @@ namespace Laura
 
 		YAML::Emitter out;
 		out << YAML::BeginMap;
-		out << YAML::Key << "BootSceneGUID" << YAML::Value << (uint64_t)m_BootSceneGUID;
+		out << YAML::Key << "BootSceneGUID" << YAML::Value << (uint64_t)m_BootSceneGuid;
 		out << YAML::EndMap;
 
 		// overwrites if exists
@@ -97,7 +97,7 @@ namespace Laura
 		}
 
 		if (root["BootSceneGUID"]) {
-			m_BootSceneGUID = (LR_GUID)root["BootSceneGUID"].as<uint64_t>();
+			m_BootSceneGuid = (LR_GUID)root["BootSceneGUID"].as<uint64_t>();
 		}
 		return true;
 	}

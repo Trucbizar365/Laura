@@ -9,11 +9,15 @@ namespace Laura
 	class EntityHandle {
 	public:
 		EntityHandle() = default;
-		EntityHandle(entt::entity entity, entt::registry* registry);
-		~EntityHandle();
+		~EntityHandle() = default;
+
+		EntityHandle(entt::entity entity, entt::registry* registry)
+			: m_EntityID(entity), m_Registry(registry) {
+		}
 
 		template<typename T, typename... Args>
-		T& AddComponent(Args&&... args) const {
+		T& GetOrAddComponent(Args&&... args) const {
+			if (HasComponent<T>()) { return GetComponent<T>(); }
 			return m_Registry->emplace<T>(m_EntityID, std::forward<Args>(args)...);
 		}
 

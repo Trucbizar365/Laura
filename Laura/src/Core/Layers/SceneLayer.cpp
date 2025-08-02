@@ -26,29 +26,29 @@ namespace Laura
 
 			m_Scene = std::make_shared<Scene>();
 
-			m_Scene->SetSkyboxGUID(m_AssetManager->LoadAsset(LR_RESOURCES_PATH "Assets/Skyboxes/kloofendal_48d_partly_cloudy_puresky_4k.hdr"));
+			m_Scene->SetSkyboxGuid(m_AssetManager->LoadAsset(LR_RESOURCES_PATH "Assets/Skyboxes/kloofendal_48d_partly_cloudy_puresky_4k.hdr"));
 
 			{
 				EntityHandle camera = m_Scene->CreateEntity();
 				camera.GetComponent<TagComponent>().Tag = std::string("Camera");
-				camera.AddComponent<TransformComponent>().SetTranslation({ 0.0f, 40.0f, -200.0f });
-				camera.AddComponent<CameraComponent>().fov = 30.0f;
+				camera.GetOrAddComponent<TransformComponent>().SetTranslation({ 0.0f, 40.0f, -200.0f });
+				camera.GetOrAddComponent<CameraComponent>().fov = 30.0f;
 			}
 			{
 				EntityHandle dragon = m_Scene->CreateEntity();
 				dragon.GetComponent<TagComponent>().Tag = "Dragon";
-				dragon.AddComponent<TransformComponent>(); // Add if you want to set translation/scale
-				dragon.AddComponent<MaterialComponent>();
-				auto& meshComponent = dragon.AddComponent<MeshComponent>();
+				dragon.GetOrAddComponent<TransformComponent>(); // Add if you want to set translation/scale
+				dragon.GetOrAddComponent<MaterialComponent>();
+				auto& meshComponent = dragon.GetOrAddComponent<MeshComponent>();
 				meshComponent.guid = m_AssetManager->LoadAsset(LR_RESOURCES_PATH "Assets/Models/stanford_dragon_pbr.glb");
 				meshComponent.sourceName = "stanford_dragon_pbr.glb";
 			}
 			{
 				EntityHandle bunny = m_Scene->CreateEntity();
 				bunny.GetComponent<TagComponent>().Tag = "Bunny";
-				bunny.AddComponent<TransformComponent>();
-				bunny.AddComponent<MaterialComponent>();
-				auto& meshComponent = bunny.AddComponent<MeshComponent>();
+				bunny.GetOrAddComponent<TransformComponent>();
+				bunny.GetOrAddComponent<MaterialComponent>();
+				auto& meshComponent = bunny.GetOrAddComponent<MeshComponent>();
 				meshComponent.guid = m_AssetManager->LoadAsset(LR_RESOURCES_PATH "Assets/Models/stanford_bunny_pbr.glb");
 				meshComponent.sourceName = "stanford_bunny_pbr.glb";
 			}

@@ -1,110 +1,81 @@
 #include "Project/Scene/SceneManager.h"
 
-namespace Laura 
+namespace Laura
 {
 
-    LR_GUID SceneManager::NewScene(const std::string& name) {
-        auto scene = std::make_shared<Scene>(name);
-        m_Scenes[scene->GetGUID()] = scene;
-        return scene->GetGUID();
-    }
+	LR_GUID SceneManager::CreateScene(const std::string& name) {
+		auto scene = std::make_shared<Scene>(name);
+		m_Scenes[scene->GetGuid()] = scene;
+		LOG_ENGINE_INFO("CreateScene: created new scene \"{0}\" with GUID {1}", name, scene->GetGuid());
+		return scene->GetGuid();
+	}
 
-    void SceneManager::RemoveScene(LR_GUID guid) {
-        if (m_ActiveSceneGUID == guid)  { m_ActiveSceneGUID = LR_GUID::INVALID; }
-        if (m_BootSceneGUID == guid)    { m_BootSceneGUID   = LR_GUID::INVALID; }
-        size_t removed = m_Scenes.erase(guid);
-        if (removed == 0) {
-            LOG_ENGINE_WARN("Scene to be erased Not Found");
-        }
-    }
+	void SceneManager::DeleteScene(LR_GUID guid) {
+		if (m_OpenSceneGuid == guid) {
+			m_OpenSceneGuid = LR_GUID::INVALID;
+			LOG_ENGINE_INFO("DeleteScene: closed open scene (GUID {0}) because it was deleted", guid);
+		}
 
-    bool SceneManager::SetActiveScene(LR_GUID guid) {
-        if (guid == LR_GUID::INVALID) {
-            LOG_ENGINE_WARN("Invalid GUID passed")
-            return false;
-        }
-        auto it = m_Scenes.find(guid); 
-        if (it == m_Scenes.end()) {
-            LOG_ENGINE_WARN("Scene Not found");
-            return false;
-        }
-        m_ActiveSceneGUID = guid; 
-        return true;
-    }
+		size_t removed = m_Scenes.erase(guid);
+		if (removed == 0) {
+			LOG_ENGINE_WARN("DeleteScene: no scene found with GUID {0}; nothing deleted", guid);
+		} else {
+			LOG_ENGINE_INFO("DeleteScene: successfully removed scene with GUID {0}", guid);
+		}
+	}
 
-    std::shared_ptr<Scene> SceneManager::GetActiveScene() const {
-        if (m_ActiveSceneGUID == LR_GUID::INVALID){
-            LOG_ENGINE_WARN("Invalid GUID passed")
-            return nullptr;
-        }
-        if (auto it = m_Scenes.find(m_ActiveSceneGUID); it != m_Scenes.end()) {
-            return it->second;
-        }
-        LOG_ENGINE_WARN("Scene Not found");
-        return nullptr;
-    }
+	bool SceneManager::SetOpenScene(LR_GUID guid) {
+		auto scene = find(guid);
+		if (!scene) {
+			LOG_ENGINE_WARN("SetOpenScene: cannot open scene; no scene registered with GUID {0}", guid);
+			return false;
+		}
 
-    bool SceneManager::SerializeScenes(const std::filesystem::path& projectRoot) const {
-       bool successAll = true;
+		m_OpenSceneGuid = guid;
+		LOG_ENGINE_INFO("SetOpenScene: now tracking scene with GUID {0} as the active scene", guid);
+		return true;
+	}
 
-		// Remove orphaned scene files
-		for (const auto& filepath : FindFilesInFolder(projectRoot, SCENE_FILE_EXTENSION)) {
-			LR_GUID guid = GuidFromFilename(filepath.filename());
-            if (guid == LR_GUID::INVALID) {
-                LOG_ENGINE_WARN("Unable to delete scene file: {0}", filepath);
-                continue;
-            }
+	std::shared_ptr<Scene> SceneManager::GetOpenScene() const {
+		return find(m_OpenSceneGuid);
+	}
 
-			if (m_Scenes.find(guid) == m_Scenes.end()) {
-				std::error_code ec;
-				std::filesystem::remove(filepath, ec);
-				if (ec) {
-					successAll = false;
-                    LOG_ENGINE_WARN("Unable to delete scene file: {0}", filepath);
-				}
+	void SceneManager::SaveScenesToFolder(const std::filesystem::path& folderpath) const {
+		// Delete orphaned .lrscene files
+		for (const auto& scenepath : FindFilesInFolder(folderpath, SCENE_FILE_EXTENSION)) {
+			LR_GUID guid = ExtractGuidFromScenepath(scenepath);
+			if (guid == LR_GUID::INVALID) {
+				LOG_ENGINE_WARN("SaveScenesToFolder: invalid GUID in filename \"{0}\"; skipping orphaned file", scenepath.string());
+				continue;
+			}
+
+			if (!find(guid)) {
+				LOG_ENGINE_INFO("SaveScenesToFolder: deleting orphaned scene file \"{0}\" (GUID {1})", scenepath.string(), guid);
+				std::filesystem::remove(scenepath);
 			}
 		}
 
-		// serialize all scenes
+		// Serialize in-memory scenes
 		for (const auto& [guid, scene] : m_Scenes) {
-            auto filepath = SceneFilepathFromGuid(projectRoot, scene->GetGUID());
-			if (!scene->Serialize(filepath)) {
-				successAll = false;
-                LOG_ENGINE_WARN("Unable to serialize scene file: {0}", filepath);
+			std::filesystem::path scenepath = ComposeScenepathFromGuid(folderpath, guid);
+			if (!SaveSceneFile(scenepath, scene)) {
+				LOG_ENGINE_WARN("SaveScenesToFolder: failed to serialize scene GUID {0} to \"{1}\"", guid, scenepath.string());
+			} else {
+				LOG_ENGINE_INFO("SaveScenesToFolder: successfully saved scene GUID {0} to \"{1}\"", guid, scenepath.string());
 			}
 		}
+	}
 
-		return successAll; 
-    }
-
-    bool SceneManager::DeserializeScenes(const std::filesystem::path& projectRoot) {
-        bool successAll = true;
-        for (const auto& scenepath : FindFilesInFolder(projectRoot, SCENE_FILE_EXTENSION)) {
-            auto scene = std::make_shared<Scene>();
-            bool success = scene->Deserialize(scenepath);
-            if (!success) { 
-                successAll = false; 
-                LOG_ENGINE_WARN("Unable to Deserialize scene file: {0}", filepath);
-                continue;
-            }
-            m_Scenes[scene->GetGUID()] = scene;
-        }
-        return successAll;
-    }
-
-    std::filesystem::path SceneManager::SceneFilepathFromGuid(const std::filesystem::path& projectRoot, LR_GUID guid) {
-        return projectRoot / (std::to_string(static_cast<uint64_t>(guid)) + SCENE_FILE_EXTENSION);
-    }
-
-    LR_GUID SceneManager::GuidFromSceneFilepath(const std::filesystem::path& filepath) {
-        std::string stem = filepath.filename().stem().string(); // remove extension
-        try {
-            uint64_t value = std::stoull(stem); // convert String TO Unsigned Long Long - STOULL 
-            return LR_GUID(value);
-        }
-        catch (const std::exception&) {
-            LOG_ENGINE_WARN("Unable to extract GUID from filename: {0}", filepath);
-            return LR_GUID::INVALID;
-        }
-    }
+	void SceneManager::LoadScenesFromFolder(const std::filesystem::path& folderpath) {
+		for (const auto& scenepath : FindFilesInFolder(folderpath, SCENE_FILE_EXTENSION)) {
+			auto scene = LoadSceneFile(scenepath);
+			if (!scene) {
+				LOG_ENGINE_WARN("LoadScenesFromFolder: failed to deserialize scene file \"{0}\"; skipping", scenepath.string());
+				continue;
+			}
+			LR_GUID guid = scene->GetGuid();
+			m_Scenes[guid] = scene;
+			LOG_ENGINE_INFO("LoadScenesFromFolder: loaded scene \"{0}\" with GUID {1}", scenepath.string(), guid);
+		}
+	}
 }

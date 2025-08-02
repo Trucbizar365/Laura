@@ -34,7 +34,7 @@ namespace Laura
 		bool DeserializeProjFile(const std::filesystem::path& projectFolderpath);
 
 		std::filesystem::path m_ProjectFolderpath;
-		LR_GUID m_BootSceneGUID = LR_GUID::INVALID;
+		LR_GUID m_BootSceneGuid = LR_GUID::INVALID;
 		std::shared_ptr<SceneManager> m_SceneManager = nullptr;
 		std::shared_ptr<AssetManager> m_AssetManager = nullptr;
 	};
