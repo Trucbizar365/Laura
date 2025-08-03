@@ -70,7 +70,7 @@ namespace Laura
 	#define ASSET_META_FILE_EXTENSION ".lrmeta"
 
 	struct AssetMetaFile {
-		AssetMetaFile(LR_GUID guid) : guid(guid) {}
+		AssetMetaFile(LR_GUID guid = LR_GUID::INVALID) : guid(guid) {}
 		LR_GUID guid = LR_GUID::INVALID;
 	};
 
@@ -115,7 +115,7 @@ namespace Laura
 		/// Populates the AssetPool and loads as many assets as possible.
 		void LoadAssetPoolFromFolder(const std::filesystem::path& folderpath);
 
-		inline std::weak_ptr<const AssetPool> GetAssetPool() const { return AssetPool; }
+		inline std::shared_ptr<const AssetPool> GetAssetPool() const { return m_AssetPool; }
 
 	private:
 		std::shared_ptr<AssetPool> m_AssetPool;
@@ -126,6 +126,6 @@ namespace Laura
 
 		// Loaders
 		bool LoadMesh(const std::filesystem::path& assetpath, LR_GUID guid);
-		bool LoadTexture(const std::filesystem::path& assetpath, const int channels = 4, LR_GUID guid);
+		bool LoadTexture(const std::filesystem::path& assetpath, LR_GUID guid, const int channels = 4);
 	};
 } 

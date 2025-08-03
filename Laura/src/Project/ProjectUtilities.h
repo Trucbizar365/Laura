@@ -12,7 +12,7 @@ namespace Laura
     inline std::vector<std::filesystem::path> FindFilesInFolder(const std::filesystem::path& folder, const std::string& extension) {
         std::vector<std::filesystem::path> result;
 		if (!std::filesystem::exists(folder) || !std::filesystem::is_directory(folder)) {
-            LOG_ENGINE_WARN("Folder does not exists or is not a directory {0}", folder);
+            LOG_ENGINE_WARN("Folder does not exists or is not a directory {0}", folder.string());
 			return result;
 		}
 		for (const auto& entry : std::filesystem::directory_iterator(folder)) {
@@ -41,7 +41,7 @@ namespace Laura
 	// Appends a new extension string to the given path without removing the existing one.
 	// Example: "asset/cube.fbx" + ".lrmeta" -> "asset/cube.fbx.lrmeta"
 	inline std::filesystem::path AppendExtension(const std::filesystem::path& path, const std::string& extension) {
-		return path + extension;
+		return std::filesystem::path(path.string() + extension);
 	}
 
 	// Removes the last extension from a path while preserving its directory.

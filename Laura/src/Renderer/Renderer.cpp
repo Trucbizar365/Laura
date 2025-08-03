@@ -9,19 +9,19 @@ namespace Laura
 		m_CameraUBO = IUniformBuffer::Create(80, 0, BufferUsageType::DYNAMIC_DRAW);
 	}
 
-	std::shared_ptr<IImage2D> Renderer::Render(const Scene* scene, const AssetPool* resourcePool) {
+	std::shared_ptr<IImage2D> Renderer::Render(const Scene* scene, const AssetPool* assetPool) {
 		auto t = m_Profiler->timer("Renderer::Render()");
 
-		const auto pScene = Parse(scene, resourcePool);
+		const auto pScene = Parse(scene, assetPool);
 		if (!pScene) { // Most likely scene missing camera
 			return nullptr;
 		}
-		SetupGPUResources(pScene, resourcePool);
+		SetupGPUResources(pScene, assetPool);
 		Draw();
 		return m_Frame;
 	}
 
-	std::shared_ptr<const Renderer::ParsedScene> Renderer::Parse(const Scene* scene, const AssetPool* resourcePool) const {
+	std::shared_ptr<const Renderer::ParsedScene> Renderer::Parse(const Scene* scene, const AssetPool* assetPool) const {
 		if (scene == nullptr) {
 			return nullptr;
 		}
@@ -51,7 +51,7 @@ namespace Laura
 		for (auto entity : renderableView) {
 			EntityHandle e(entity, scene->GetRegistry());
 			LR_GUID& guid = e.GetComponent<MeshComponent>().guid;
-			std::shared_ptr<MeshMetadata> metadata = resourcePool->Get<MeshMetadata>(guid);
+			std::shared_ptr<MeshMetadata> metadata = assetPool->find<MeshMetadata>(guid);
 			if (!metadata) {
 				continue;
 			}
@@ -71,7 +71,7 @@ namespace Laura
 
 	// returns false if error occured, else true
 	// assumes a valid pScene
-	bool Renderer::SetupGPUResources(std::shared_ptr<const ParsedScene> pScene, const AssetPool* resourcePool) {
+	bool Renderer::SetupGPUResources(std::shared_ptr<const ParsedScene> pScene, const AssetPool* assetPool) {
 		m_Profiler->timer("Renderer::SetupGPUResources()");
 
 		if (settings.ComputeShaderPath != m_Cache.ActiveShaderPath) {
@@ -125,14 +125,14 @@ namespace Laura
 
 		{
 			// SKYBOX
-    		uint32_t currTexBuffVersion = resourcePool->GetUpdateVersion(AssetPool::ResourceType::TextureBuffer);
+    		uint32_t currTexBuffVersion = assetPool->GetUpdateVersion(AssetPool::AssetType::TextureBuffer);
     		if (prevTexBuffVersion != currTexBuffVersion) {
         		prevTexBuffVersion = currTexBuffVersion;
 
-        		auto metadata = resourcePool->Get<TextureMetadata>(pScene->skyboxGUID);
+        		auto metadata = assetPool->find<TextureMetadata>(pScene->skyboxGUID);
         		if (metadata) {
             		const uint32_t SKYBOX_TEXTURE_UNIT = 1;
-            		const unsigned char* data = &resourcePool->TextureBuffer[metadata->texStartIdx];
+            		const unsigned char* data = &assetPool->TextureBuffer[metadata->texStartIdx];
             		m_SkyboxTexture = ITexture2D::Create(data, metadata->width, metadata->height, SKYBOX_TEXTURE_UNIT);
         		}
     		}
@@ -140,42 +140,42 @@ namespace Laura
 
 		// MESH BUFFER
 		{
-    		uint32_t currMeshBuffVersion = resourcePool->GetUpdateVersion(AssetPool::ResourceType::MeshBuffer);
+    		uint32_t currMeshBuffVersion = assetPool->GetUpdateVersion(AssetPool::AssetType::MeshBuffer);
     		if (prevMeshBuffVersion != currMeshBuffVersion) {
         		prevMeshBuffVersion = currMeshBuffVersion;
 
-        		uint32_t meshBuffer_sizeBytes = sizeof(Triangle) * resourcePool->MeshBuffer.size();
+        		uint32_t meshBuffer_sizeBytes = sizeof(Triangle) * assetPool->MeshBuffer.size();
         		m_MeshBufferSSBO = IShaderStorageBuffer::Create(meshBuffer_sizeBytes, 5, BufferUsageType::STATIC_DRAW);
         		m_MeshBufferSSBO->Bind();
-        		m_MeshBufferSSBO->AddData(0, meshBuffer_sizeBytes, resourcePool->MeshBuffer.data());
+        		m_MeshBufferSSBO->AddData(0, meshBuffer_sizeBytes, assetPool->MeshBuffer.data());
         		m_MeshBufferSSBO->Unbind();
     		}
 		}
 
 		// NODE BUFFER
 		{
-    		uint32_t currNodeBuffVersion = resourcePool->GetUpdateVersion(AssetPool::ResourceType::NodeBuffer);
+    		uint32_t currNodeBuffVersion = assetPool->GetUpdateVersion(AssetPool::AssetType::NodeBuffer);
     		if (prevNodeBuffVersion != currNodeBuffVersion) {
         		prevNodeBuffVersion = currNodeBuffVersion;
 
-        		uint32_t nodeBuffer_sizeBytes = sizeof(BVHAccel::Node) * resourcePool->NodeBuffer.size();
+        		uint32_t nodeBuffer_sizeBytes = sizeof(BVHAccel::Node) * assetPool->NodeBuffer.size();
         		m_NodeBufferSSBO = IShaderStorageBuffer::Create(nodeBuffer_sizeBytes, 6, BufferUsageType::STATIC_DRAW);
         		m_NodeBufferSSBO->Bind();
-        		m_NodeBufferSSBO->AddData(0, nodeBuffer_sizeBytes, resourcePool->NodeBuffer.data());
+        		m_NodeBufferSSBO->AddData(0, nodeBuffer_sizeBytes, assetPool->NodeBuffer.data());
         		m_NodeBufferSSBO->Unbind();
     		}
 		}
 
 		// INDEX BUFFER
 		{
-    		uint32_t currIndexBuffVersion = resourcePool->GetUpdateVersion(AssetPool::ResourceType::IndexBuffer);
+    		uint32_t currIndexBuffVersion = assetPool->GetUpdateVersion(AssetPool::AssetType::IndexBuffer);
     		if (prevIndexBuffVersion != currIndexBuffVersion) {
         		prevIndexBuffVersion = currIndexBuffVersion;
 
-        		uint32_t indexBuffer_sizeBytes = sizeof(uint32_t) * resourcePool->IndexBuffer.size();
+        		uint32_t indexBuffer_sizeBytes = sizeof(uint32_t) * assetPool->IndexBuffer.size();
         		m_IndexBufferSSBO = IShaderStorageBuffer::Create(indexBuffer_sizeBytes, 7, BufferUsageType::STATIC_DRAW);
         		m_IndexBufferSSBO->Bind();
-        		m_IndexBufferSSBO->AddData(0, indexBuffer_sizeBytes, resourcePool->IndexBuffer.data());
+        		m_IndexBufferSSBO->AddData(0, indexBuffer_sizeBytes, assetPool->IndexBuffer.data());
         		m_IndexBufferSSBO->Unbind();
     		}
 		}

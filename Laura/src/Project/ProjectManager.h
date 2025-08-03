@@ -17,7 +17,7 @@ namespace Laura
 	#define PROJECT_FILE_EXTENSION ".lrproj"
 
 	struct ProjectFile {
-		ProjectFile(LR_GUID bootSceneGuid) : bootSceneGuid(bootSceneGuid) {}
+		ProjectFile(LR_GUID bootSceneGuid = LR_GUID::INVALID) : bootSceneGuid(bootSceneGuid) {}
 		LR_GUID bootSceneGuid = LR_GUID::INVALID;
 	};
 
@@ -54,7 +54,8 @@ namespace Laura
 		/// Creates a new project in the given folder.
 		/// Initializes the AssetManager and SceneManager.
 		/// Saves an initial project file.
-		void NewProject(const std::filesystem::path& folderpath);
+		/// Returns true on success.
+		bool NewProject(const std::filesystem::path& folderpath);
 
 		/// Opens an existing project from the given folder.
 		/// Loads the project file and initializes managers.
@@ -71,6 +72,9 @@ namespace Laura
 		inline bool IsProjectOpen() const { return !m_ProjectPath.empty(); }
 		inline std::shared_ptr<SceneManager> GetSceneManager() const { return m_SceneManager; }
 		inline std::shared_ptr<AssetManager> GetAssetManager() const { return m_AssetManager; }
+
+		inline void SetBootSceneGuid(LR_GUID guid) { m_ProjectFile.bootSceneGuid = guid; }
+		inline LR_GUID GetBootSceneGuid() const { return m_ProjectFile.bootSceneGuid; }
 
 	private:
 		/// Filesystem path to the current project folder (where .lrproj lives).

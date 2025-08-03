@@ -73,7 +73,7 @@ namespace Laura
 					<< YAML::BeginSeq << rotation.x << rotation.y << rotation.z << YAML::EndSeq
 
 					<< YAML::Key << "Scale" << YAML::Value << YAML::Flow
-					<< YAML::BeginSeq << scale.x << scale.y << scale.z << YAML::EndSeq;
+					<< YAML::BeginSeq << scale.x << scale.y << scale.z << YAML::EndSeq
 				<< YAML::EndMap;
 			}
 
@@ -138,7 +138,7 @@ namespace Laura
 
 			auto entitiesNode = root["Entities"];
 			if (entitiesNode && entitiesNode.IsSequence()) {
-				for (auto& entityNode : entitiesNode) {
+				for (auto entityNode : entitiesNode) {
 					EntityHandle entity = scene->CreateEntity();
 					
 					auto tag = entityNode["TagComponent"].as<std::string>();

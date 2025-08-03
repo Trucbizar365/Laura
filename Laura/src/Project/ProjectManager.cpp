@@ -41,7 +41,7 @@ namespace Laura
 
 		YAML::Node root;
 		try {
-			root = YAML::LoadFile(filepath.string());
+			root = YAML::LoadFile(projectFilepath.string());
 			ProjectFile projectFile;
 			projectFile.bootSceneGuid = static_cast<LR_GUID>(root["bootSceneGuid"].as<uint64_t>());
 			LOG_ENGINE_INFO("LoadProjectFile: successfully loaded project file from {0}", projectFilepath.string());
@@ -57,7 +57,7 @@ namespace Laura
 
 
 	// PROJECT MANAGER ----------------------------------------------------------------------------
-	void ProjectManager::NewProject(const std::filesystem::path& folderpath) {
+	bool ProjectManager::NewProject(const std::filesystem::path& folderpath) {
 		if (std::filesystem::exists(folderpath)) {
 			LOG_ENGINE_WARN("NewProject: folder already exists at {0}", folderpath.string());
 			return false;
@@ -74,7 +74,7 @@ namespace Laura
 		m_AssetManager = std::make_shared<AssetManager>();
 		m_SceneManager = std::make_shared<SceneManager>();
 
-		if (!SaveProject()) {
+		if (!SaveProject(folderpath)) {
 			LOG_ENGINE_ERROR("NewProject: failed to save initial project file at {0}", folderpath.string());
 			return false;
 		}
@@ -93,7 +93,7 @@ namespace Laura
 		m_ProjectPath = folderpath;
 
 		std::filesystem::path projectFilepath = ComposeProjectFilepath(folderpath);
-		if (!LoadProjectFile(projectFilepath)) {
+		if (!LoadProjectFile(projectFilepath).has_value()) {
 			m_ProjectFile = ProjectFile{};
 			LOG_ENGINE_WARN("OpenProject: failed to deserialize project file at {0}", projectFilepath.string());
 		}
@@ -101,12 +101,8 @@ namespace Laura
 		m_AssetManager = std::make_shared<AssetManager>();
 		m_SceneManager = std::make_shared<SceneManager>();
 
-		if (!m_AssetManager->LoadAssetPoolFromFolder(folderpath)) {
-			LOG_ENGINE_WARN("OpenProject: failed to load asset pool from {0}", folderpath.string());
-		}
-		if (!m_SceneManager->LoadScenesFromFolder(folderpath)) {
-			LOG_ENGINE_WARN("OpenProject: failed to load scenes from {0}", folderpath.string());
-		}
+		m_AssetManager->LoadAssetPoolFromFolder(folderpath);
+		m_SceneManager->LoadScenesFromFolder(folderpath);
 
 		LOG_ENGINE_INFO("OpenProject: successfully opened project at {0}", folderpath.string());
 		return true;
@@ -114,15 +110,16 @@ namespace Laura
 
 
 	bool ProjectManager::SaveProject(const std::filesystem::path& folderpath) {
+		if (!IsProjectOpen()) {
+			LOG_ENGINE_WARN("SaveProject: no project is currently open");
+			return false;
+		}
+
 		if (!(std::filesystem::exists(folderpath) && std::filesystem::is_directory(folderpath))) {
 			LOG_ENGINE_ERROR("SaveProject: project folder is invalid or does not exist at {0}", folderpath.string());
 			return false;
 		}
 
-		if (!IsProjectOpen()) {
-			LOG_ENGINE_WARN("SaveProject: no project is currently open");
-			return false;
-		}
 
 		bool success = true;
 		std::filesystem::path projectFilepath = ComposeProjectFilepath(folderpath);
@@ -132,20 +129,18 @@ namespace Laura
 			success = false;
 		} else { LOG_ENGINE_INFO("SaveProject: wrote project data into {0}", projectFilepath.string()); }
 
-		if (!m_SceneManager->SaveScenesToFolder(folderpath)) {
-			LOG_ENGINE_ERROR("SaveProject: failed to save scenes to {0}", folderpath.string());
-			success = false;
-		} else { LOG_ENGINE_INFO("SaveProject: saved scenes to {0}", folderpath.string()); }
-
-		if (!m_AssetManager->SaveAssetPoolToFolder(folderpath)) {
-			LOG_ENGINE_ERROR("SaveProject: failed to save asset pool to {0}", folderpath.string());
-			success = false;
-		} else { LOG_ENGINE_INFO("SaveProject: saved asset pool to {0}", folderpath.string()); }
+		m_SceneManager->SaveScenesToFolder(folderpath);
+		m_AssetManager->SaveAssetPoolToFolder(folderpath);
 
 		return success;
 	}
 
 	void ProjectManager::CloseProject() {
+		if (!IsProjectOpen()) {
+			LOG_ENGINE_WARN("CloseProject: no project is currently open");
+			return;
+		}
+
 		LOG_ENGINE_INFO("CloseProject: closing project at {0}", m_ProjectPath.string());
 
 		m_ProjectPath.clear();

@@ -3,13 +3,11 @@
 #include "lrpch.h"
 #include "Core/IWindow.h"
 #include "Core/Layers/LayerStack.h"
-#include "Core/Layers/SceneLayer.h"
 #include "Core/Layers/RenderLayer.h"
-#include "Renderer/Renderer.h"
-#include "Renderer/IRendererAPI.h"
-#include "Project/Assets/AssetManager.h"
-#include "Events/IEvent.h"
 #include "Core/Profiler.h"
+#include "Project/ProjectManager.h"
+#include "Renderer/IRendererAPI.h"
+#include "Events/IEvent.h"
 
 namespace Laura 
 {
@@ -28,10 +26,8 @@ namespace Laura
         std::shared_ptr<IRendererAPI>   _RendererAPI;
         std::shared_ptr<Profiler>       _Profiler;
 
-        std::shared_ptr<AssetPool> _ResourcePool;
-        std::shared_ptr<AssetManager>      _AssetManager;
+        std::shared_ptr<ProjectManager> _ProjectManager;
 
-        std::shared_ptr<SceneLayer>     _SceneLayer;
         std::shared_ptr<RenderLayer>    _RenderLayer;
 
     protected:

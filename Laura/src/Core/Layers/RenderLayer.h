@@ -6,7 +6,7 @@
 #include "Core/Layers/LayerStack.h"
 #include "Core/Events/IEvent.h"
 #include "Renderer/Renderer.h"
-#include "Project/Assets/AssetManager.h"
+#include "Project/ProjectManager.h"
 
 namespace Laura
 {
@@ -14,8 +14,8 @@ namespace Laura
 	class RenderLayer : public ILayer {
 	public:
 		RenderLayer(std::shared_ptr<IEventDispatcher> eventDispatcher,
-					std::shared_ptr<Profiler> profiler, // will go in the future
-					std::shared_ptr<AssetPool> resourcePool
+					std::shared_ptr<Profiler> profiler,
+					std::shared_ptr<const ProjectManager> projectManager
 		);
 
 		virtual void onAttach() override;
@@ -26,13 +26,10 @@ namespace Laura
 		virtual void onEvent(std::shared_ptr<IEvent> event) override;
 
 	private:
-		std::shared_ptr<IEventDispatcher> m_EventDispatcher;
 		std::shared_ptr<Profiler> m_Profiler;
-		std::shared_ptr<Renderer> m_Renderer;
+		std::shared_ptr<IEventDispatcher> m_EventDispatcher;
+		std::shared_ptr<const ProjectManager> m_ProjectManager;
 
-		std::shared_ptr<const AssetPool> m_AssetPool;
-
-		std::weak_ptr<const Scene> m_Scene;
-		std::shared_ptr<IImage2D> m_RenderBuffer;
+		Renderer m_Renderer;
 	};
 }

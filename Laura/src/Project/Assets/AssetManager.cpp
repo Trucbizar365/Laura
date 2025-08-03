@@ -12,7 +12,7 @@ namespace Laura
 
 	// META FILE ------------------------------------------------------------------------------
     bool SaveMetaFile(const std::filesystem::path& metafilePath, const AssetMetaFile& assetMetafile) {
-		if (!(metafilePath.has_extension() && metafilePath.extension() == SCENE_FILE_EXTENSION)) {
+		if (!(metafilePath.has_extension() && metafilePath.extension() == ASSET_META_FILE_EXTENSION)) {
 			LOG_ENGINE_WARN("SaveMetaFile: invalid file extension '{}'.", metafilePath.string());
 			return false;
 		}
@@ -27,13 +27,13 @@ namespace Laura
             << YAML::Key << "GUID" << YAML::Value << (uint64_t)assetMetafile.guid 
             << YAML::EndMap;
 
-		std::ofstream fout(filepath);
+		std::ofstream fout(metafilePath);
 		if (!fout.is_open()) {
 			LOG_ENGINE_ERROR("SaveMetaFile: could not open {0} for writing — permissions or path invalid", metafilePath.string());
 			return false;
 		}
 		fout << out.c_str();
-		LOG_ENGINE_INFO("SaveMetaFile: wrote metadata for GUID {0}", assetMetafile.guid);
+		LOG_ENGINE_INFO("SaveMetaFile: wrote metadata for GUID {0}", (uint64_t)assetMetafile.guid);
 		return true;
     }
 
@@ -43,7 +43,7 @@ namespace Laura
 			metafilePath.has_extension() && metafilePath.extension() == ASSET_META_FILE_EXTENSION))
 		{
 			LOG_ENGINE_WARN("LoadMetaFile: invalid or missing meta file: {0}", metafilePath.string());
-			return nullptr;
+			return std::nullopt;
 		}
 
         YAML::Node root;
@@ -51,7 +51,7 @@ namespace Laura
             root = YAML::LoadFile(metafilePath.string());
             AssetMetaFile metafile;
             metafile.guid = (LR_GUID)root["GUID"].as<uint64_t>();
-			LOG_ENGINE_INFO("LoadMetaFile: loaded metadata for GUID {0}", metafile.guid);
+			LOG_ENGINE_INFO("LoadMetaFile: loaded metadata for GUID {0}", (uint64_t)metafile.guid);
             return std::make_optional(metafile);
         }
         catch (const std::exception& e) {
@@ -89,7 +89,7 @@ namespace Laura
             return LR_GUID::INVALID;
         }
 
-		LOG_ENGINE_INFO("ImportAsset: successfully imported asset {0} with GUID {1}", assetpath.string(), guid);
+		LOG_ENGINE_INFO("ImportAsset: successfully imported asset {0} with GUID {1}", assetpath.string(), (uint64_t)guid);
         return guid;
     }
 
@@ -122,7 +122,7 @@ namespace Laura
 					LOG_ENGINE_INFO("SaveAssetPoolToFolder: saved metafile {0}", metapath.string());
 				}
 			} else {
-				LOG_ENGINE_WARN("SaveAssetPoolToFolder: asset not found in folder for GUID {0}", guid);
+				LOG_ENGINE_WARN("SaveAssetPoolToFolder: asset not found in folder for GUID {0}", (uint64_t)guid);
 			}
 		}
 	}
@@ -148,7 +148,7 @@ namespace Laura
 				continue;
 			}
 
-			LOG_ENGINE_INFO("LoadAssetPoolFromFolder: loaded asset {0} with GUID {1}", assetpath.string(), maybeMetafile->guid);
+			LOG_ENGINE_INFO("LoadAssetPoolFromFolder: loaded asset {0} with GUID {1}", assetpath.string(), (uint64_t)maybeMetafile->guid);
 		}
 	}
 
@@ -162,13 +162,13 @@ namespace Laura
 		const std::string extension = assetpath.extension().string();
 		for (const auto& SUPPORTED_FORMAT : SUPPORTED_MESH_FILE_FORMATS) {
 			if (extension == SUPPORTED_FORMAT) {
-				LOG_ENGINE_INFO("LoadAssetFile: loading mesh {0} for GUID {1}", assetpath.string(), guid);
+				LOG_ENGINE_INFO("LoadAssetFile: loading mesh {0} for GUID {1}", assetpath.string(), (uint64_t)guid);
 				return LoadMesh(assetpath, guid);
 			}
 		}
 		for (const auto& SUPPORTED_FORMAT : SUPPORTED_TEXTURE_FILE_FORMATS) {
 			if (extension == SUPPORTED_FORMAT) {
-				LOG_ENGINE_INFO("LoadAssetFile: loading texture {0} for GUID {1}", assetpath.string(), guid);
+				LOG_ENGINE_INFO("LoadAssetFile: loading texture {0} for GUID {1}", assetpath.string(), (uint64_t)guid);
 				return LoadTexture(assetpath, 4, guid);
 			}
 		}
@@ -242,12 +242,12 @@ namespace Laura
 		m_AssetPool->MarkUpdated(AssetPool::AssetType::Metadata);
 
 		LOG_ENGINE_INFO("LoadMesh: loaded {0} triangles from {1} (GUID {2}) in {3:.2f} ms", 
-			triCount, assetpath.string(), guid, loadTimeMs);
+			triCount, assetpath.string(), (uint64_t)guid, loadTimeMs);
 		return true;
 	}
 
 
-	bool AssetManager::LoadTexture(const std::filesystem::path& assetpath, int channels, LR_GUID guid) {
+	bool AssetManager::LoadTexture(const std::filesystem::path& assetpath, LR_GUID guid, int channels) {
 		auto timerStart = std::chrono::high_resolution_clock::now();
 
 		if (!m_AssetPool) {
@@ -260,7 +260,7 @@ namespace Laura
 		unsigned char* data = stbi_load(assetpath.string().c_str(), &width, &height, &channelsInFile, channels);
 		if (!data) {
 			LOG_ENGINE_CRITICAL("LoadTexture: failed to load texture from path={0} (requested channels={1}) for GUID={2}.",
-				assetpath.string(), channels, guid);
+				assetpath.string(), channels, (uint64_t)guid);
 			return false;
 		}
 
@@ -290,7 +290,7 @@ namespace Laura
 		m_AssetPool->MarkUpdated(AssetPool::AssetType::Metadata);
 
 		LOG_ENGINE_INFO("LoadTexture: loaded texture {0} (GUID {1}) {2}x{3} with {4} channels in {5:.2f} ms",
-			assetpath.string(), guid, width, height, actualChannels, loadTimeMs);
+			assetpath.string(), (uint64_t)guid, width, height, actualChannels, loadTimeMs);
 		return true;
 	}
 }
