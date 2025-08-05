@@ -30,8 +30,8 @@ namespace Laura
 
 		// UI related
 		const float BASE_TILE_WH_RATIO = 0.75f;
-		const float BASE_TILE_ICON_FONT_SIZE = 0.3f;
-		const float BASE_TILE_TITLE_FONT_SIZE = 13.0f;
+		const float BASE_TILE_ICON_FONT_SIZE = 0.2f;
+		const float BASE_TILE_TITLE_FONT_SIZE = 16.0f;
 		const float TILE_SCALAR_MIN = 75.0f;
 		const float TILE_SCALAR_MAX = 110.0f;
 

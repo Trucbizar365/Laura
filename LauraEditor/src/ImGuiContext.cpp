@@ -28,11 +28,8 @@ namespace Laura
         ImPlot::CreateContext();
  
         ImGuiIO& io = ImGui::GetIO();
-		ImFontConfig config;
-		config.OversampleH = 3;
-		config.OversampleV = 3;
-		config.PixelSnapH = true;
-        io.FontDefault = io.Fonts->AddFontFromFileTTF(EDITOR_RESOURCES_PATH "Fonts/Inter/Inter_18pt-Medium.ttf", 15.0f, &config);
+        io.Fonts->AddFontFromFileTTF(EDITOR_RESOURCES_PATH "Fonts/Roboto/Roboto-Regular.ttf", 15.0f);
+        io.FontDefault = io.Fonts->AddFontFromFileTTF(EDITOR_RESOURCES_PATH "Fonts/Noto_Sans/NotoSans-Regular.ttf", 16.0f);
 
         ImFontConfig iconConfig;
         iconConfig.MergeMode = true;  // Merge Font Awesome with the default font
@@ -67,7 +64,9 @@ namespace Laura
         if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
             style.WindowRounding = 0.0f;
             style.TabRounding = 0.0f;
-            style.Colors[ImGuiCol_WindowBg].w = 1.0f;
+            style.TabBarBorderSize = 0.0f;
+            style.GrabRounding = 2.0f;
+            style.ScrollbarRounding = 2.0f;
         }
 
         style.WindowTitleAlign = ImVec2(0.5f, 0.5f);

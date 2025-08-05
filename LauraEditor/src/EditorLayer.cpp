@@ -16,9 +16,9 @@ namespace Laura
 
 			m_EditorState(std::make_shared<EditorState>()),
 			m_Launcher(m_EditorState, m_ProjectManager),
-			m_InspectorPanel(m_EditorState),
-			m_SceneHierarchyPanel(m_EditorState),
-			m_ViewportPanel(m_EditorState),
+			m_InspectorPanel(m_EditorState, m_ProjectManager),
+			m_SceneHierarchyPanel(m_EditorState, m_ProjectManager),
+			m_ViewportPanel(m_EditorState, m_ProjectManager),
 			m_ThemePanel(m_EditorState),
 			m_ProfilerPanel(m_EditorState),
 			m_RenderSettingsPanel(m_EditorState),
@@ -88,8 +88,8 @@ namespace Laura
 		DrawMainMenu();
 		bool showDemo = true;
 		ImGui::ShowDemoWindow(&showDemo);
-		m_SceneHierarchyPanel.OnImGuiRender(m_Scene);
-		m_InspectorPanel.OnImGuiRender(m_Scene);
+		m_SceneHierarchyPanel.OnImGuiRender();
+		m_InspectorPanel.OnImGuiRender();
 		m_ThemePanel.OnImGuiRender();
 		m_AssetsPanel.OnImGuiRender();
 		m_RenderSettingsPanel.OnImGuiRender();

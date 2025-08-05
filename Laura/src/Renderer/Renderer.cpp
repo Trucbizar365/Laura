@@ -16,7 +16,7 @@ namespace Laura
 		if (!pScene) { // Most likely scene missing camera
 			return nullptr;
 		}
-		SetupGPUResources(pScene, assetPool);
+		SetupGPUResources(pScene, scene, assetPool);
 		Draw();
 		return m_Frame;
 	}
@@ -64,14 +64,13 @@ namespace Laura
 			);
 		}
 
-		pScene->skyboxGUID = scene->GetSkyboxGuid();
-
+		pScene->skyboxGUID = scene->skyboxGuid;
 		return pScene;
 	}
 
 	// returns false if error occured, else true
 	// assumes a valid pScene
-	bool Renderer::SetupGPUResources(std::shared_ptr<const ParsedScene> pScene, const AssetPool* assetPool) {
+	bool Renderer::SetupGPUResources(std::shared_ptr<const ParsedScene> pScene, const Scene* scene, const AssetPool* assetPool) {
 		m_Profiler->timer("Renderer::SetupGPUResources()");
 
 		if (settings.ComputeShaderPath != m_Cache.ActiveShaderPath) {
@@ -118,17 +117,15 @@ namespace Laura
 			m_MeshEntityLookupSSBO->Unbind();
 		}
 
-		static uint32_t prevTexBuffVersion = 0;
 		static uint32_t prevMeshBuffVersion = 0;
 		static uint32_t prevNodeBuffVersion = 0;
 		static uint32_t prevIndexBuffVersion = 0;
+		static uint32_t prevSkyboxTextureVersion = 0;
 
 		{
 			// SKYBOX
-    		uint32_t currTexBuffVersion = assetPool->GetUpdateVersion(AssetPool::AssetType::TextureBuffer);
-    		if (prevTexBuffVersion != currTexBuffVersion) {
-        		prevTexBuffVersion = currTexBuffVersion;
-
+    		if (scene && prevSkyboxTextureVersion != scene->GetSkyboxUpdateVersion()) {
+				prevSkyboxTextureVersion = scene->GetSkyboxUpdateVersion();
         		auto metadata = assetPool->find<TextureMetadata>(pScene->skyboxGUID);
         		if (metadata) {
             		const uint32_t SKYBOX_TEXTURE_UNIT = 1;

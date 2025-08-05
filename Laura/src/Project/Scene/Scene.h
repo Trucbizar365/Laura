@@ -21,7 +21,7 @@ namespace Laura
 	class Scene {
 	public:
 		explicit Scene(std::string name)
-			: m_SceneName(std::move(name)) {
+			: name(std::move(name)) {
 			m_Registry = new entt::registry();
 		}
 
@@ -40,21 +40,22 @@ namespace Laura
 		void OnUpdate();
 		void OnShutdown();
 
-		inline entt::registry*		GetRegistry()	const { return m_Registry;	 }
-		inline LR_GUID				GetGuid()		const { return m_SceneGUID;  }
-		inline LR_GUID				GetSkyboxGuid() const { return m_SkyboxGUID; }
-		inline const std::string&	GetName()		const { return m_SceneName;  }
+		inline entt::registry* GetRegistry() const { return m_Registry; }
 
-		inline std::string&			GetMutableName()	{ return m_SceneName; }
+		LR_GUID		guid;
+		std::string name;
 
-		inline void			SetSkyboxGuid(LR_GUID guid) { m_SkyboxGUID = guid;			  }
-		inline void			SetName(std::string name)	{ m_SceneName  = std::move(name); }
+		LR_GUID		skyboxGuid;
+		std::string skyboxName;
+
+		// Versioning system to track buffer updates across multiple listeners (e.g., renderer).
+		// Listeners compare a static `lastUpdateId` against `GetUpdateVersion()` to detect changes.
+		inline void MarkSkyboxUpdated() { m_SkyboxUpdateVersion++; }
+		inline uint32_t GetSkyboxUpdateVersion() const { return m_SkyboxUpdateVersion; }
 
 	private:
-		LR_GUID		m_SceneGUID;
-		LR_GUID		m_SkyboxGUID;
-		std::string m_SceneName;
 		entt::registry* m_Registry;
+		size_t m_SkyboxUpdateVersion = 0;
 
 		friend bool SaveSceneFile(const std::filesystem::path& scenepath, std::shared_ptr<const Scene> scene);
 		friend std::shared_ptr<Scene> LoadSceneFile(const std::filesystem::path& scenepath);

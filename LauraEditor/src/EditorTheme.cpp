@@ -68,7 +68,7 @@ namespace Laura
     void EditorTheme::LoadDefaultDark() {
         m_ColorPallete[EditorCol_Primary1]    = ImVec4{0.3f, 0.305f, 0.31f, 1.0f};      // HeaderHovered, ButtonHovered
         m_ColorPallete[EditorCol_Primary2]    = ImVec4{0.15f, 0.1505f, 0.151f, 1.0f};   // HeaderActive, ButtonActive, FrameBgActive
-        m_ColorPallete[EditorCol_Primary3]    = ImVec4{0.01f, 0.01f, 0.01f, 1.0f};      // MenuBarBg
+        m_ColorPallete[EditorCol_Primary3]    = ImVec4{0.059f, 0.059f, 0.063f, 1.0f};      // MenuBarBg
         m_ColorPallete[EditorCol_Secondary1]  = ImVec4{0.078f, 0.078f, 0.078f, 1.0f};   // Header, TabHovered, TabSelected, AddComponentButton
         m_ColorPallete[EditorCol_Secondary2]  = ImVec4{0.138f, 0.138f, 0.138f, 1.0f};   // SelectedHeader
         m_ColorPallete[EditorCol_Accent1]     = ImVec4{0.26f, 0.59f, 0.98f, 1.0f};     // SliderGrabActive, TabDimmedSelectedOverline (blue)

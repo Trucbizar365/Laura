@@ -18,7 +18,7 @@ namespace Laura
         auto assetPool = assetManager->GetAssetPool();
 
         theme.PushColor(ImGuiCol_Button, EditorCol_Secondary2);
-        if (ImGui::Button(ICON_FA_PLUS " Add")) {
+        if (ImGui::Button("Add")) {
 			ImGui::OpenPopup("Add Menu");
 		}
 
@@ -34,10 +34,10 @@ namespace Laura
         }
 
 		if (ImGui::BeginPopup("Add Menu", ImGuiWindowFlags_AlwaysAutoResize)) {
-            if (ImGui::MenuItem("Scene")) {
+            if (ImGui::MenuItem(ICON_FA_CIRCLE_NODES " Scene")) {
                 m_ProjectManager->GetSceneManager()->CreateScene();
             }
-            if (ImGui::MenuItem("Asset...")) {
+            if (ImGui::MenuItem(ICON_FA_CUBE " Asset...")) {
 				OPENFILENAMEA ofn = { sizeof(OPENFILENAMEA) };
 				char buff[MAX_PATH] = {}; 
 				ofn.lpstrFilter = "All Files\0*.*\0";
@@ -68,7 +68,7 @@ namespace Laura
                 ImGui::Indent(horizontalSpacing);
                 // draw scene tiles
                 for (const auto& [guid, scene] : *m_ProjectManager->GetSceneManager()) {
-                    DrawSceneTile(guid, scene->GetName().c_str());
+                    DrawSceneTile(guid, scene->name.c_str());
                     float last_assetTile_x2 = ImGui::GetItemRectMax().x;
                     if (last_assetTile_x2 + ImGui::GetItemRectSize().x < column_x2) {
                         ImGui::SameLine(0, horizontalSpacing);
@@ -102,7 +102,7 @@ namespace Laura
     }
     
     void AssetsPanel::DrawSceneTile(LR_GUID guid, const char* title) {
-		DrawGenericTile(guid, title, ICON_FA_CUBES_STACKED, DNDPayloadTypes::SCENE);
+		DrawGenericTile(guid, title, ICON_FA_CIRCLE_NODES, DNDPayloadTypes::SCENE);
 	}
 
     void AssetsPanel::DrawAssetTile(LR_GUID guid, const char* title) {
@@ -119,7 +119,7 @@ namespace Laura
 			dndPayloadType = DNDPayloadTypes::MESH;
 		}
 		else if (assetPool->find<TextureMetadata>(guid) != nullptr) {
-			icon = ICON_FA_IMAGE;
+			icon = ICON_FA_FILE_IMAGE;
 			dndPayloadType = DNDPayloadTypes::TEXTURE;
 		}
 		else {
@@ -167,11 +167,21 @@ namespace Laura
             drawlist->PushClipRect(tileCoordsTopLeft, tileCoordsBottomRight, true);
         }
          
+        // highlight active scene tile
+        EditorCol_ tileFgCol = EditorCol_Text2; // darker by default
+        if (auto sceneManager = m_ProjectManager->GetSceneManager()) {
+            if (auto scene = sceneManager->GetOpenScene()) {
+                if (scene->guid == guid){
+                    tileFgCol = EditorCol_Text1; // selected is bright
+                }
+            }
+        }
+
         // Render Icon
         auto* fontRegistry = static_cast<ImGuiContextFontRegistry*>(ImGui::GetIO().UserData);
 		if (fontRegistry && fontRegistry->HighResIcons) {
             ImFont* font = fontRegistry->HighResIcons;
-			float fontSize = BASE_TILE_ICON_FONT_SIZE * m_TileScalar;
+			float fontSize = floor(BASE_TILE_ICON_FONT_SIZE * m_TileScalar);
 			ImVec2 iconDims = font->CalcTextSizeA(fontSize, FLT_MAX, 0.0f, icon);
 			ImVec2 iconPos = {
 				tileCoordsTopLeft.x + (tileDims.x - iconDims.x) * 0.5f,
@@ -181,7 +191,7 @@ namespace Laura
                 font, 
                 fontSize, 
                 iconPos, 
-                ImGui::GetColorU32(theme[EditorCol_Text1]), 
+                ImGui::GetColorU32(theme[tileFgCol]), 
                 icon
             );
 		}
@@ -193,11 +203,13 @@ namespace Laura
             floor(tileCoordsTopLeft.y + tileDims.y * BASE_TILE_WH_RATIO)
         };
         float wrapWidth = tileDims.x - margin*2;
+
+
         drawlist->AddText(
             ImGui::GetFont(),
             BASE_TILE_TITLE_FONT_SIZE,
             titlePos,
-            ImGui::GetColorU32(theme[EditorCol_Text1]),
+            ImGui::GetColorU32(theme[tileFgCol]),
             title,
             nullptr,
             wrapWidth
@@ -228,41 +240,12 @@ namespace Laura
             ImGui::Text("%s", std::format("{}", value).c_str());
             };
 
-        auto DrawLabelInput = [&theme](const char* label, std::string& value) {
-            theme.PushColor(ImGuiCol_Text, EditorCol_Text2);
-            ImGui::Text("%s", label);
-            theme.PopColor();
-            ImGui::SameLine(150);
-            std::string inputId = std::string("##inputText") + label;
-
-            char buffer[256];
-            memset(buffer, 0, sizeof(buffer));
-            strcpy(buffer, value.c_str());
-            ImGui::AlignTextToFramePadding();
-            if (ImGui::InputText(inputId.c_str(), buffer, sizeof(buffer))) {
-                value = std::string(buffer);
-            }
-            };
 
         // No asset selected
         if (m_SelectedTile == LR_GUID::INVALID) {
             return;
         }
         
-        // shouldDetete = true; on btn click
-        auto DrawRightAlignedDeleteBtn = [&](bool& shouldDelete) {
-            const char* icon = ICON_FA_TRASH_CAN;
-            ImVec2 textSize = ImGui::CalcTextSize(icon);
-            ImVec2 buttonSize = {
-                textSize.x + ImGui::GetStyle().FramePadding.x * 2.0f,
-                textSize.y + ImGui::GetStyle().FramePadding.y * 2.0f
-            };
-            ImGui::SetCursorPosX(ImGui::GetCursorPosX() + ImGui::GetContentRegionAvail().x - buttonSize.x);
-            if (ImGui::Button(ICON_FA_TRASH_CAN)) {
-                shouldDelete = true;
-            }
-        };
-
         if (std::shared_ptr<Scene> scene = sceneManager->find(m_SelectedTile)) {
             theme.PushColor(ImGuiCol_Text, EditorCol_Accent1);
             ImGui::Text("General");
@@ -270,33 +253,103 @@ namespace Laura
             ImGui::AlignTextToFramePadding();
             ImGui::SameLine();
             static bool shouldDeleteScene = false;
-            DrawRightAlignedDeleteBtn(shouldDeleteScene);
-            ConfirmAndExecute(shouldDeleteScene, ICON_FA_TRASH_CAN " Delete Scene", "Are you sure you want to delete this scene?", [&]() {
-                sceneManager->DeleteScene(scene->GetGuid());
+
+
+            std::string openLabel = "Open";
+			std::string deleteLabel = ICON_FA_TRASH;
+
+			// Calculate sizes individually
+			ImVec2 openSize = ImGui::CalcTextSize(openLabel.c_str());
+			ImVec2 deleteSize = ImGui::CalcTextSize(deleteLabel.c_str());
+
+			ImVec2 openBtnSize = {
+				openSize.x + ImGui::GetStyle().FramePadding.x * 2.0f,
+				openSize.y + ImGui::GetStyle().FramePadding.y * 2.0f
+			};
+
+			ImVec2 deleteBtnSize = {
+				deleteSize.x + ImGui::GetStyle().FramePadding.x * 2.0f,
+				deleteSize.y + ImGui::GetStyle().FramePadding.y * 2.0f
+			};
+
+			float spacing = ImGui::GetStyle().ItemSpacing.x;
+			float totalWidth = openBtnSize.x + spacing + deleteBtnSize.x;
+
+			// Align to the right
+			ImGui::SetCursorPosX(ImGui::GetCursorPosX() + ImGui::GetContentRegionAvail().x - totalWidth);
+
+			// Render buttons
+            theme.PushColor(ImGuiCol_Button, EditorCol_Secondary2);
+			if (ImGui::Button(openLabel.c_str(), openBtnSize)) {
+                sceneManager->SetOpenScene(scene->guid);
+			}
+			ImGui::SameLine();
+			if (ImGui::Button(deleteLabel.c_str(), deleteBtnSize)) {
+				shouldDeleteScene = true;
+			}
+            theme.PopColor();
+            ConfirmAndExecute(shouldDeleteScene, ICON_FA_TRASH " Delete Scene", "Are you sure you want to delete this scene?", [&]() {
+                sceneManager->DeleteScene(scene->guid);
                 m_SelectedTile = LR_GUID::INVALID;
 			}, m_EditorState);
 
-            DrawLabelInput("Rename:", scene->GetMutableName());
             theme.PushColor(ImGuiCol_Text, EditorCol_Text2);
-            ImGui::Text("Open on Boot:");
+            ImGui::Text("Scene Name:");
             theme.PopColor();
-            ImGui::SameLine(150.0f);
-            bool isBoot = m_ProjectManager->IsBootScene(scene->GetGuid());
+            ImGui::SameLine();
+            std::string inputId = std::string("##sceneNameInput");
+            char buffer[256];
+            memset(buffer, 0, sizeof(buffer));
+            strcpy(buffer, scene->name.c_str());
+            ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
+            if (ImGui::InputText("##sceneNameInput", buffer, sizeof(buffer))) {
+                scene->name = std::string(buffer);
+            }
+
+            ImGui::Separator();
+            ImGui::Dummy({ 0.0f, 3.0f });
+
+            theme.PushColor(ImGuiCol_Text, EditorCol_Text2);
+			ImGui::Text("Skybox:");
+			theme.PopColor();
+			ImGui::SameLine();
+			theme.PushColor(ImGuiCol_Header, EditorCol_Secondary2);
+			ImGui::Selectable((scene->skyboxName + "##SkyboxDNDTarget").c_str(), true);
+			theme.PopColor();
+			if (ImGui::BeginDragDropTarget()) {
+				if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(DNDPayloadTypes::TEXTURE)) {
+					IM_ASSERT(payload->DataSize == sizeof(DNDPayload));
+					auto& texPayload = *static_cast<DNDPayload*>(payload->Data);
+					scene->skyboxName = texPayload.title; // copy char title[256] into std::string
+					scene->skyboxGuid = texPayload.guid;
+                    scene->MarkSkyboxUpdated();
+				}
+				ImGui::EndDragDropTarget();
+			}
+            ImGui::Dummy({ 0.0f, 3.0f });
+            theme.PushColor(ImGuiCol_Text, EditorCol_Text2);
+            ImGui::Text("Open Scene on Boot:");
+            theme.PopColor();
+            ImGui::SameLine();
+            bool isBoot = m_ProjectManager->IsBootScene(scene->guid);
+            theme.PushColor(ImGuiCol_CheckMark, EditorCol_Text1);
             if (ImGui::Checkbox("##bootSceneCheckbox", &isBoot)){
                 if (isBoot) {
-                    m_ProjectManager->SetBootSceneGuid(scene->GetGuid());
+                    m_ProjectManager->SetBootSceneGuid(scene->guid);
                 }
                 else {
                     m_ProjectManager->SetBootSceneGuid(LR_GUID::INVALID);
                 }
             }
+            theme.PopColor();
 
+            ImGui::Dummy({ 0.0f, 3.0f });
             ImGui::Separator();
             ImGui::Dummy({ 0.0f, 5.0f });
             theme.PushColor(ImGuiCol_Text, EditorCol_Accent1);
             ImGui::Text("Scene Info");
             theme.PopColor();
-            DrawLabelValue("Guid:", scene->GetGuid().string().c_str());
+            DrawLabelValue("Guid:", scene->guid.string().c_str());
 
         }
         else if (const auto& it = assetPool->Metadata.find(m_SelectedTile); it != assetPool->Metadata.end()) {
@@ -305,9 +358,21 @@ namespace Laura
             theme.PopColor();
             ImGui::AlignTextToFramePadding();
             ImGui::SameLine();
+
             static bool shouldDeleteAsset = false;
-            DrawRightAlignedDeleteBtn(shouldDeleteAsset);
-            ConfirmAndExecute(shouldDeleteAsset, ICON_FA_TRASH_CAN " Delete Asset", "Are you sure you want to delete this asset?", [&]() {
+            const char* deleteLabel = ICON_FA_TRASH;
+            ImVec2 textSize = ImGui::CalcTextSize(deleteLabel);
+            ImVec2 buttonSize = {
+                textSize.x + ImGui::GetStyle().FramePadding.x * 2.0f,
+                textSize.y + ImGui::GetStyle().FramePadding.y * 2.0f
+            };
+            ImGui::SetCursorPosX(ImGui::GetCursorPosX() + ImGui::GetContentRegionAvail().x - buttonSize.x);
+            theme.PushColor(ImGuiCol_Button, EditorCol_Secondary2);
+            if (ImGui::Button(deleteLabel)) {
+                shouldDeleteAsset = true;
+            }
+            theme.PopColor();
+            ConfirmAndExecute(shouldDeleteAsset, ICON_FA_TRASH " Delete Asset", "Are you sure you want to delete this asset?", [&]() {
                 // TODO delete asset  assetManager->DeleteAsset(guid);
                 m_SelectedTile = LR_GUID::INVALID;
 			}, m_EditorState);

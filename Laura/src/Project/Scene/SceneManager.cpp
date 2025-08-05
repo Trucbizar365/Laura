@@ -5,9 +5,9 @@ namespace Laura
 
 	LR_GUID SceneManager::CreateScene(const std::string& name) {
 		auto scene = std::make_shared<Scene>(name);
-		m_Scenes[scene->GetGuid()] = scene;
-		LOG_ENGINE_INFO("CreateScene: created new scene \"{0}\" with GUID {1}", name, (uint64_t)scene->GetGuid());
-		return scene->GetGuid();
+		m_Scenes[scene->guid] = scene;
+		LOG_ENGINE_INFO("CreateScene: created new scene \"{0}\" with GUID {1}", name, (uint64_t)scene->guid);
+		return scene->guid;
 	}
 
 	void SceneManager::DeleteScene(LR_GUID guid) {
@@ -73,7 +73,7 @@ namespace Laura
 				LOG_ENGINE_WARN("LoadScenesFromFolder: failed to deserialize scene file \"{0}\"; skipping", scenepath.string());
 				continue;
 			}
-			LR_GUID guid = scene->GetGuid();
+			LR_GUID guid = scene->guid;
 			m_Scenes[guid] = scene;
 			LOG_ENGINE_INFO("LoadScenesFromFolder: loaded scene \"{0}\" with GUID {1}", scenepath.string(), (uint64_t)guid);
 		}

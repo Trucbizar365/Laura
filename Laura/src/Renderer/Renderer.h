@@ -76,7 +76,7 @@ namespace Laura
 
 	private:
 		std::shared_ptr<const ParsedScene> Parse(const Scene* scene, const AssetPool* resourcePool) const;
-		bool SetupGPUResources(std::shared_ptr<const ParsedScene> pScene, const AssetPool* resourcePool);
+		bool SetupGPUResources(std::shared_ptr<const ParsedScene> pScene, const Scene* scene, const AssetPool* resourcePool);
 		void Draw(); // Draws directly to m_Frame
 
 		std::shared_ptr<IComputeShader> m_Shader;

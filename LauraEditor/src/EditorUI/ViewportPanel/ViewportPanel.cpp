@@ -1,22 +1,39 @@
 #include "ViewportPanel.h"
 #include <IconsFontAwesome6.h>
 #include <imgui_internal.h>
+#include "EditorUI/DNDPayloads.h"
 
 namespace Laura
 {
 
+	void ViewportPanel::DrawDropTargetForScene() {
+		if (ImGui::BeginDragDropTarget()) {
+			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(DNDPayloadTypes::SCENE)) {
+				IM_ASSERT(payload->DataSize == sizeof(DNDPayload));
+				auto& scenePayload = *static_cast<DNDPayload*>(payload->Data);
+				if (m_ProjectManager->ProjectIsOpen()) {
+					if (auto sceneManager = m_ProjectManager->GetSceneManager()) {
+						sceneManager->SetOpenScene(scenePayload.guid);
+					}
+				}
+			}
+			ImGui::EndDragDropTarget();
+		}
+	}
+
 	void ViewportPanel::OnImGuiRender(std::weak_ptr<IImage2D> image) {
 		static ImGuiWindowFlags ViewportFlags = ImGuiWindowFlags_NoCollapse;
-		
+		auto theme = m_EditorState->temp.editorTheme;
+
 		ImGuiStyle& style = ImGui::GetStyle();
 		ImVec4 originalWindowBG = style.Colors[ImGuiCol_WindowBg];
-		style.Colors[ImGuiCol_WindowBg] = style.Colors[ImGuiCol_TitleBg]; // make the background blend with the titlebar
-
+		theme.PushColor(ImGuiCol_WindowBg, EditorCol_Background2);
+		
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0, 0 }); // remove the border padding
 		ImGui::Begin(ICON_FA_EYE " Viewport", nullptr, ViewportFlags);
-
+		ImGui::BeginChild("DropArea");
+	
 		ImGuiWindow* window = ImGui::GetCurrentWindow();
-		
 		ForceUpdate = false;
 
 		DrawViewportSettingsPanel();
@@ -24,8 +41,11 @@ namespace Laura
 		auto imageShared = image.lock();
 		if (imageShared == nullptr) {
 			DrawVieportSettingsButton();
+			ImGui::EndChild();
 			ImGui::PopStyleVar();
+			DrawDropTargetForScene();
 			ImGui::End();
+			theme.PopColor();
 			return;
 		}
 		
@@ -94,9 +114,12 @@ namespace Laura
 
 		DrawVieportSettingsButton();
 
+		ImGui::EndChild();
 		ImGui::PopStyleVar();
+		DrawDropTargetForScene();
+
 		ImGui::End();
-		style.Colors[ImGuiCol_WindowBg] = originalWindowBG;
+		theme.PopColor();
 	}
 
 	void ViewportPanel::DrawVieportSettingsButton() {

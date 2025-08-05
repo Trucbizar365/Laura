@@ -5,23 +5,30 @@ namespace Laura
 {
 
 	/// INSPECTOR PANEL METHODS //////////////////////////////////////////////////////////////
-	InspectorPanel::InspectorPanel(std::shared_ptr<EditorState> editorState)
-		: m_EditorState(editorState) {
+	InspectorPanel::InspectorPanel(std::shared_ptr<EditorState> editorState, std::shared_ptr<ProjectManager> projectManager)
+		: m_EditorState(editorState), m_ProjectManager(projectManager) {
 	}
 
-    void InspectorPanel::OnImGuiRender(std::weak_ptr<Scene> scene) {
+    void InspectorPanel::OnImGuiRender() {
 		EditorTheme& theme = m_EditorState->temp.editorTheme;
 		
 		ImGui::SetNextWindowSizeConstraints({ 350, 50 }, {FLT_MAX, FLT_MAX});
 		ImGui::Begin(ICON_FA_CIRCLE_INFO " Inspector");
+		
 
-		auto sceneShared = scene.lock();
-        if (sceneShared == nullptr || m_EditorState->temp.selectedEntity == entt::null) {
+        if (!m_ProjectManager->ProjectIsOpen()) {
+            ImGui::End();
+            return;
+        }
+
+        std::shared_ptr<Scene> scene = m_ProjectManager->GetSceneManager()->GetOpenScene();
+
+        if (scene == nullptr || m_EditorState->temp.selectedEntity == entt::null) {
 			ImGui::End();
 			return;
 		}
 		
-        entt::registry* activeRegistry = sceneShared->GetRegistry();
+        entt::registry* activeRegistry = scene->GetRegistry();
         entt::entity selectedEntity = m_EditorState->temp.selectedEntity;
         EntityHandle entity(selectedEntity, activeRegistry);
 
@@ -48,7 +55,7 @@ namespace Laura
 		);
 
 		// CAMERA COMPOENENT
-		DrawComponent<CameraComponent>(std::string(ICON_FA_VIDEO " Camera Component"), entity, [&theme, &sceneShared](EntityHandle& entity) {
+		DrawComponent<CameraComponent>(std::string(ICON_FA_VIDEO " Camera Component"), entity, [&theme, &scene](EntityHandle& entity) {
 				auto& cameraComponent = entity.GetComponent<CameraComponent>();
 
 				theme.PushColor(ImGuiCol_Text, EditorCol_Text2);
@@ -57,8 +64,8 @@ namespace Laura
 				ImGui::SameLine(150.0f);
 				theme.PushColor(ImGuiCol_CheckMark, EditorCol_Text1);
 				if (ImGui::Checkbox("##MainCameraCheckbox", &cameraComponent.isMain)) {
-					for (auto e : sceneShared->GetRegistry()->view<CameraComponent>()) {
-						EntityHandle otherEntity(e, sceneShared->GetRegistry());
+					for (auto e : scene->GetRegistry()->view<CameraComponent>()) {
+						EntityHandle otherEntity(e, scene->GetRegistry());
 						if (otherEntity.GetComponent<GUIDComponent>().guid != entity.GetComponent<GUIDComponent>().guid) {
 							otherEntity.GetComponent<CameraComponent>().isMain = false;
 						}

@@ -13,10 +13,10 @@ namespace Laura
 
 	class InspectorPanel {
 	public:
-		InspectorPanel(std::shared_ptr<EditorState> editorState);
+		InspectorPanel(std::shared_ptr<EditorState> editorState, std::shared_ptr<ProjectManager> projectManager);
 		~InspectorPanel() = default;
 
-		void OnImGuiRender(std::weak_ptr<Scene> scene);
+		void OnImGuiRender();
 
 	private:
 		template<typename T, typename UILambda>
@@ -38,12 +38,12 @@ namespace Laura
 				ImGui::SameLine(panelDims.x - 1.5 * lineHeight - 0.2);
 
 				if (removable) {
-					if (ImGui::Button(ICON_FA_TRASH_CAN)) {
+					if (ImGui::Button(ICON_FA_TRASH)) {
 						deleteComponent = true;
-						ImGui::OpenPopup(ICON_FA_TRASH_CAN " Delete Component");
+						ImGui::OpenPopup(ICON_FA_TRASH " Delete Component");
 					}
 
-					ConfirmAndExecute(deleteComponent, ICON_FA_TRASH_CAN " Delete Component", "Are you sure you want to delete this component?", [&]() {
+					ConfirmAndExecute(deleteComponent, ICON_FA_TRASH " Delete Component", "Are you sure you want to delete this component?", [&]() {
 						entity.RemoveComponent<T>();
 					}, m_EditorState);
 				}
@@ -93,5 +93,6 @@ namespace Laura
 
 	private:
 		std::shared_ptr<EditorState> m_EditorState;
+		std::shared_ptr<ProjectManager> m_ProjectManager;
 	};
 }
