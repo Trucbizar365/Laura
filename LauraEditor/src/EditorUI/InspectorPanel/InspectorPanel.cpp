@@ -11,6 +11,7 @@ namespace Laura
 
     void InspectorPanel::OnImGuiRender() {
 		EditorTheme& theme = m_EditorState->temp.editorTheme;
+		float margin = 5.0f;
 		
 		ImGui::SetNextWindowSizeConstraints({ 350, 50 }, {FLT_MAX, FLT_MAX});
 		ImGui::Begin(ICON_FA_CIRCLE_INFO " Inspector");
@@ -27,11 +28,12 @@ namespace Laura
 			ImGui::End();
 			return;
 		}
-		
+
+		theme.PushColor(ImGuiCol_FrameBg, EditorCol_Primary2);
         entt::registry* activeRegistry = scene->GetRegistry();
         entt::entity selectedEntity = m_EditorState->temp.selectedEntity;
         EntityHandle entity(selectedEntity, activeRegistry);
-
+		
 		// TAG COMPONENT
         if (entity.HasComponent<TagComponent>()) {
 			std::string& tag = entity.GetComponent<TagComponent>().Tag;
@@ -55,13 +57,13 @@ namespace Laura
 		);
 
 		// CAMERA COMPOENENT
-		DrawComponent<CameraComponent>(std::string(ICON_FA_VIDEO " Camera Component"), entity, [&theme, &scene](EntityHandle& entity) {
+		DrawComponent<CameraComponent>(std::string(ICON_FA_VIDEO " Camera Component"), entity, [&](EntityHandle& entity) {
 				auto& cameraComponent = entity.GetComponent<CameraComponent>();
 
 				theme.PushColor(ImGuiCol_Text, EditorCol_Text2);
 				ImGui::Text("Main Camera:");
 				theme.PopColor();
-				ImGui::SameLine(150.0f);
+				ImGui::SameLine();
 				theme.PushColor(ImGuiCol_CheckMark, EditorCol_Text1);
 				if (ImGui::Checkbox("##MainCameraCheckbox", &cameraComponent.isMain)) {
 					for (auto e : scene->GetRegistry()->view<CameraComponent>()) {
@@ -76,7 +78,8 @@ namespace Laura
 				theme.PushColor(ImGuiCol_Text, EditorCol_Text2);
 				ImGui::Text("FOV");
 				theme.PopColor();
-				ImGui::SameLine(150.0f);
+				ImGui::SameLine();
+				ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x - margin);
 				ImGui::DragFloat("##fovDragInt", &cameraComponent.fov, 0.1f, 10.0f, 130.0f, "%.1f");
 			}
 		);
@@ -143,6 +146,7 @@ namespace Laura
 
 		// ensure that there is always some space under the Add Component button when scrolling to display the popup
 		ImGui::Dummy(ImVec2(0.0f, 100.0f)); 
+		theme.PopColor();
         ImGui::End();
     }
 }

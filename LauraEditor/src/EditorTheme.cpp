@@ -66,17 +66,22 @@ namespace Laura
     }
 
     void EditorTheme::LoadDefaultDark() {
+        auto RGBA = [](uint8_t r, uint8_t g, uint8_t b, uint8_t a = 255) -> ImVec4 {
+            constexpr float inv255 = 1.0f / 255.0f;
+            return ImVec4{ r * inv255, g * inv255, b * inv255, a * inv255 };
+        };
         m_ColorPallete[EditorCol_Primary1]    = ImVec4{0.3f, 0.305f, 0.31f, 1.0f};      // HeaderHovered, ButtonHovered
         m_ColorPallete[EditorCol_Primary2]    = ImVec4{0.15f, 0.1505f, 0.151f, 1.0f};   // HeaderActive, ButtonActive, FrameBgActive
-        m_ColorPallete[EditorCol_Primary3]    = ImVec4{0.059f, 0.059f, 0.063f, 1.0f};      // MenuBarBg
+        m_ColorPallete[EditorCol_Primary3] = RGBA(55, 55, 61, 255);
         m_ColorPallete[EditorCol_Secondary1]  = ImVec4{0.078f, 0.078f, 0.078f, 1.0f};   // Header, TabHovered, TabSelected, AddComponentButton
-        m_ColorPallete[EditorCol_Secondary2]  = ImVec4{0.138f, 0.138f, 0.138f, 1.0f};   // SelectedHeader
+        m_ColorPallete[EditorCol_Secondary2]  = RGBA(51, 51, 51, 255);
         m_ColorPallete[EditorCol_Accent1]     = ImVec4{0.26f, 0.59f, 0.98f, 1.0f};     // SliderGrabActive, TabDimmedSelectedOverline (blue)
         m_ColorPallete[EditorCol_Accent2]     = ImVec4{0.391f, 0.391f, 0.391f, 1.0f};   // CheckMark, SliderGrab
         m_ColorPallete[EditorCol_Text1]       = ImVec4{1.0f, 1.0f, 1.0f, 1.0f};         // Text
         m_ColorPallete[EditorCol_Text2]       = ImVec4{0.5f, 0.5f, 0.5f, 1.0f};         // TextDisabled
-        m_ColorPallete[EditorCol_Background1] = ImVec4{0.109f, 0.109f, 0.109f, 1.0f};   // WindowBg, TransformButtonBg (X/Y/Z)
-        m_ColorPallete[EditorCol_Background2] = ImVec4{0.08f, 0.08f, 0.08f, 1.0f};    // PopupBg
+
+        m_ColorPallete[EditorCol_Background1] = RGBA(37, 37, 38, 255);
+        m_ColorPallete[EditorCol_Background2] = RGBA(30, 30, 30, 255);
         m_ColorPallete[EditorCol_Error]       = ImVec4{0.609f, 0.109f, 0.109f, 1.0f};   // TransformButtonXActive
         m_ColorPallete[EditorCol_Warning]     = ImVec4{1.0f, 0.5f, 0.0f, 1.0f};         // Custom fallback
         m_ColorPallete[EditorCol_Success]     = ImVec4{0.109f, 0.609f, 0.109f, 1.0f};   // TransformButtonYActive
