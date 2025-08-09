@@ -43,9 +43,9 @@ namespace Laura
 
 		YAML::Emitter out;
 		out << YAML::BeginMap
-		<< YAML::Key << "SceneGUID"  << YAML::Value << static_cast<uint64_t>(scene->guid)
+		<< YAML::Key << "SceneGuid"  << YAML::Value << static_cast<uint64_t>(scene->guid)
 		<< YAML::Key << "SceneName"  << YAML::Value << scene->name
-		<< YAML::Key << "SkyboxGUID" << YAML::Value << static_cast<uint64_t>(scene->skyboxGuid)
+		<< YAML::Key << "SkyboxGuid" << YAML::Value << static_cast<uint64_t>(scene->skyboxGuid)
 		<< YAML::Key << "SkyboxName" << YAML::Value << scene->skyboxName
 		<< YAML::Key << "Entities" << YAML::Value << YAML::BeginSeq;
 		// iterate over all entities
@@ -84,7 +84,7 @@ namespace Laura
 				out << YAML::Key << "CameraComponent" << YAML::Value 
 				<< YAML::BeginMap
 					<< YAML::Key << "IsMain" << YAML::Value << cc.isMain
-					<< YAML::Key << "FOV"    << YAML::Value << cc.fov 
+					<< YAML::Key << "Fov"    << YAML::Value << cc.fov 
 				<< YAML::EndMap;
 			}
 
@@ -94,7 +94,7 @@ namespace Laura
 				out << YAML::Key << "MeshComponent" << YAML::Value 
 				<< YAML::BeginMap
 					<< YAML::Key << "SourceName" << YAML::Value << mc.sourceName
-					<< YAML::Key << "MeshGUID"   << YAML::Value << static_cast<uint64_t>(mc.guid)
+					<< YAML::Key << "MeshGuid"   << YAML::Value << static_cast<uint64_t>(mc.guid)
 				<< YAML::EndMap;
 			}
 			out << YAML::EndMap;
@@ -132,9 +132,9 @@ namespace Laura
 		try {
 			root = YAML::LoadFile(scenepath.string());
 			auto scene = std::make_shared<Scene>();
-			scene->guid	= static_cast<LR_GUID>(root["SceneGUID"].as<uint64_t>());
+			scene->guid	= static_cast<LR_GUID>(root["SceneGuid"].as<uint64_t>());
 			scene->name = root["SceneName"].as<std::string>();
-			scene->skyboxGuid = static_cast<LR_GUID>(root["SkyboxGUID"].as<uint64_t>());
+			scene->skyboxGuid = static_cast<LR_GUID>(root["SkyboxGuid"].as<uint64_t>());
 			scene->skyboxName = root["SkyboxName"].as<std::string>();
 
 			auto entitiesNode = root["Entities"];
@@ -157,14 +157,14 @@ namespace Laura
 						auto& cc = entity.GetOrAddComponent<CameraComponent>();
 						auto cnode = entityNode["CameraComponent"];
 						cc.isMain      = cnode["IsMain"].as<bool>();
-						cc.fov         = cnode["FOV"].as<float>();
+						cc.fov         = cnode["Fov"].as<float>();
 					}
 
 					if (entityNode["MeshComponent"]) {
 						auto& mc = entity.GetOrAddComponent<MeshComponent>();
 						auto mnode = entityNode["MeshComponent"];
 						mc.sourceName = mnode["SourceName"].as<std::string>();
-						mc.guid       = static_cast<LR_GUID>(mnode["MeshGUID"].as<uint64_t>());
+						mc.guid       = static_cast<LR_GUID>(mnode["MeshGuid"].as<uint64_t>());
 					}
 				}
 			}

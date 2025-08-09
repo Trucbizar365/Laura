@@ -24,7 +24,8 @@ namespace Laura
 
         YAML::Emitter out;
         out << YAML::BeginMap 
-            << YAML::Key << "GUID" << YAML::Value << (uint64_t)assetMetafile.guid 
+            << YAML::Key << "Guid" << YAML::Value << (uint64_t)assetMetafile.guid 
+			<< YAML::Key << "SourcePath" << YAML::Value << assetMetafile.sourcePath.string()
             << YAML::EndMap;
 
 		std::ofstream fout(metafilePath);
@@ -50,7 +51,9 @@ namespace Laura
         try {
             root = YAML::LoadFile(metafilePath.string());
             AssetMetaFile metafile;
-            metafile.guid = (LR_GUID)root["GUID"].as<uint64_t>();
+            metafile.guid = (LR_GUID)root["Guid"].as<uint64_t>();
+			metafile.sourcePath = std::filesystem::path{root["SourcePath"].as<std::string>()};
+
 			LOG_ENGINE_INFO("LoadMetaFile: loaded metadata for GUID {0}", (uint64_t)metafile.guid);
             return std::make_optional(metafile);
         }
@@ -104,9 +107,11 @@ namespace Laura
 		// Save metafiles for all assets in the asset pool
 		for (const auto& [guid, metadataPair] : m_AssetPool->Metadata) {
 			const auto& [metadata, metadataExtension] = metadataPair;
-			if (metadataExtension && IsFileInFolder(metadataExtension->sourcePath, folderpath)) {
-				AssetMetaFile metafile{ guid };
-				auto metapath = AppendExtension(metadataExtension->sourcePath, ASSET_META_FILE_EXTENSION);
+			if (metadataExtension && std::filesystem::exists(metadataExtension->sourcePath)) {
+				AssetMetaFile metafile{ guid, metadataExtension->sourcePath };
+
+				// save .lrmeta in the project root next to .lrproj file with filename same as the original asset + .lrmeta extension
+				auto metapath = folderpath / (metadataExtension->sourcePath.filename().string() + ASSET_META_FILE_EXTENSION);
 				if (!SaveMetaFile(metapath, metafile)) {
 					LOG_ENGINE_WARN("SaveAssetPoolToFolder: failed to save metafile {0}", metapath.string());
 				}
@@ -114,7 +119,7 @@ namespace Laura
 					LOG_ENGINE_INFO("SaveAssetPoolToFolder: saved metafile {0}", metapath.string());
 				}
 			} else {
-				LOG_ENGINE_WARN("SaveAssetPoolToFolder: asset not found in folder for GUID {0}", (uint64_t)guid);
+				LOG_ENGINE_WARN("SaveAssetPoolToFolder: asset does not exist {0}", metadataExtension->sourcePath.string());
 			}
 		}
 	}
@@ -122,25 +127,27 @@ namespace Laura
 
 	void AssetManager::LoadAssetPoolFromFolder(const std::filesystem::path& folderpath) {
 		for (const auto& metapath : FindFilesInFolder(folderpath, ASSET_META_FILE_EXTENSION)) {
-			// check if the asset file exists next to the .lrmeta file
-			const auto assetpath = StripExtension(metapath);
-			if (!std::filesystem::exists(assetpath)) {
-				LOG_ENGINE_WARN("LoadAssetPoolFromFolder: missing asset file for metafile {0}", metapath.string());
-				continue;
-			}
-
 			auto maybeMetafile = LoadMetaFile(metapath);
 			if (!maybeMetafile.has_value()) {
 				LOG_ENGINE_WARN("LoadAssetPoolFromFolder: failed to load metafile {0}", metapath.string());
 				continue;
 			}
 
-			if (!LoadAssetFile(assetpath, maybeMetafile->guid)) {
-				LOG_ENGINE_WARN("LoadAssetPoolFromFolder: failed to load asset {0}", assetpath.string());
+			auto sourcePath = maybeMetafile->sourcePath;
+
+			// check if the asset exists at the path specified by the .lrmeta file
+			if (!std::filesystem::exists(sourcePath)) {
+				LOG_ENGINE_WARN("LoadAssetPoolFromFolder: missing asset file for metafile {0}", metapath.string());
 				continue;
 			}
 
-			LOG_ENGINE_INFO("LoadAssetPoolFromFolder: loaded asset {0} with GUID {1}", assetpath.string(), (uint64_t)maybeMetafile->guid);
+			// if yes then load the asset from that file
+			if (!LoadAssetFile(sourcePath, maybeMetafile->guid)) {
+				LOG_ENGINE_WARN("LoadAssetPoolFromFolder: failed to load asset {0}", sourcePath.string());
+				continue;
+			}
+
+			LOG_ENGINE_INFO("LoadAssetPoolFromFolder: loaded asset {0} with GUID {1}", sourcePath.string(), (uint64_t)maybeMetafile->guid);
 		}
 	}
 
@@ -151,6 +158,7 @@ namespace Laura
 			return false;
 		}
 
+		// choose loader based on the extension
 		const std::string extension = assetpath.extension().string();
 		for (const auto& SUPPORTED_FORMAT : SUPPORTED_MESH_FILE_FORMATS) {
 			if (extension == SUPPORTED_FORMAT) {

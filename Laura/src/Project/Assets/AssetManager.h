@@ -70,8 +70,12 @@ namespace Laura
 	#define ASSET_META_FILE_EXTENSION ".lrmeta"
 
 	struct AssetMetaFile {
-		AssetMetaFile(LR_GUID guid = LR_GUID::INVALID) : guid(guid) {}
+		AssetMetaFile(LR_GUID guid = LR_GUID::INVALID, std::filesystem::path sourcePath = "")
+			: guid(guid), sourcePath(std::move(sourcePath)) {
+		}
+
 		LR_GUID guid = LR_GUID::INVALID;
+		std::filesystem::path sourcePath;
 	};
 
 	/// Serialize the 'assetMetafile' as-is at the location 'metapath'.
