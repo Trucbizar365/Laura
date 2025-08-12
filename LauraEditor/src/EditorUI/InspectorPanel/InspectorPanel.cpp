@@ -108,6 +108,33 @@ namespace Laura
 			}
 		);
 
+		DrawComponent<MaterialComponent>(std::string(ICON_FA_LAYER_GROUP " Material"), entity, [&](EntityHandle& entity) {
+				auto& materialComponent = entity.GetComponent<MaterialComponent>();
+				ImGui::Dummy({ 0.0f, 5.0f });
+
+				theme.PushColor(ImGuiCol_Text, EditorCol_Text2);
+				ImGui::Text("Emission Strength:");
+				theme.PopColor();
+				ImGui::SameLine(150.0f);
+				ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
+				ImGui::SliderFloat("##emission strength", &materialComponent.emission.w, 0.0f, 1.0f);
+
+				theme.PushColor(ImGuiCol_Text, EditorCol_Text2);
+				ImGui::Text("Emission Color:");
+				theme.PopColor();
+				ImGui::SameLine(150.0f);
+				ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
+				ImGui::ColorEdit3("##emission color", glm::value_ptr(materialComponent.emission), ImGuiColorEditFlags_NoBorder | ImGuiColorEditFlags_NoInputs);
+
+				theme.PushColor(ImGuiCol_Text, EditorCol_Text2);
+				ImGui::Text("Color:");
+				theme.PopColor();
+				ImGui::SameLine(150.0f);
+				ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
+				ImGui::ColorEdit3("##color", glm::value_ptr(materialComponent.color), ImGuiColorEditFlags_NoBorder | ImGuiColorEditFlags_NoInputs);
+			}
+		);
+
 		// ADD COMPONENT BUTTON
 		ImGui::Dummy(ImVec2(0.0f, 5.0f));
 		ImGui::Separator();

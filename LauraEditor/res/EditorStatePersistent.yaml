@@ -3,8 +3,8 @@ EditorThemeFilepath: ""
 EditorRenderSettings:
   showBvhHeatmap: false
   bvhHeatmapColorCutoff: 500
-  resolution: [1080, 1920]
+  resolution: [1920, 1200]
   raysPerPixel: 1
-  bouncesPerRay: 1
-  accumulate: false
+  bouncesPerRay: 5
+  accumulate: true
   vSync: true
