@@ -2,18 +2,22 @@
 
 #include "Laura.h"
 #include "EditorState.h"
+#include "EditorUI/IEditorPanel.h"
 
 namespace Laura
 {
 
-	class ProfilerPanel {
+	class ProfilerPanel : public IEditorPanel {
 	public:
-		ProfilerPanel(std::shared_ptr<EditorState> editorState)
-			: m_EditorState(editorState) {
+		ProfilerPanel(std::shared_ptr<EditorState> editorState, std::shared_ptr<Profiler> profiler)
+			: m_EditorState(editorState), m_Profiler(profiler) {
 		}
 
 		~ProfilerPanel() = default;
-		void OnImGuiRender(std::shared_ptr<Profiler> profiler);
+
+		virtual inline void init() override {}
+		virtual void OnImGuiRender() override;
+		virtual inline void onEvent(std::shared_ptr<IEvent> event) override {}
 		
 	private:
 		
@@ -24,5 +28,6 @@ namespace Laura
 		};
 
 		std::shared_ptr<EditorState> m_EditorState;
+		std::shared_ptr<Profiler> m_Profiler;
 	};
 }

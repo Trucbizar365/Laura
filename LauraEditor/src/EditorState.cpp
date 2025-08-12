@@ -9,6 +9,8 @@ namespace Laura
 			YAML::Node node;
 			node["ViewportMode"]        = state->persistent.viewportMode;
 			node["EditorThemeFilepath"] = state->persistent.editorThemeFilepath.string();
+			YAML::Node rsNode = node["EditorRenderSettings"];
+			state->persistent.editorRenderSettings.SerializeToYamlNode(rsNode);
 
 			std::ofstream fout(EDITOR_STATE_FILE_PATH);
 			if (!fout.is_open()) {
@@ -42,16 +44,19 @@ namespace Laura
 			YAML::Node node = YAML::LoadFile(filepath);
 			state->persistent.viewportMode          = node["ViewportMode"].as<ViewportMode>();
             state->persistent.editorThemeFilepath   = std::filesystem::path{ node["EditorThemeFilepath"].as<std::string>() };
+			YAML::Node rsNode = node["EditorRenderSettings"];
+			state->persistent.editorRenderSettings.DeserializeFromYamlNode(rsNode);
 		}
 		catch (const YAML::RepresentationException& e) {
-			LOG_EDITOR_CRITICAL("YAML representation error (make sure the file is valid): {0}, error: {1}", filepath, e.what());
+			LOG_EDITOR_ERROR("YAML representation error (make sure the file is valid): {0}, error: {1}", filepath, e.what());
 			return false;
 		}
 		catch (const std::exception& e) {
-			LOG_EDITOR_CRITICAL("Unknown error occurred while saving file: {0}, error: {1}", filepath, e.what());
+			LOG_EDITOR_ERROR("Unknown error occurred while loading file: {0}, error: {1}", filepath, e.what());
 			return false;
 		}
-        
+		
+		// Load theme based on the filepath
         auto [status, errMsg] = state->temp.editorTheme.LoadFromFile(state->persistent.editorThemeFilepath); // deserialize derived state
         if (state->persistent.editorThemeFilepath == "") {
             LOG_EDITOR_INFO("Using default theme");

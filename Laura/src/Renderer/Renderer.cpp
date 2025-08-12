@@ -7,6 +7,12 @@ namespace Laura
 	void Renderer::Init() {
 		m_SettingsUBO = IUniformBuffer::Create(48, 1, BufferUsageType::DYNAMIC_DRAW);
 		m_CameraUBO = IUniformBuffer::Create(80, 0, BufferUsageType::DYNAMIC_DRAW);
+		m_Shader = IComputeShader::Create(m_ComputeShaderPath.string(), glm::uvec3(1)); // work group sizes set in Draw() before shader->dispatch() 
+		if (!m_Shader) {
+			LOG_ENGINE_CRITICAL("Unable to equip compute shader!");
+			return;
+		}
+		m_Shader->Bind();
 	}
 
 	std::shared_ptr<IImage2D> Renderer::Render(const Scene* scene, const AssetPool* assetPool) {
@@ -72,42 +78,34 @@ namespace Laura
 	// assumes a valid pScene
 	bool Renderer::SetupGPUResources(std::shared_ptr<const ParsedScene> pScene, const Scene* scene, const AssetPool* assetPool) {
 		m_Profiler->timer("Renderer::SetupGPUResources()");
-
-		if (settings.ComputeShaderPath != m_Cache.ActiveShaderPath) {
-			m_Shader = IComputeShader::Create(settings.ComputeShaderPath.string(), glm::uvec3(1)); // work group sizes set in Draw() before shader->dispatch() 
-			if (!m_Shader) {
-				return false;
-			}
-			m_Shader->Bind();
-			m_Cache.ActiveShaderPath = settings.ComputeShaderPath;
+		
+		// Update frame buffer if changed
+		if (m_RenderSettings.resolution != m_Cache.Resolution) {
+			m_Frame = IImage2D::Create(nullptr, m_RenderSettings.resolution.x, m_RenderSettings.resolution.y, 0, Image2DType::LR_READ_WRITE);
+			m_Cache.Resolution = m_RenderSettings.resolution;
 		}
 
-		if (settings.Resolution != m_Cache.Resolution) {
-			m_Frame = IImage2D::Create(nullptr, settings.Resolution.x, settings.Resolution.y, 0, Image2DType::LR_READ_WRITE);
-			m_Cache.Resolution = settings.Resolution;
-		}
+		// increment acumulation
+		m_Cache.AccumulatedFrames = (m_RenderSettings.accumulate) ? (m_Cache.AccumulatedFrames + 1) : 0;
 
-		m_Cache.AccumulatedFrames = (settings.ShouldAccumulate) ? (m_Cache.AccumulatedFrames + 1) : 0;
-		{
-			// SETTINGS
-			uint32_t meshEntityCount = pScene->MeshEntityLookupTable.size();
-			uint32_t displayBVH = static_cast<uint32_t>(settings.displayBVH);
-			m_SettingsUBO->Bind();
-			m_SettingsUBO->AddData(0, sizeof(uint32_t), &settings.raysPerPixel);
-			m_SettingsUBO->AddData(4, sizeof(uint32_t), &settings.bouncesPerRay);
-			m_SettingsUBO->AddData(8, sizeof(uint32_t), &settings.maxAABBIntersections);
-			m_SettingsUBO->AddData(12, sizeof(uint32_t), &m_Cache.AccumulatedFrames);
-			m_SettingsUBO->AddData(16, sizeof(uint32_t), &meshEntityCount);
-			m_SettingsUBO->AddData(20, sizeof(uint32_t), &displayBVH);
-			m_SettingsUBO->Unbind();
-		}
-		{
-			// CAMERA
-			m_CameraUBO->Bind();
-			m_CameraUBO->AddData(0, sizeof(glm::mat4), &pScene->CameraTransform);
-			m_CameraUBO->AddData(64, sizeof(float), &pScene->CameraFocalLength);
-			m_CameraUBO->Unbind();
-		}
+		// SETTINGS
+		uint32_t meshEntityCount = pScene->MeshEntityLookupTable.size();
+		uint32_t showBvhHeatmap = static_cast<uint32_t>(m_RenderSettings.showBvhHeatmap);
+		m_SettingsUBO->Bind();
+		m_SettingsUBO->AddData(0, sizeof(uint32_t), &m_RenderSettings.raysPerPixel);
+		m_SettingsUBO->AddData(4, sizeof(uint32_t), &m_RenderSettings.bouncesPerRay);
+		m_SettingsUBO->AddData(8, sizeof(uint32_t), &m_RenderSettings.bvhHeatmapColorCutoff);
+		m_SettingsUBO->AddData(12, sizeof(uint32_t), &m_Cache.AccumulatedFrames);
+		m_SettingsUBO->AddData(16, sizeof(uint32_t), &meshEntityCount);
+		m_SettingsUBO->AddData(20, sizeof(uint32_t), &showBvhHeatmap);
+		m_SettingsUBO->Unbind();
+
+		// CAMERA
+		m_CameraUBO->Bind();
+		m_CameraUBO->AddData(0, sizeof(glm::mat4), &pScene->CameraTransform);
+		m_CameraUBO->AddData(64, sizeof(float), &pScene->CameraFocalLength);
+		m_CameraUBO->Unbind();
+
 		{
 			// ENTITY LOOKUP TABLE - updated every frame (transforms...)
 			uint32_t sizeBytes = sizeof(MeshEntityHandle) * pScene->MeshEntityLookupTable.size();
@@ -181,8 +179,8 @@ namespace Laura
 		auto t = m_Profiler->timer("Renderer::Draw()");
 		m_Shader->Bind();
 		m_Shader->setWorkGroupSizes(glm::uvec3(
-			(settings.Resolution.x + 7) / 8,
-			(settings.Resolution.y + 3) / 4,
+			(m_RenderSettings.resolution.x + 7) / 8,
+			(m_RenderSettings.resolution.y + 3) / 4,
 			1
 		  ));
 		m_Shader->Dispatch();

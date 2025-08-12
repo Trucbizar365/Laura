@@ -3,14 +3,8 @@
 #include <Laura.h>
 #include "EditorState.h"
 #include "ImGuiContext.h"
+#include "EditorUI/IEditorPanel.h"
 #include "EditorUI/Launcher/Launcher.h"
-#include "EditorUI/ViewportPanel/ViewportPanel.h"
-#include "EditorUI/SceneHierarchyPanel/SceneHierarchyPanel.h"
-#include "EditorUI/InspectorPanel/InspectorPanel.h"
-#include "EditorUI/ProfilerPanel/ProfilerPanel.h"
-#include "EditorUI/RenderSettingsPanel/RenderSettingsPanel.h"
-#include "EditorUI/ThemePanel/ThemePanel.h"
-#include "EditorUI/AssetsPanel/AssetsPanel.h"
 
 namespace Laura
 {
@@ -31,26 +25,24 @@ namespace Laura
 	private:
 		void DrawMainMenu();
 
-		// Engine
+		// Engine Systems
 		std::shared_ptr<Profiler> m_Profiler;
-		std::shared_ptr<IEventDispatcher> m_EventDispatcher;
+		std::shared_ptr<IEventDispatcher> m_EventDispatcher; // layerstack  
 		std::shared_ptr<ProjectManager> m_ProjectManager;
 
-		// Values received from events
-		std::weak_ptr<Scene> m_Scene;
-		std::weak_ptr<IImage2D> m_LatestFrameRender;
-
-		// Editor
+		// Editor Systems
 		std::shared_ptr<EditorState> m_EditorState;
-		std::shared_ptr<ImGuiContext> m_ImGuiContext;
+		std::shared_ptr<ImGuiContext> m_ImGuiContext; // passed from LauraEditor.cpp
 
 		Launcher m_Launcher;
-		SceneHierarchyPanel m_SceneHierarchyPanel;
-		InspectorPanel m_InspectorPanel;
-		ViewportPanel m_ViewportPanel;
-		ThemePanel m_ThemePanel;
-		ProfilerPanel m_ProfilerPanel;
-		RenderSettingsPanel m_RenderSettingsPanel;
-		AssetsPanel m_AssetsPanel;
+
+		// Editor Panels
+		std::unique_ptr<IEditorPanel> m_SceneHierarchyPanel;
+		std::unique_ptr<IEditorPanel> m_InspectorPanel;
+		std::unique_ptr<IEditorPanel> m_ViewportPanel;
+		std::unique_ptr<IEditorPanel> m_ThemePanel;
+		std::unique_ptr<IEditorPanel> m_ProfilerPanel;
+		std::unique_ptr<IEditorPanel> m_RenderSettingsPanel;
+		std::unique_ptr<IEditorPanel> m_AssetsPanel;
 	};
 }

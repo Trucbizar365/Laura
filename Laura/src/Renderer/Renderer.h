@@ -3,6 +3,7 @@
 #include "lrpch.h"
 #include "Project/Scene/Scene.h"
 #include "Project/Assets/AssetManager.h"
+#include "Renderer/RenderSettings.h"
 #include "Renderer/IRendererAPI.h"
 #include "Renderer/IComputeShader.h"
 #include "Renderer/ITexture2D.h"
@@ -17,15 +18,6 @@ namespace Laura
 
 	class Renderer {
 	private:
-		struct Settings { /* here are the default ones */
-			glm::uvec2 Resolution{ 640, 360 }; // nHD 16:9
-			std::filesystem::path ComputeShaderPath = LR_RESOURCES_PATH "Shaders/PathTracing.comp";
-			uint32_t raysPerPixel = 1;
-			uint32_t bouncesPerRay = 5;
-			bool ShouldAccumulate = false;
-			bool displayBVH = false;
-			uint32_t maxAABBIntersections;
-		};
 
 		struct Cache {
 			glm::uvec2 Resolution{0};
@@ -71,24 +63,27 @@ namespace Laura
 		inline static IRendererAPI::API GetAPI() { return IRendererAPI::GetAPI(); } // getter
 		inline static void SetAPI(IRendererAPI::API api) { IRendererAPI::SetAPI(api); } // setter
 
+		inline void applySettings(RenderSettings renderSettings) { m_RenderSettings = renderSettings; }
+
 		void Init();
 		std::shared_ptr<IImage2D> Render(const Scene* scene, const AssetPool* resourcePool);
-
-		Settings settings{};
 
 	private:
 		std::shared_ptr<const ParsedScene> Parse(const Scene* scene, const AssetPool* resourcePool) const;
 		bool SetupGPUResources(std::shared_ptr<const ParsedScene> pScene, const Scene* scene, const AssetPool* resourcePool);
 		void Draw(); // Draws directly to m_Frame
 
+
+		std::shared_ptr<Profiler> m_Profiler;
+
 		std::shared_ptr<IComputeShader> m_Shader;
 		std::shared_ptr<IImage2D> m_Frame;
 		std::shared_ptr<ITexture2D> m_SkyboxTexture;
-
 		std::shared_ptr<IUniformBuffer> m_CameraUBO, m_SettingsUBO;
 		std::shared_ptr<IShaderStorageBuffer> m_MeshEntityLookupSSBO, m_MeshBufferSSBO, m_NodeBufferSSBO, m_IndexBufferSSBO;
 		
 		Cache m_Cache;
-		std::shared_ptr<Profiler> m_Profiler;
+		RenderSettings m_RenderSettings;
+		std::filesystem::path m_ComputeShaderPath = LR_RESOURCES_PATH "Shaders/PathTracing.comp";
 	};
 }

@@ -39,6 +39,7 @@ namespace Laura
 		struct {
 			ViewportMode viewportMode = ViewportMode::FitToViewport;
 			std::filesystem::path editorThemeFilepath = "";
+			RenderSettings editorRenderSettings{};
 		} persistent;
 	};
 

@@ -4,6 +4,11 @@
 namespace Laura 
 {
 
+	void RenderSettingsPanel::init() {
+		// sync the renderer with the newely deserialized render settings 
+		m_EventDispatcher->dispatchEvent(std::make_shared<UpdateRenderSettingsEvent>(m_EditorState->persistent.editorRenderSettings));
+	}
+
 	void RenderSettingsPanel::OnImGuiRender() {
 		EditorTheme& theme = m_EditorState->temp.editorTheme;
 
@@ -20,6 +25,7 @@ namespace Laura
 
 		ImGui::BeginChild("child_with_margin", ImVec2(avail_width - margin_right, 0), false);
 		if (ImGui::BeginTabBar("##tabs", ImGuiTabBarFlags_None)) {
+			RenderSettings& editorRenderSettings = m_EditorState->persistent.editorRenderSettings;
 
 			if (ImGui::BeginTabItem("Editor")) {
 				theme.PushColor(ImGuiCol_Text, EditorCol_Accent1);
@@ -34,6 +40,9 @@ namespace Laura
         				bool selected = (current_idx == n);
         				if (ImGui::Selectable(m_ResolutionOptions[n].label, selected)) {
             				current_idx = n;
+
+							editorRenderSettings.resolution = m_ResolutionOptions[n].resolution;
+							m_EventDispatcher->dispatchEvent(std::make_shared<UpdateRenderSettingsEvent>(editorRenderSettings));
         				}
 						if (selected) { ImGui::SetItemDefaultFocus(); }
     				}
@@ -43,19 +52,27 @@ namespace Laura
 				float drag_speed = 0.1f;  // slower dragging speed
 				DrawLabel("Rays Per Pixel:");
 				ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
-				ImGui::DragInt("##RaysPerPixelDragInt", &m_RaysPerPixel, drag_speed, 0, 100, "%d", ImGuiSliderFlags_AlwaysClamp);
+				if (ImGui::DragInt("##RaysPerPixelDragInt", &editorRenderSettings.raysPerPixel, drag_speed, 0, 100, "%d", ImGuiSliderFlags_AlwaysClamp)) {
+					m_EventDispatcher->dispatchEvent(std::make_shared<UpdateRenderSettingsEvent>(editorRenderSettings));
+				}
 
 				DrawLabel("Bounces Per Ray:");
 				ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
-				ImGui::DragInt("##BouncesPerRayDragInt", &m_BouncesPerRay, drag_speed, 0, 100, "%d", ImGuiSliderFlags_AlwaysClamp);
+				if (ImGui::DragInt("##BouncesPerRayDragInt", &editorRenderSettings.bouncesPerRay, drag_speed, 0, 100, "%d", ImGuiSliderFlags_AlwaysClamp)) {
+					m_EventDispatcher->dispatchEvent(std::make_shared<UpdateRenderSettingsEvent>(editorRenderSettings));
+				}
 
 				theme.PushColor(ImGuiCol_CheckMark, EditorCol_Text1);
 				{
 					DrawLabel("Light Accumulation:");
-					ImGui::Checkbox("##LightAccumulationCheckbox", &m_IsAccumulate);
+					if (ImGui::Checkbox("##LightAccumulationCheckbox", &editorRenderSettings.accumulate)) {
+						m_EventDispatcher->dispatchEvent(std::make_shared<UpdateRenderSettingsEvent>(editorRenderSettings));
+					}
 
 					DrawLabel("VSync:");
-					ImGui::Checkbox("##VSyncCheckbox", &m_IsVSync);
+					if (ImGui::Checkbox("##VSyncCheckbox", &editorRenderSettings.vSync)) {
+						m_EventDispatcher->dispatchEvent(std::make_shared<UpdateRenderSettingsEvent>(editorRenderSettings));
+					}
 
 					ImGui::Dummy({ 0.0f, 10.0f });
 					theme.PushColor(ImGuiCol_Text, EditorCol_Accent1);
@@ -63,7 +80,9 @@ namespace Laura
 					theme.PopColor();
 
 					DrawLabel("Visualize BVH:");
-					ImGui::Checkbox("##VisualizeBVHCheckbox", &m_IsBVHVisualization);
+					if (ImGui::Checkbox("##VisualizeBVHCheckbox", &editorRenderSettings.showBvhHeatmap)) {
+						m_EventDispatcher->dispatchEvent(std::make_shared<UpdateRenderSettingsEvent>(editorRenderSettings));
+					}
 				}
 				theme.PopColor();
 				ImGui::EndTabItem();

@@ -3,6 +3,7 @@
 #include <IconsFontAwesome6.h>
 #include <imgui_internal.h>
 #include "Laura.h"
+#include "EditorUI/IEditorPanel.h"
 #include "EditorState.h"
 #include "EditorTheme.h"
 #include "EditorUI/UtilityUI.h"
@@ -11,12 +12,14 @@
 namespace Laura
 {
 
-	class InspectorPanel {
+	class InspectorPanel : public IEditorPanel {
 	public:
 		InspectorPanel(std::shared_ptr<EditorState> editorState, std::shared_ptr<ProjectManager> projectManager);
 		~InspectorPanel() = default;
 
-		void OnImGuiRender();
+		virtual inline void init() override {}
+		virtual void OnImGuiRender() override;
+		virtual inline void onEvent(std::shared_ptr<IEvent> event) override {}
 
 	private:
 		template<typename T, typename UILambda>

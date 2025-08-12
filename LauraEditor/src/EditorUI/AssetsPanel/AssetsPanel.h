@@ -1,6 +1,7 @@
 #pragma once
 
 #include <Laura.h>
+#include "EditorUI/IEditorPanel.h"
 #include "EditorState.h"
 #include "IconsFontAwesome6.h"
 #include "EditorUI\DNDPayloads.h"
@@ -8,16 +9,18 @@
 namespace Laura 
 {
 
-	class AssetsPanel {
+	class AssetsPanel : public IEditorPanel {
 	public:
-		AssetsPanel(std::shared_ptr<EditorState> editorState, 
-					std::shared_ptr<ProjectManager> projectManager)
+		AssetsPanel(std::shared_ptr<EditorState> editorState,
+			std::shared_ptr<ProjectManager> projectManager)
 			: m_EditorState(editorState),
-			  m_ProjectManager(projectManager) {
+			m_ProjectManager(projectManager) {
 		}
 		~AssetsPanel() = default;
-	
-		void OnImGuiRender();
+
+		virtual inline void init() override {}
+		virtual void OnImGuiRender() override;
+		virtual inline void onEvent(std::shared_ptr<IEvent> event) override {}
 
 	private:
 		void DrawAssetTile(LR_GUID guid, const char* title);

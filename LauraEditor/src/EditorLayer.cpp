@@ -1,6 +1,13 @@
+#include <imgui.h>
 #include "EditorLayer.h"
-#include "imgui.h"
 #include "EditorUI/UtilityUI.h"
+#include "EditorUI/ViewportPanel/ViewportPanel.h"
+#include "EditorUI/SceneHierarchyPanel/SceneHierarchyPanel.h"
+#include "EditorUI/InspectorPanel/InspectorPanel.h"
+#include "EditorUI/ProfilerPanel/ProfilerPanel.h"
+#include "EditorUI/RenderSettingsPanel/RenderSettingsPanel.h"
+#include "EditorUI/ThemePanel/ThemePanel.h"
+#include "EditorUI/AssetsPanel/AssetsPanel.h"
 
 namespace Laura
 {
@@ -12,21 +19,31 @@ namespace Laura
 		:	m_EventDispatcher(eventDispatcher),
 			m_ProjectManager(projectManager),
 			m_Profiler(profiler),
-			m_ImGuiContext(imGuiContext),
 
 			m_EditorState(std::make_shared<EditorState>()),
+			m_ImGuiContext(imGuiContext),
+		
 			m_Launcher(m_EditorState, m_ProjectManager),
-			m_InspectorPanel(m_EditorState, m_ProjectManager),
-			m_SceneHierarchyPanel(m_EditorState, m_ProjectManager),
-			m_ViewportPanel(m_EditorState, m_ProjectManager),
-			m_ThemePanel(m_EditorState),
-			m_ProfilerPanel(m_EditorState),
-			m_RenderSettingsPanel(m_EditorState),
-			m_AssetsPanel(m_EditorState, m_ProjectManager){
+
+			m_SceneHierarchyPanel(std::make_unique<SceneHierarchyPanel>(m_EditorState, m_ProjectManager)),
+			m_InspectorPanel(std::make_unique<InspectorPanel>(m_EditorState, m_ProjectManager)),
+			m_ViewportPanel(std::make_unique<ViewportPanel>(m_EditorState, m_ProjectManager)),
+			m_ThemePanel(std::make_unique<ThemePanel>(m_EditorState)),
+			m_ProfilerPanel(std::make_unique<ProfilerPanel>(m_EditorState, m_Profiler)),
+			m_RenderSettingsPanel(std::make_unique<RenderSettingsPanel>(m_EditorState, m_EventDispatcher)),
+			m_AssetsPanel(std::make_unique<AssetsPanel>(m_EditorState, m_ProjectManager)){
 	}
 
 	void EditorLayer::onAttach() {
 		deserializeState(m_EditorState);
+
+		m_InspectorPanel		->init();
+		m_SceneHierarchyPanel	->init();
+		m_ViewportPanel			->init();
+		m_ThemePanel			->init();
+		m_ProfilerPanel			->init();
+		m_RenderSettingsPanel	->init();
+		m_AssetsPanel			->init();
 	}
 
 	void EditorLayer::onDetach() {
@@ -34,12 +51,42 @@ namespace Laura
 	}
 
 	void EditorLayer::onEvent(std::shared_ptr<IEvent> event) {
-		//std::cout << event->GetType() << std::endl;
-
-		if (event->GetType() == EventType::NEW_FRAME_RENDERED_EVENT) {
-			m_LatestFrameRender = std::dynamic_pointer_cast<NewFrameRenderedEvent>(event)->frame;
-		}
+		// propagate events to individual panels
+		m_InspectorPanel		->onEvent(event);
+		m_SceneHierarchyPanel	->onEvent(event);
+		m_ViewportPanel			->onEvent(event);
+		m_ThemePanel			->onEvent(event);
+		m_ProfilerPanel			->onEvent(event);
+		m_RenderSettingsPanel	->onEvent(event);
+		m_AssetsPanel			->onEvent(event);
 	}
+
+	void EditorLayer::onUpdate() {
+		m_ImGuiContext->BeginFrame();
+		m_EditorState->temp.editorTheme.ApplyAllToImgui(); // apply theme every frame
+
+		if (!m_ProjectManager->ProjectIsOpen()) {
+			m_Launcher.OnImGuiRender();
+			m_ImGuiContext->EndFrame();
+			return;
+		}
+
+		ImGui::DockSpaceOverViewport(0, ImGui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode);
+		DrawMainMenu();
+		bool showDemo = true;
+		ImGui::ShowDemoWindow(&showDemo);
+
+		m_SceneHierarchyPanel	->OnImGuiRender();
+		m_InspectorPanel		->OnImGuiRender();
+		m_ThemePanel			->OnImGuiRender();
+		m_AssetsPanel			->OnImGuiRender();
+		m_RenderSettingsPanel	->OnImGuiRender();
+		m_ViewportPanel			->OnImGuiRender();
+		m_ProfilerPanel			->OnImGuiRender();
+
+		m_ImGuiContext->EndFrame();
+	}
+
 
 	void EditorLayer::DrawMainMenu() {
 		static bool shouldCloseProject = false;
@@ -83,30 +130,5 @@ namespace Laura
 			},
 			m_EditorState	
 		);
-	}
-
-	void EditorLayer::onUpdate() {
-		m_ImGuiContext->BeginFrame();
-		m_EditorState->temp.editorTheme.ApplyAllToImgui(); // apply theme every frame
-
-		if (!m_ProjectManager->ProjectIsOpen()) {
-			m_Launcher.OnImGuiRender();
-			m_ImGuiContext->EndFrame();
-			return;
-		}
-
-		ImGui::DockSpaceOverViewport(0, ImGui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode);
-		DrawMainMenu();
-		bool showDemo = true;
-		ImGui::ShowDemoWindow(&showDemo);
-		m_SceneHierarchyPanel.OnImGuiRender();
-		m_InspectorPanel.OnImGuiRender();
-		m_ThemePanel.OnImGuiRender();
-		m_AssetsPanel.OnImGuiRender();
-		m_RenderSettingsPanel.OnImGuiRender();
-		m_ViewportPanel.OnImGuiRender(m_LatestFrameRender);
-		m_ProfilerPanel.OnImGuiRender(m_Profiler);
-
-		m_ImGuiContext->EndFrame();
 	}
 }
