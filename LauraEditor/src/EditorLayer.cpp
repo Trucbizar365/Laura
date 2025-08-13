@@ -76,7 +76,8 @@ namespace Laura
 		}
 
 		ImGui::DockSpaceOverViewport(0, ImGui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode);
-		m_MainMenuPanel			->OnImGuiRender();
+
+		m_MainMenuPanel			->OnImGuiRender(); 
 		m_SceneHierarchyPanel	->OnImGuiRender();
 		m_InspectorPanel		->OnImGuiRender();
 		m_ThemePanel			->OnImGuiRender();

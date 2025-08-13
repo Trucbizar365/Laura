@@ -1,5 +1,6 @@
 #include <IconsFontAwesome6.h>
-#include "EditorUI\RenderSettingsPanel\RenderSettingsPanel.h"
+#include "EditorUI/RenderSettingsPanel/RenderSettingsPanel.h"
+#include "EditorUI/UtilityUI.h"
 
 namespace Laura 
 {
@@ -12,6 +13,7 @@ namespace Laura
 	void RenderSettingsPanel::OnImGuiRender() {
 		EditorTheme& theme = m_EditorState->temp.editorTheme;
 
+
 		auto DrawLabel = [&theme](const char* label) {
             theme.PushColor(ImGuiCol_Text, EditorCol_Text2);
             ImGui::Text("%s", label);
@@ -20,6 +22,9 @@ namespace Laura
         };
 
 		ImGui::Begin(ICON_FA_WRENCH " RENDER SETTINGS");
+		if (m_EditorState->temp.isInRuntimeMode) {
+			ImGui::BeginDisabled();
+		}
 		float avail_width = ImGui::GetContentRegionAvail().x;
 		float margin_right = 5.0f;  // pixels to leave empty on the right
 
@@ -97,6 +102,11 @@ namespace Laura
 			ImGui::EndTabBar();
 		}
 		ImGui::EndChild();
+		
+		if (m_EditorState->temp.isInRuntimeMode) {
+			ImGui::EndDisabled();
+		}
+		
 		ImGui::End();
 	}
  }
