@@ -5,7 +5,6 @@
 
 namespace Laura
 {
-
 	void ViewportPanel::DrawDropTargetForScene() {
 		if (ImGui::BeginDragDropTarget()) {
 			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(DNDPayloadTypes::SCENE)) {
@@ -21,7 +20,13 @@ namespace Laura
 		}
 	}
 
-	void ViewportPanel::OnImGuiRender(std::weak_ptr<IImage2D> image) {
+	void ViewportPanel::onEvent(std::shared_ptr<IEvent> event) {
+		if (event->GetType() == EventType::NEW_FRAME_RENDERED_EVENT) {
+			m_LatestRenderedFrame = std::dynamic_pointer_cast<NewFrameRenderedEvent>(event)->frame;
+		}
+	}
+
+	void ViewportPanel::OnImGuiRender() {
 		static ImGuiWindowFlags ViewportFlags = ImGuiWindowFlags_NoCollapse;
 		auto theme = m_EditorState->temp.editorTheme;
 
@@ -38,8 +43,8 @@ namespace Laura
 
 		DrawViewportSettingsPanel();
 
-		auto imageShared = image.lock();
-		if (imageShared == nullptr) {
+		auto latestRenderedFrameShared = m_LatestRenderedFrame.lock();
+		if (latestRenderedFrameShared == nullptr) {
 			DrawVieportSettingsButton();
 			ImGui::EndChild();
 			ImGui::PopStyleVar();
@@ -49,7 +54,7 @@ namespace Laura
 			return;
 		}
 		
-		ImageDimensions = imageShared->GetDimensions();
+		ImageDimensions = latestRenderedFrameShared->GetDimensions();
 		WindowDimensions = glm::ivec2(ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y);
 		TLWindowPosition = glm::ivec2(ImGui::GetWindowPos().x, ImGui::GetWindowPos().y);
 
@@ -110,7 +115,7 @@ namespace Laura
 		ImDrawList* drawList = ImGui::GetWindowDrawList();
 		ImVec2 TLImVec = ImVec2(m_TopLeftImageCoords.x, m_TopLeftImageCoords.y);
 		ImVec2 BRImVec = ImVec2(m_BottomRightImageCoords.x, m_BottomRightImageCoords.y);
-		drawList->AddImage((ImTextureID)imageShared->GetID(), TLImVec, BRImVec, { 0, 1 }, { 1, 0 });
+		drawList->AddImage((ImTextureID)latestRenderedFrameShared->GetID(), TLImVec, BRImVec, { 0, 1 }, { 1, 0 });
 
 		DrawVieportSettingsButton();
 

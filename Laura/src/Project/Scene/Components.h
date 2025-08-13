@@ -57,7 +57,8 @@ namespace Laura
 	};
 
 	struct MaterialComponent {
-		LR_GUID guid = LR_GUID::INVALID;
+		glm::vec4 emission; // xyz: color, w: strength
+		glm::vec4 color; // w: padding
 	};
 
 	struct CameraComponent {

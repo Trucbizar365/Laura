@@ -2,15 +2,19 @@
 
 #include "Laura.h"
 #include "EditorState.h"
+#include "EditorUI/IEditorPanel.h"
 
 namespace Laura
 {
 
-	class SceneHierarchyPanel {
+	class SceneHierarchyPanel : public IEditorPanel {
 	public:
 		SceneHierarchyPanel(std::shared_ptr<EditorState> editorState, std::shared_ptr<ProjectManager> projectManager);
 		~SceneHierarchyPanel() = default;
-		void OnImGuiRender();
+
+		virtual inline void init() override {}
+		virtual void OnImGuiRender() override;
+		virtual inline void onEvent(std::shared_ptr<IEvent> event) override {}
 
 	private:
 		std::shared_ptr<EditorState> m_EditorState;

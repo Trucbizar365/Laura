@@ -148,7 +148,7 @@ namespace Laura
         			ImGui::Text(name);
         			ImGui::NextColumn();
 					ImGui::PushID(i);
-					ImGui::ColorEdit4("##color", (float*)&theme[static_cast<EditorCol_>(i)], ImGuiColorEditFlags_AlphaBar);
+					ImGui::ColorEdit4("##color", (float*)&theme[static_cast<EditorCol_>(i)], ImGuiColorEditFlags_AlphaBar | ImGuiColorEditFlags_NoInputs);
 					ImGui::PopID();
         			ImGui::NextColumn();
     			}

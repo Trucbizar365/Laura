@@ -5,32 +5,32 @@
 namespace Laura 
 {
 
-    void ProfilerPanel::OnImGuiRender(std::shared_ptr<Profiler> profiler) {
+    void ProfilerPanel::OnImGuiRender() {
         EditorTheme& theme = m_EditorState->temp.editorTheme;
 
         if (!m_EditorState->temp.isProfilerPanelOpen) {
             return;
         }
 
-        if (!profiler->globalTimerSet) {
+        if (!m_Profiler->globalTimerSet) {
             LOG_ENGINE_WARN("Unable to render Profiler Panel - No Global Timer Set");
             return;
         }
 
-        auto t = profiler->timer("ProfilerPanel");
+        auto t = m_Profiler->timer("ProfilerPanel");
 
         ImPlot::PushColormap(ImPlotColormap_Deep);
         theme.PushColor(ImGuiCol_WindowBg, EditorCol_Background3);
         ImGui::Begin(ICON_FA_STOPWATCH " PROFILER", &m_EditorState->temp.isProfilerPanelOpen);
 
-        const char* playLabel = (profiler->isPaused) ? ICON_FA_PLAY : ICON_FA_PAUSE;
+        const char* playLabel = (m_Profiler->isPaused) ? ICON_FA_PLAY : ICON_FA_PAUSE;
         theme.PushColor(ImGuiCol_Button, EditorCol_Transparent);
         if (ImGui::Button(playLabel)) {
-            profiler->isPaused = !profiler->isPaused;
+            m_Profiler->isPaused = !m_Profiler->isPaused;
         }
         theme.PopColor();
 
-        const ScrollingBuffer& buff = profiler->getGlobalBuffer();
+        const ScrollingBuffer& buff = m_Profiler->getGlobalBuffer();
         if (!buff.empty()) {
             ImGui::SameLine();
             double Global_ms = buff.data()[buff.size() - 1];
@@ -40,7 +40,7 @@ namespace Laura
             ImGui::SameLine();
 
             if (ImGui::Button("Clear " ICON_FA_REPEAT))
-                profiler->clear();
+                m_Profiler->clear();
             ImGui::SameLine();
         }
 
@@ -59,7 +59,7 @@ namespace Laura
             ImPlot::SetupAxisFormat(ImAxis_Y1, "%gms");
             ImPlot::PushStyleVar(ImPlotStyleVar_FillAlpha, 0.05f);
             
-            for (const auto& p : profiler->data()) {
+            for (const auto& p : m_Profiler->data()) {
                 const std::string label = p.first;
                 const ScrollingBuffer& buff = p.second;
 

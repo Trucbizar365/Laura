@@ -2,6 +2,7 @@
 
 #include "Core/Events/IEvent.h"
 #include "Renderer/IImage2D.h"
+#include "Renderer/RenderSettings.h"
 
 namespace Laura 
 {
@@ -13,5 +14,14 @@ namespace Laura
 			: frame(std::move(frame)) {}
 
 		inline EventType GetType() const override { return EventType::NEW_FRAME_RENDERED_EVENT; }
+	};
+
+	struct UpdateRenderSettingsEvent: public IEvent {
+		RenderSettings renderSettings;
+
+		UpdateRenderSettingsEvent(RenderSettings renderSettings) 
+			: renderSettings(std::move(renderSettings)) {}
+
+		inline EventType GetType() const override { return EventType::UPDATE_RENDER_SETTINGS_EVENT; }
 	};
 }

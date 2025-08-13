@@ -2,18 +2,22 @@
 
 #include "Laura.h"
 #include "EditorState.h"
+#include "EditorUI/IEditorPanel.h"
 
 namespace Laura
 {
 
-	class ThemePanel {
+	class ThemePanel : public IEditorPanel {
 	public:
 		inline ThemePanel(std::shared_ptr<EditorState> editorState)
 			: m_EditorState(editorState) {
 		}
 
 		~ThemePanel() = default;
-		void OnImGuiRender();
+
+		virtual inline void init() override {}
+		virtual void OnImGuiRender() override;
+		virtual inline void onEvent(std::shared_ptr<IEvent> event) override {}
 
 	private:
 		std::shared_ptr<EditorState> m_EditorState;

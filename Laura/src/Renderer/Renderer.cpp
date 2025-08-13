@@ -5,8 +5,17 @@ namespace Laura
 {
 
 	void Renderer::Init() {
-		m_SettingsUBO = IUniformBuffer::Create(48, 1, BufferUsageType::DYNAMIC_DRAW);
+		// fixed size from start
 		m_CameraUBO = IUniformBuffer::Create(80, 0, BufferUsageType::DYNAMIC_DRAW);
+		m_SettingsUBO = IUniformBuffer::Create(48, 1, BufferUsageType::DYNAMIC_DRAW);
+
+		// work group sizes set in Draw() before shader->dispatch() 
+		m_Shader = IComputeShader::Create(m_ComputeShaderPath.string(), glm::uvec3(1)); 
+		if (!m_Shader) {
+			LOG_ENGINE_CRITICAL("Unable to equip compute shader!");
+			return;
+		}
+		m_Shader->Bind();
 	}
 
 	std::shared_ptr<IImage2D> Renderer::Render(const Scene* scene, const AssetPool* assetPool) {
@@ -45,9 +54,16 @@ namespace Laura
 		if (!pScene->hasValidCamera) {
 			return nullptr;
 		}
-
+		
+		// SKYBOX
+		pScene->skyboxGUID = scene->skyboxGuid;
+		
+		// ENTITY HANDLES, TRANSFORMS & MATERIALS
 		auto renderableView = scene->GetRegistry()->view<TransformComponent, MeshComponent>();
 		pScene->MeshEntityLookupTable.reserve(renderableView.size_hint());
+		pScene->TransformBuffer.reserve(renderableView.size_hint());
+		pScene->MaterialBuffer.reserve(renderableView.size_hint());
+
 		for (auto entity : renderableView) {
 			EntityHandle e(entity, scene->GetRegistry());
 			LR_GUID& guid = e.GetComponent<MeshComponent>().guid;
@@ -55,16 +71,27 @@ namespace Laura
 			if (!metadata) {
 				continue;
 			}
+			
+			// transform guaranteed by the view
+			pScene->TransformBuffer.emplace_back(e.GetComponent<TransformComponent>().GetMatrix());
+
+			// material not guaranteed
+			if (e.HasComponent<MaterialComponent>()) {
+				MaterialComponent& materialComponent = e.GetComponent<MaterialComponent>();
+				pScene->MaterialBuffer.emplace_back(materialComponent.emission, materialComponent.color);
+			} else {
+				pScene->MaterialBuffer.emplace_back(); // default constructed material
+			}
+
 			pScene->MeshEntityLookupTable.emplace_back (
 				metadata->firstTriIdx,
 				metadata->TriCount,
 				metadata->firstNodeIdx,
 				metadata->nodeCount,
-				e.GetComponent<TransformComponent>().GetMatrix()
+				pScene->TransformBuffer.size() - 1,
+				pScene->MaterialBuffer.size() - 1
 			);
 		}
-
-		pScene->skyboxGUID = scene->skyboxGuid;
 		return pScene;
 	}
 
@@ -73,54 +100,35 @@ namespace Laura
 	bool Renderer::SetupGPUResources(std::shared_ptr<const ParsedScene> pScene, const Scene* scene, const AssetPool* assetPool) {
 		m_Profiler->timer("Renderer::SetupGPUResources()");
 
-		if (settings.ComputeShaderPath != m_Cache.ActiveShaderPath) {
-			m_Shader = IComputeShader::Create(settings.ComputeShaderPath.string(), glm::uvec3(1)); // work group sizes set in Draw() before shader->dispatch() 
-			if (!m_Shader) {
-				return false;
-			}
-			m_Shader->Bind();
-			m_Cache.ActiveShaderPath = settings.ComputeShaderPath;
+		// Update frame buffer if changed
+		if (m_RenderSettings.resolution != m_Cache.Resolution) {
+			m_Frame = IImage2D::Create(nullptr, m_RenderSettings.resolution.x, m_RenderSettings.resolution.y, 0, Image2DType::LR_READ_WRITE);
+			m_Cache.Resolution = m_RenderSettings.resolution;
 		}
 
-		if (settings.Resolution != m_Cache.Resolution) {
-			m_Frame = IImage2D::Create(nullptr, settings.Resolution.x, settings.Resolution.y, 0, Image2DType::LR_READ_WRITE);
-			m_Cache.Resolution = settings.Resolution;
-		}
+		// increment acumulation
+		m_Cache.AccumulatedFrames = (m_RenderSettings.accumulate) ? (m_Cache.AccumulatedFrames + 1) : 0;
 
-		m_Cache.AccumulatedFrames = (settings.ShouldAccumulate) ? (m_Cache.AccumulatedFrames + 1) : 0;
-		{
-			// SETTINGS
-			uint32_t meshEntityCount = pScene->MeshEntityLookupTable.size();
-			uint32_t displayBVH = static_cast<uint32_t>(settings.displayBVH);
-			m_SettingsUBO->Bind();
-			m_SettingsUBO->AddData(0, sizeof(uint32_t), &settings.raysPerPixel);
-			m_SettingsUBO->AddData(4, sizeof(uint32_t), &settings.bouncesPerRay);
-			m_SettingsUBO->AddData(8, sizeof(uint32_t), &settings.maxAABBIntersections);
-			m_SettingsUBO->AddData(12, sizeof(uint32_t), &m_Cache.AccumulatedFrames);
-			m_SettingsUBO->AddData(16, sizeof(uint32_t), &meshEntityCount);
-			m_SettingsUBO->AddData(20, sizeof(uint32_t), &displayBVH);
-			m_SettingsUBO->Unbind();
-		}
-		{
-			// CAMERA
-			m_CameraUBO->Bind();
-			m_CameraUBO->AddData(0, sizeof(glm::mat4), &pScene->CameraTransform);
-			m_CameraUBO->AddData(64, sizeof(float), &pScene->CameraFocalLength);
-			m_CameraUBO->Unbind();
-		}
-		{
-			// ENTITY LOOKUP TABLE - updated every frame (transforms...)
-			uint32_t sizeBytes = sizeof(MeshEntityHandle) * pScene->MeshEntityLookupTable.size();
-			m_MeshEntityLookupSSBO = IShaderStorageBuffer::Create(sizeBytes, 4, BufferUsageType::DYNAMIC_DRAW);
-			m_MeshEntityLookupSSBO->Bind();
-			m_MeshEntityLookupSSBO->AddData(0, sizeBytes, pScene->MeshEntityLookupTable.data());
-			m_MeshEntityLookupSSBO->Unbind();
-		}
+		// UBOs
 
-		static uint32_t prevMeshBuffVersion = 0;
-		static uint32_t prevNodeBuffVersion = 0;
-		static uint32_t prevIndexBuffVersion = 0;
-		static uint32_t prevSkyboxTextureVersion = 0;
+		// SETTINGS
+		uint32_t meshEntityCount = pScene->MeshEntityLookupTable.size();
+		uint32_t showBvhHeatmap = static_cast<uint32_t>(m_RenderSettings.showBvhHeatmap);
+		m_SettingsUBO->Bind();
+		m_SettingsUBO->AddData(0, sizeof(uint32_t), &m_RenderSettings.raysPerPixel);
+		m_SettingsUBO->AddData(4, sizeof(uint32_t), &m_RenderSettings.bouncesPerRay);
+		m_SettingsUBO->AddData(8, sizeof(uint32_t), &m_RenderSettings.bvhHeatmapColorCutoff);
+		m_SettingsUBO->AddData(12, sizeof(uint32_t), &m_Cache.AccumulatedFrames);
+		m_SettingsUBO->AddData(16, sizeof(uint32_t), &meshEntityCount);
+		m_SettingsUBO->AddData(20, sizeof(uint32_t), &showBvhHeatmap);
+		m_SettingsUBO->Unbind();
+
+		// CAMERA
+		m_CameraUBO->Bind();
+		m_CameraUBO->AddData(0, sizeof(glm::mat4), &pScene->CameraTransform);
+		m_CameraUBO->AddData(64, sizeof(float), &pScene->CameraFocalLength);
+		m_CameraUBO->Unbind();
+
 
 		// Update SKYBOX texture if guid changed 
 		if (scene && scene->skyboxGuid != m_Cache.prevSkyboxGuid) {
@@ -133,47 +141,82 @@ namespace Laura
 			}
 		}
 
-		// MESH BUFFER
+		// SSBOs - UPDATED EVERY FRAME 
+
+		{
+			// EntityLookupTable - BINDING POINT 0
+			uint32_t sizeBytes = sizeof(MeshEntityHandle) * pScene->MeshEntityLookupTable.size();
+			m_MeshEntityLookupSSBO = IShaderStorageBuffer::Create(sizeBytes, 0, BufferUsageType::DYNAMIC_DRAW);
+			m_MeshEntityLookupSSBO->Bind();
+			m_MeshEntityLookupSSBO->AddData(0, sizeBytes, pScene->MeshEntityLookupTable.data());
+			m_MeshEntityLookupSSBO->Unbind();
+		}
+		{
+			// Transforms - BINDING POINT 1
+			uint32_t sizeBytes = sizeof(glm::mat4) * pScene->TransformBuffer.size();
+			m_TransformSSBO = IShaderStorageBuffer::Create(sizeBytes, 1, BufferUsageType::DYNAMIC_DRAW);
+			m_TransformSSBO->Bind();
+			m_TransformSSBO->AddData(0, sizeBytes, pScene->TransformBuffer.data());
+			m_TransformSSBO->Unbind();
+		}
+		{
+			// Materials - BINDING POINT 2
+			uint32_t sizeBytes = sizeof(Material) * pScene->MaterialBuffer.size();
+			m_MaterialSSBO = IShaderStorageBuffer::Create(sizeBytes, 2, BufferUsageType::DYNAMIC_DRAW);
+			m_MaterialSSBO->Bind();
+			m_MaterialSSBO->AddData(0, sizeBytes, pScene->MaterialBuffer.data());
+			m_MaterialSSBO->Unbind();
+		}
+
+		// SSBOs - UPDATED ON CHANGE 
+
+		static uint32_t prevMeshBuffVersion = 0;
+		static uint32_t prevNodeBuffVersion = 0;
+		static uint32_t prevIndexBuffVersion = 0;
+		static uint32_t prevSkyboxTextureVersion = 0;
+
+		// Mesh Buffer - BINDING POINT 3
 		{
     		uint32_t currMeshBuffVersion = assetPool->GetUpdateVersion(AssetPool::AssetType::MeshBuffer);
     		if (prevMeshBuffVersion != currMeshBuffVersion) {
         		prevMeshBuffVersion = currMeshBuffVersion;
 
         		uint32_t meshBuffer_sizeBytes = sizeof(Triangle) * assetPool->MeshBuffer.size();
-        		m_MeshBufferSSBO = IShaderStorageBuffer::Create(meshBuffer_sizeBytes, 5, BufferUsageType::STATIC_DRAW);
+        		m_MeshBufferSSBO = IShaderStorageBuffer::Create(meshBuffer_sizeBytes, 3, BufferUsageType::STATIC_DRAW);
         		m_MeshBufferSSBO->Bind();
         		m_MeshBufferSSBO->AddData(0, meshBuffer_sizeBytes, assetPool->MeshBuffer.data());
         		m_MeshBufferSSBO->Unbind();
     		}
 		}
 
-		// NODE BUFFER
+		// Node Buffer - BINDING POINT 4
 		{
     		uint32_t currNodeBuffVersion = assetPool->GetUpdateVersion(AssetPool::AssetType::NodeBuffer);
     		if (prevNodeBuffVersion != currNodeBuffVersion) {
         		prevNodeBuffVersion = currNodeBuffVersion;
 
         		uint32_t nodeBuffer_sizeBytes = sizeof(BVHAccel::Node) * assetPool->NodeBuffer.size();
-        		m_NodeBufferSSBO = IShaderStorageBuffer::Create(nodeBuffer_sizeBytes, 6, BufferUsageType::STATIC_DRAW);
+        		m_NodeBufferSSBO = IShaderStorageBuffer::Create(nodeBuffer_sizeBytes, 4, BufferUsageType::STATIC_DRAW);
         		m_NodeBufferSSBO->Bind();
         		m_NodeBufferSSBO->AddData(0, nodeBuffer_sizeBytes, assetPool->NodeBuffer.data());
         		m_NodeBufferSSBO->Unbind();
     		}
 		}
 
-		// INDEX BUFFER
+		// Index Buffer - BINDING POINT 5 
 		{
     		uint32_t currIndexBuffVersion = assetPool->GetUpdateVersion(AssetPool::AssetType::IndexBuffer);
     		if (prevIndexBuffVersion != currIndexBuffVersion) {
         		prevIndexBuffVersion = currIndexBuffVersion;
 
         		uint32_t indexBuffer_sizeBytes = sizeof(uint32_t) * assetPool->IndexBuffer.size();
-        		m_IndexBufferSSBO = IShaderStorageBuffer::Create(indexBuffer_sizeBytes, 7, BufferUsageType::STATIC_DRAW);
+        		m_IndexBufferSSBO = IShaderStorageBuffer::Create(indexBuffer_sizeBytes, 5, BufferUsageType::STATIC_DRAW);
         		m_IndexBufferSSBO->Bind();
         		m_IndexBufferSSBO->AddData(0, indexBuffer_sizeBytes, assetPool->IndexBuffer.data());
         		m_IndexBufferSSBO->Unbind();
     		}
 		}
+
 		return true;
 	}
 
@@ -181,8 +224,8 @@ namespace Laura
 		auto t = m_Profiler->timer("Renderer::Draw()");
 		m_Shader->Bind();
 		m_Shader->setWorkGroupSizes(glm::uvec3(
-			(settings.Resolution.x + 7) / 8,
-			(settings.Resolution.y + 3) / 4,
+			(m_RenderSettings.resolution.x + 7) / 8,
+			(m_RenderSettings.resolution.y + 3) / 4,
 			1
 		  ));
 		m_Shader->Dispatch();

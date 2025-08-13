@@ -1,23 +1,28 @@
 #pragma once
 
 #include "Laura.h"
-#include "EditorState.h"
 #include <array>
+#include "EditorState.h"
+#include "EditorUI/IEditorPanel.h"
 
 namespace Laura
 {
 
-	class RenderSettingsPanel {
+	class RenderSettingsPanel : public IEditorPanel {
 	public:
-		RenderSettingsPanel(std::shared_ptr<EditorState> editorState)
-			: m_EditorState(editorState) {}
+		RenderSettingsPanel(std::shared_ptr<EditorState> editorState, std::shared_ptr<IEventDispatcher> eventDispatcher)
+			: m_EditorState(editorState), m_EventDispatcher(eventDispatcher) {
+        }
 
 		~RenderSettingsPanel() = default;
-		void OnImGuiRender();
+
+        virtual void init() override;
+		virtual void OnImGuiRender() override;
+		virtual inline void onEvent(std::shared_ptr<IEvent> event) override {}
 
 	private:
 		struct ResolutionOption {
-			glm::vec2 size;      // {width, height}
+			glm::vec2 resolution;      // {width, height}
 			const char* label;   // friendly name or description
 		};
 
@@ -47,9 +52,8 @@ namespace Laura
             {{1080, 2340},  "Vertical FHD+ 1080x2340 (9:19.5)"},
             {{1440, 3200},  "Vertical WQHD+ 1440x3200 (9:20)"}
         }};
-        int m_RaysPerPixel = 5, m_BouncesPerRay = 1;
-        bool m_IsAccumulate = false, m_IsVSync = true, m_IsBVHVisualization = false;
-		
+
 		std::shared_ptr<EditorState> m_EditorState;
+        std::shared_ptr<IEventDispatcher> m_EventDispatcher;
 	};
 }
