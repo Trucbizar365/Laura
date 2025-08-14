@@ -27,6 +27,14 @@ else()
 	message(!!!! ERROR "Unsupported build type: ${CMAKE_BUILD_TYPE}" !!!!)
 endif()
 
+if(MSVC)
+	target_compile_definitions(${EXECUTABLE_NAME} PUBLIC _CRT_SECURE_NO_WARNINGS)
+	set_property(TARGET ${EXECUTABLE_NAME} PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+	if (NOT ENABLE_CONSOLE)
+		set_target_properties(${EXECUTABLE_NAME} PROPERTIES LINK_FLAGS "/SUBSYSTEM:WINDOWS /ENTRY:mainCRTStartup")
+	endif()
+endif()
+
 # LAURA RUNTIME TARGET ///////////////////
 set(EXECUTABLE_NAME "LauraRuntime")
 add_executable(${EXECUTABLE_NAME})
@@ -36,7 +44,7 @@ target_sources(${EXECUTABLE_NAME} PRIVATE ${RUNTIME_SOURCES})
 target_include_directories(${EXECUTABLE_NAME} PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/LauraRuntime/src/")
 target_link_libraries(${EXECUTABLE_NAME} PUBLIC LauraEngine)
 
-
+target_compile_definitions(${EXECUTABLE_NAME} PUBLIC RUNTIME_PROJECTFILE_PATH="C:/Users/X13JG/Desktop/project1/project1.lrproj")
 
 if(MSVC)
 	target_compile_definitions(${EXECUTABLE_NAME} PUBLIC _CRT_SECURE_NO_WARNINGS)

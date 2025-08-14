@@ -22,5 +22,10 @@ namespace Laura
 		std::shared_ptr<Profiler> m_Profiler;
 		std::shared_ptr<IEventDispatcher> m_EventDispatcher; // layerstack  
 		std::shared_ptr<ProjectManager> m_ProjectManager;
+		
+		// Simple texture display
+		std::shared_ptr<IImage2D> m_CurrentFrame;
+		int m_WindowWidth = 1280, m_WindowHeight = 720;
+		unsigned int m_Framebuffer;
 	};
 }

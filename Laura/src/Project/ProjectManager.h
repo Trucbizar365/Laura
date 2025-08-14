@@ -35,7 +35,19 @@ namespace Laura
 	/// Computes the absolute path to the project file (.lrproj) given the project folder.
 	/// Example: Input folder `/MyProject/` -> Output `/MyProject/MyProject.lrproj`
 	inline std::filesystem::path ComposeProjectFilepath(const std::filesystem::path& folderpath) {
+		if (folderpath.empty()) {
+			LOG_ENGINE_ERROR("ComposeProjectFilepath: folderpath is empty");
+			return std::filesystem::path{};
+		}
+		if (!std::filesystem::exists(folderpath)) {
+			LOG_ENGINE_ERROR("ComposeProjectFilepath: folderpath does not exist: {}", folderpath.string());
+			return std::filesystem::path{};
+		}
 		std::string folderName = folderpath.filename().string();
+		if (folderName.empty()) {
+			LOG_ENGINE_ERROR("ComposeProjectFilepath: could not extract folder name from: {}", folderpath.string());
+			return std::filesystem::path{};
+		}
 		return folderpath / (folderName + PROJECT_FILE_EXTENSION);
 	}
 
