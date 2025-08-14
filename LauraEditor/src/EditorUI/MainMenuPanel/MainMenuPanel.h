@@ -9,8 +9,14 @@ namespace Laura
 
 	class MainMenuPanel : public IEditorPanel {
 	public:
-		MainMenuPanel(std::shared_ptr<EditorState> editorState, std::shared_ptr<ProjectManager> projectManager)
-			: m_EditorState(editorState), m_ProjectManager(projectManager) {}
+		MainMenuPanel(std::shared_ptr<EditorState> editorState, 
+					  std::shared_ptr<IEventDispatcher> eventDispatcher, 
+			          std::shared_ptr<ProjectManager> projectManager)
+			: m_EditorState(editorState)
+			, m_EventDispatcher(eventDispatcher)
+			, m_ProjectManager(projectManager) 
+		{}
+
 		~MainMenuPanel() = default;
 
 		virtual inline void init() override {}
@@ -19,6 +25,7 @@ namespace Laura
 
 	private:
 		std::shared_ptr<EditorState> m_EditorState;
+		std::shared_ptr<IEventDispatcher> m_EventDispatcher;
 		std::shared_ptr<ProjectManager> m_ProjectManager;
 	};
 }
