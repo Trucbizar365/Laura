@@ -42,6 +42,13 @@ namespace Laura
 			theme.PushColor(ImGuiCol_Text, btnIconCol);
 			if (ImGui::Button(btnIcon.c_str())) {
 				m_EditorState->temp.isInRuntimeMode = !m_EditorState->temp.isInRuntimeMode;
+
+				if (m_EditorState->temp.isInRuntimeMode) { // set runtime settings
+					m_EventDispatcher->dispatchEvent(std::make_shared<UpdateRenderSettingsEvent>(m_ProjectManager->GetMutableRuntimeRenderSettings()));
+				}
+				else { // set editor settings
+					m_EventDispatcher->dispatchEvent(std::make_shared<UpdateRenderSettingsEvent>(m_EditorState->persistent.editorRenderSettings));
+				}
 			}
 			theme.PopColor(2);
 

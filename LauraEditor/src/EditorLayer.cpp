@@ -24,13 +24,13 @@ namespace Laura
 		, m_ImGuiContext(imGuiContext)
 		, m_Launcher(m_EditorState, m_ProjectManager)
 		, m_EditorPanels({
-			std::make_unique<MainMenuPanel>(m_EditorState, m_ProjectManager),
+			std::make_unique<MainMenuPanel>(m_EditorState, m_EventDispatcher, m_ProjectManager),
 			std::make_unique<InspectorPanel>(m_EditorState, m_ProjectManager),
 			std::make_unique<SceneHierarchyPanel>(m_EditorState, m_ProjectManager),
 			std::make_unique<ViewportPanel>(m_EditorState, m_ProjectManager),
 			std::make_unique<ThemePanel>(m_EditorState),
 			std::make_unique<ProfilerPanel>(m_EditorState, m_Profiler),
-			std::make_unique<RenderSettingsPanel>(m_EditorState, m_EventDispatcher),
+			std::make_unique<RenderSettingsPanel>(m_EditorState, m_EventDispatcher, m_ProjectManager),
 			std::make_unique<AssetsPanel>(m_EditorState, m_ProjectManager)
 		}){
 	}
@@ -47,8 +47,9 @@ namespace Laura
 		serializeState(m_EditorState);
 	}
 
-	void EditorLayer::onEvent(std::shared_ptr<IEvent> event) {
-		if (m_EditorState->temp.isInRuntimeMode && event->IsInputEvent()) {
+	void EditorLayer::onEvent(std::shared_ptr<IEvent> event) { 
+		// while in editor mode - consume input events
+		if (!m_EditorState->temp.isInRuntimeMode && event->IsInputEvent()) {
 			event->Consume();
 			return; // don't propagate further
 		}
@@ -59,6 +60,9 @@ namespace Laura
 				break;
 			}
 		}
+
+		if (event->GetType() != EventType::NEW_FRAME_RENDERED_EVENT)
+			std::cout << event->GetType() << std::endl;
 	}
 
 	void EditorLayer::onUpdate() {
