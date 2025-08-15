@@ -32,12 +32,16 @@ namespace Laura
 		Scene(const Scene&) = delete;
 		Scene& operator=(const Scene&) = delete;
 
-		EntityHandle CreateEntity();
+		EntityHandle CreateEntity(const std::string& name = "Empty Entity");
+		EntityHandle CreateEntityWithGuid(LR_GUID guid, const std::string& name);
+
 		void DestroyEntity(EntityHandle entity);
 
 		void OnStart();
 		void OnUpdate();
 		void OnShutdown();
+
+		static std::shared_ptr<Scene> Copy(std::shared_ptr<Scene> other);
 
 		inline entt::registry* GetRegistry() const { return m_Registry; }
 

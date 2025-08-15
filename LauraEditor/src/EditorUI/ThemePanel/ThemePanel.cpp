@@ -21,7 +21,7 @@ namespace Laura
 		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(3, 3));
 		theme.PushColor(ImGuiCol_WindowBg, EditorCol_Background3);
 		ImGui::Begin(ICON_FA_BRUSH " THEMES", &m_EditorState->temp.isThemePanelOpen, ThemePanelFlags);
-		if (m_EditorState->temp.isInRuntimeMode) {
+		if (m_EditorState->temp.isInRuntimeSimulation) {
 			ImGui::BeginDisabled();
 		}
 
@@ -164,7 +164,7 @@ namespace Laura
 			ImGui::EndTabBar();
 		}
 
-		if (m_EditorState->temp.isInRuntimeMode) {
+		if (m_EditorState->temp.isInRuntimeSimulation) {
 			ImGui::EndDisabled();
 		}
 		

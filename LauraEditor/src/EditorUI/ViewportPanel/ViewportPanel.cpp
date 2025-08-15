@@ -38,7 +38,7 @@ namespace Laura
 		
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0, 0 }); // remove the border padding
 		ImGui::Begin(ICON_FA_EYE " VIEWPORT", nullptr, ViewportFlags);
-		if (m_EditorState->temp.isInRuntimeMode) {
+		if (m_EditorState->temp.isInRuntimeSimulation) {
 			ImGui::BeginDisabled();
 		}
 
@@ -56,7 +56,7 @@ namespace Laura
 			ImGui::PopStyleVar();
 			DrawDropTargetForScene();
 			
-			if (m_EditorState->temp.isInRuntimeMode) {
+			if (m_EditorState->temp.isInRuntimeSimulation) {
 				ImGui::EndDisabled();
 			}
 			
@@ -134,7 +134,7 @@ namespace Laura
 		ImGui::PopStyleVar();
 		DrawDropTargetForScene();
 
-		if (m_EditorState->temp.isInRuntimeMode) {
+		if (m_EditorState->temp.isInRuntimeSimulation) {
 			ImGui::EndDisabled();
 		}
 

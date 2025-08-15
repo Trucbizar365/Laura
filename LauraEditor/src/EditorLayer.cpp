@@ -49,7 +49,7 @@ namespace Laura
 
 	void EditorLayer::onEvent(std::shared_ptr<IEvent> event) { 
 		// while in editor mode - consume input events
-		if (!m_EditorState->temp.isInRuntimeMode && event->IsInputEvent()) {
+		if (!m_EditorState->temp.isInRuntimeSimulation && event->IsInputEvent()) {
 			event->Consume();
 			return; // don't propagate further
 		}

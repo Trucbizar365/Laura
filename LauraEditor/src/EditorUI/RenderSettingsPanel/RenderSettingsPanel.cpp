@@ -22,7 +22,7 @@ namespace Laura
         };
 
 		ImGui::Begin(ICON_FA_WRENCH " RENDER SETTINGS");
-		if (m_EditorState->temp.isInRuntimeMode) {
+		if (m_EditorState->temp.isInRuntimeSimulation) {
 			ImGui::BeginDisabled();
 		}
 		float avail_width = ImGui::GetContentRegionAvail().x;
@@ -138,7 +138,7 @@ namespace Laura
 		}
 		ImGui::EndChild();
 		
-		if (m_EditorState->temp.isInRuntimeMode) {
+		if (m_EditorState->temp.isInRuntimeSimulation) {
 			ImGui::EndDisabled();
 		}
 		

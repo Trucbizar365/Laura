@@ -16,12 +16,12 @@ namespace Laura
 		
 		ImGui::SetNextWindowSizeConstraints({ 350, 50 }, {FLT_MAX, FLT_MAX});
 		ImGui::Begin(ICON_FA_CIRCLE_INFO " INSPECTOR");
-		if (m_EditorState->temp.isInRuntimeMode) {
+		if (m_EditorState->temp.isInRuntimeSimulation) {
 			ImGui::BeginDisabled();
 		}
 
         if (!m_ProjectManager->ProjectIsOpen()) {
-			if (m_EditorState->temp.isInRuntimeMode) {
+			if (m_EditorState->temp.isInRuntimeSimulation) {
 				ImGui::EndDisabled();
 			}
             ImGui::End();
@@ -31,7 +31,7 @@ namespace Laura
         std::shared_ptr<Scene> scene = m_ProjectManager->GetSceneManager()->GetOpenScene();
 
         if (scene == nullptr || m_EditorState->temp.selectedEntity == entt::null) {
-			if (m_EditorState->temp.isInRuntimeMode) {
+			if (m_EditorState->temp.isInRuntimeSimulation) {
 				ImGui::EndDisabled();
 			}
 			ImGui::End();
@@ -57,8 +57,20 @@ namespace Laura
 			if (ImGui::InputTextWithHint("##Tag Component", "Entity Name", buffer, sizeof(buffer))) {
 				tag = std::string(buffer);
 			}
-			ImGui::Dummy({ 0.0f, 10.0f });
 		}
+
+		if (entity.HasComponent<IDComponent>()) {
+			LR_GUID guid = entity.GetComponent<IDComponent>().guid;
+
+			theme.PushColor(ImGuiCol_Text, EditorCol_Text2);
+			ImGui::AlignTextToFramePadding();
+			ImGui::Text("Guid:"); ImGui::SameLine();
+			ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
+			ImGui::Text(guid.string().c_str());
+			theme.PopColor();
+		}
+
+		ImGui::Dummy({ 0.0f, 10.0f });
 
 		// TRANSFORM COMPONENT
 		DrawComponent<TransformComponent>(std::string(ICON_FA_ARROWS_UP_DOWN_LEFT_RIGHT " Transform"), entity, [&](EntityHandle& _entity) {
@@ -78,7 +90,7 @@ namespace Laura
 				if (ImGui::Checkbox("##MainCameraCheckbox", &cameraComponent.isMain)) {
 					for (auto e : scene->GetRegistry()->view<CameraComponent>()) {
 						EntityHandle otherEntity(e, scene->GetRegistry());
-						if (otherEntity.GetComponent<GUIDComponent>().guid != entity.GetComponent<GUIDComponent>().guid) {
+						if (otherEntity.GetComponent<IDComponent>().guid != entity.GetComponent<IDComponent>().guid) {
 							otherEntity.GetComponent<CameraComponent>().isMain = false;
 						}
 					}
@@ -98,6 +110,7 @@ namespace Laura
 		DrawComponent<MeshComponent>(std::string(ICON_FA_CUBE " Mesh"), entity, [&theme](EntityHandle& entity) {
 				std::string& sourceName = entity.GetComponent<MeshComponent>().sourceName;
 				ImGui::Dummy({ 0.0f, 5.0f });
+				ImGui::AlignTextToFramePadding();
 				theme.PushColor(ImGuiCol_Text, EditorCol_Text2);
 				ImGui::Text("Mesh:");
 				theme.PopColor();
@@ -127,7 +140,7 @@ namespace Laura
 				theme.PopColor();
 				ImGui::SameLine(150.0f);
 				ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
-				ImGui::SliderFloat("##emission strength", &materialComponent.emission.w, 0.0f, 1.0f);
+				ImGui::SliderFloat("##emission strength", &materialComponent.emission.w, 0.0f, 100.0f, "%.2f", ImGuiSliderFlags_Logarithmic);
 
 				theme.PushColor(ImGuiCol_Text, EditorCol_Text2);
 				ImGui::Text("Emission Color:");
@@ -185,7 +198,7 @@ namespace Laura
 		ImGui::Dummy(ImVec2(0.0f, 100.0f)); 
 		theme.PopColor();
 		
-		if (m_EditorState->temp.isInRuntimeMode) {
+		if (m_EditorState->temp.isInRuntimeSimulation) {
 			ImGui::EndDisabled();
 		}
 		

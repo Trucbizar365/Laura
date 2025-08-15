@@ -12,12 +12,12 @@ namespace Laura
         
         theme.PushColor(ImGuiCol_WindowBg, EditorCol_Background1);
         ImGui::Begin(ICON_FA_CUBE " ASSETS");
-        if (m_EditorState->temp.isInRuntimeMode) {
+        if (m_EditorState->temp.isInRuntimeSimulation) {
             ImGui::BeginDisabled();
         }
 
         if (!m_ProjectManager->ProjectIsOpen()) {
-            if (m_EditorState->temp.isInRuntimeMode) {
+            if (m_EditorState->temp.isInRuntimeSimulation) {
                 ImGui::EndDisabled();
             }
             ImGui::End();
@@ -115,7 +115,7 @@ namespace Laura
             DrawTileInfo();
             ImGui::EndTable();
         }
-        if (m_EditorState->temp.isInRuntimeMode) {
+        if (m_EditorState->temp.isInRuntimeSimulation) {
             ImGui::EndDisabled();
         }
         

@@ -33,7 +33,7 @@ namespace Laura
 				float lineHeight = GImGui->Font->FontSize + GImGui->Style.FramePadding.y * 2.0f;
 
 				// unique id for each component (entity id + component type)
-				std::string idStr = std::to_string((uint64_t)entity.GetID()) + TreenodeTitle;
+				std::string idStr = std::to_string((uint64_t)entity.GetEnttID()) + TreenodeTitle;
 
 				ImGui::PushID(idStr.c_str());
 				ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(3, 3));

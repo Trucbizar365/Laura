@@ -16,7 +16,7 @@ namespace Laura
 
         if (!m_Profiler->globalTimerSet) {
             LOG_ENGINE_WARN("Unable to render Profiler Panel - No Global Timer Set");
-            if (m_EditorState->temp.isInRuntimeMode) {
+            if (m_EditorState->temp.isInRuntimeSimulation) {
                 ImGui::EndDisabled();
             }
             return;
@@ -27,7 +27,7 @@ namespace Laura
         ImPlot::PushColormap(ImPlotColormap_Deep);
         theme.PushColor(ImGuiCol_WindowBg, EditorCol_Background3);
         ImGui::Begin(ICON_FA_STOPWATCH " PROFILER", &m_EditorState->temp.isProfilerPanelOpen);
-        if (m_EditorState->temp.isInRuntimeMode) {
+        if (m_EditorState->temp.isInRuntimeSimulation) {
             ImGui::BeginDisabled();
         }
 
@@ -108,7 +108,7 @@ namespace Laura
         }
         theme.PopColor(); // frameBg
         
-        if (m_EditorState->temp.isInRuntimeMode) {
+        if (m_EditorState->temp.isInRuntimeSimulation) {
             ImGui::EndDisabled();
         }
         
