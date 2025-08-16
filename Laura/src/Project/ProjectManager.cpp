@@ -113,7 +113,7 @@ namespace Laura
 		m_SceneManager->LoadScenesFromFolder(folderpath);
 
 		if (m_ProjectFile.bootSceneGuid != LR_GUID::INVALID) {
-			m_SceneManager->SetOpenScene(m_ProjectFile.bootSceneGuid);
+			m_SceneManager->SetOpenSceneGuid(m_ProjectFile.bootSceneGuid);
 		}
 
 		LOG_ENGINE_INFO("OpenProject: successfully opened project at {0}", folderpath.string());

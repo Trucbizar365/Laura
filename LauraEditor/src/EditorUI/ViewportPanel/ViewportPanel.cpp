@@ -13,7 +13,7 @@ namespace Laura
 				auto& scenePayload = *static_cast<DNDPayload*>(payload->Data);
 				if (m_ProjectManager->ProjectIsOpen()) {
 					if (auto sceneManager = m_ProjectManager->GetSceneManager()) {
-						sceneManager->SetOpenScene(scenePayload.guid);
+						sceneManager->SetOpenSceneGuid(scenePayload.guid);
 					}
 				}
 			}

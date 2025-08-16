@@ -23,33 +23,36 @@ namespace Laura
 		}
 		
 		EditorTheme& theme = editorState->temp.editorTheme;
-
 		ImGui::OpenPopup(popupTitle);
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(10, 10));
-
+		
+		ImGui::SetNextWindowSizeConstraints({ 300.0f, 0.0f }, { 400.0f, FLT_MAX });
+		theme.PushColor(ImGuiCol_PopupBg, EditorCol_Background3);
 		if (ImGui::BeginPopupModal(popupTitle, NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
-			ImGui::Text(popupMessage);
+			theme.PushColor(ImGuiCol_Text, EditorCol_Warning);
+			ImGui::TextWrapped(popupMessage);
+			theme.PopColor();
+
 			float panelWidth = ImGui::GetContentRegionAvail().x;
 			float buttonWidth = panelWidth * 0.5f - 5.0f;
 			ImGui::Dummy({ 5.0f, 0.0f });
+			
+			theme.PushColor(ImGuiCol_Button, EditorCol_Primary3);
+			if (ImGui::Button("Yes", ImVec2(buttonWidth, 0))) {
+				onConfirm();
+				shouldExecute = false;
+				ImGui::CloseCurrentPopup();
+			}
 
-			theme.PushColor(ImGuiCol_Button, EditorCol_Secondary2);
-			{
-				if (ImGui::Button("Yes", ImVec2(buttonWidth, 0))) {
-					onConfirm();
-					shouldExecute = false;
-					ImGui::CloseCurrentPopup();
-				}
-
-				ImGui::SameLine();
-				if (ImGui::Button("No", ImVec2(buttonWidth, 0))) {
-					shouldExecute = false;
-					ImGui::CloseCurrentPopup();
-				}
+			ImGui::SameLine();
+			if (ImGui::Button("No", ImVec2(buttonWidth, 0))) {
+				shouldExecute = false;
+				ImGui::CloseCurrentPopup();
 			}
 			theme.PopColor();
 			ImGui::EndPopup();
 		}
+		theme.PopColor();
 		ImGui::PopStyleVar();
 	}
 
@@ -88,6 +91,7 @@ namespace Laura
 			ImGui::TextWrapped(popupMessage);
 			theme.PopColor();
 
+			theme.PushColor(ImGuiCol_Button, EditorCol_Primary3);
 			ImGui::Dummy(ImVec2(0.0f, 5.0f));
 			float cursorX = spacing;
 			ImGui::SetCursorPosX(cursorX);
@@ -113,6 +117,7 @@ namespace Laura
 				shouldExecute = false;
 				ImGui::CloseCurrentPopup();
 			}
+			theme.PopColor();
 			ImGui::EndPopup();
 		}
 		theme.PopColor();

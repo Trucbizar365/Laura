@@ -31,7 +31,9 @@ namespace Laura
 		/// - Logs a warning if the scene was not found.
 		void DeleteScene(LR_GUID guid);
 
-		bool SetOpenScene(LR_GUID guid);
+		bool SetOpenSceneGuid(LR_GUID guid);
+		LR_GUID GetOpenSceneGuid() const;
+
 		std::shared_ptr<Scene> GetOpenScene() const;
 
 		void EnterRuntimeSimulation();

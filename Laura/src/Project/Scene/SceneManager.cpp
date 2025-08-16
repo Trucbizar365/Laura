@@ -1,3 +1,4 @@
+#include "SceneManager.h"
 #include "Project/Scene/SceneManager.h"
 
 namespace Laura
@@ -35,9 +36,9 @@ namespace Laura
 		}
 	}
 
-	bool SceneManager::SetOpenScene(LR_GUID guid) {
+	bool SceneManager::SetOpenSceneGuid(LR_GUID guid) {
 		auto scene = find(guid);
-		if (!scene) {
+		if (!scene && guid != LR_GUID::INVALID) { // allow setting to LR_GUID::INVALID (no scene selected)
 			LOG_ENGINE_WARN("SetOpenScene: cannot open scene; no scene registered with GUID {0}", (uint64_t)guid);
 			return false;
 		}
@@ -45,6 +46,10 @@ namespace Laura
 		m_OpenSceneGuid = guid;
 		LOG_ENGINE_INFO("SetOpenScene: now tracking scene with GUID {0} as the active scene", (uint64_t)guid);
 		return true;
+	}
+
+	LR_GUID SceneManager::GetOpenSceneGuid() const {
+		return m_OpenSceneGuid;
 	}
 
 	std::shared_ptr<Scene> SceneManager::GetOpenScene() const {

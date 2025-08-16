@@ -273,41 +273,50 @@ namespace Laura
             static bool shouldDeleteScene = false;
 
 
-            std::string openLabel = "Open";
-			std::string deleteLabel = ICON_FA_TRASH;
+            bool currentSceneOpen = scene->guid == sceneManager->GetOpenSceneGuid();
+            std::string scnBtnLabel = (currentSceneOpen) ? "Close" : "Open";
+			std::string delScnBtnLabel = ICON_FA_TRASH;
 
 			// Calculate sizes individually
-			ImVec2 openSize = ImGui::CalcTextSize(openLabel.c_str());
-			ImVec2 deleteSize = ImGui::CalcTextSize(deleteLabel.c_str());
+			ImVec2 scnLabelSize = ImGui::CalcTextSize(scnBtnLabel.c_str());
+			ImVec2 delScnLabelSize = ImGui::CalcTextSize(delScnBtnLabel.c_str());
 
-			ImVec2 openBtnSize = {
-				openSize.x + ImGui::GetStyle().FramePadding.x * 2.0f,
-				openSize.y + ImGui::GetStyle().FramePadding.y * 2.0f
+			ImVec2 scnBtnSize = {
+				scnLabelSize.x + ImGui::GetStyle().FramePadding.x * 2.0f,
+				scnLabelSize.y + ImGui::GetStyle().FramePadding.y * 2.0f
 			};
 
-			ImVec2 deleteBtnSize = {
-				deleteSize.x + ImGui::GetStyle().FramePadding.x * 2.0f,
-				deleteSize.y + ImGui::GetStyle().FramePadding.y * 2.0f
+			ImVec2 delScnBtnSize = {
+				delScnLabelSize.x + ImGui::GetStyle().FramePadding.x * 2.0f,
+				delScnLabelSize.y + ImGui::GetStyle().FramePadding.y * 2.0f
 			};
 
-			float spacing = ImGui::GetStyle().ItemSpacing.x;
-			float totalWidth = openBtnSize.x + spacing + deleteBtnSize.x;
+			float btnGroupWidth = scnBtnSize.x + ImGui::GetStyle().ItemSpacing.x + delScnBtnSize.x;
 
-			// Align to the right
-			ImGui::SetCursorPosX(ImGui::GetCursorPosX() + ImGui::GetContentRegionAvail().x - totalWidth);
-
-			// Render buttons
-			if (ImGui::Button(openLabel.c_str(), openBtnSize)) {
-                sceneManager->SetOpenScene(scene->guid);
+			ImGui::SetCursorPosX(ImGui::GetCursorPosX() + ImGui::GetContentRegionAvail().x - btnGroupWidth);
+			if (ImGui::Button(scnBtnLabel.c_str(), scnBtnSize)) {
+                if (currentSceneOpen) {
+                    sceneManager->SetOpenSceneGuid(LR_GUID::INVALID);
+                }
+                else {
+                    sceneManager->SetOpenSceneGuid(scene->guid);
+                }
 			}
 			ImGui::SameLine();
-			if (ImGui::Button(deleteLabel.c_str(), deleteBtnSize)) {
+			if (ImGui::Button((delScnBtnLabel + "##DeleteSceneBtn").c_str(), delScnBtnSize)) {
 				shouldDeleteScene = true;
 			}
-            ConfirmAndExecute(shouldDeleteScene, ICON_FA_TRASH " Delete Scene", "Are you sure you want to delete this scene?", [&]() {
-                sceneManager->DeleteScene(scene->guid);
-                m_SelectedTileGuid = LR_GUID::INVALID;
-			}, m_EditorState);
+
+            ConfirmAndExecute(
+                shouldDeleteScene, 
+                ICON_FA_TRASH " Delete Scene", 
+                std::format("Are you sure you want to delete '{}'?", scene->name).c_str(), 
+                [&]() {
+                    sceneManager->DeleteScene(scene->guid);
+                    m_SelectedTileGuid = LR_GUID::INVALID;
+			    }, 
+                m_EditorState
+            );
 
             theme.PushColor(ImGuiCol_Text, EditorCol_Text2);
             ImGui::AlignTextToFramePadding();
@@ -330,7 +339,9 @@ namespace Laura
 			theme.PopColor();
 			ImGui::SameLine();
 			theme.PushColor(ImGuiCol_Header, EditorCol_Secondary2);
-			ImGui::Selectable((scene->skyboxName + "##SkyboxDNDTarget").c_str(), true);
+            float clearSkyboxBtnWidth = ImGui::CalcTextSize(ICON_FA_TRASH).x + ImGui::GetStyle().FramePadding.x * 2.0f + ImGui::GetStyle().ItemSpacing.x;
+            ImGui::Selectable((scene->skyboxName + "##SkyboxDNDTarget").c_str(), true, 
+                ImGuiSelectableFlags_None, { ImGui::GetContentRegionAvail().x - clearSkyboxBtnWidth, 0 });
 			theme.PopColor();
 			if (ImGui::BeginDragDropTarget()) {
 				if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(DNDPayloadTypes::TEXTURE)) {
@@ -341,6 +352,12 @@ namespace Laura
 				}
 				ImGui::EndDragDropTarget();
 			}
+            ImGui::SameLine();
+            if (ImGui::Button(ICON_FA_TRASH "##ClearSkyboxBtn")) {
+                scene->skyboxName = "";
+                scene->skyboxGuid = LR_GUID::INVALID;
+            }
+
             theme.PushColor(ImGuiCol_Text, EditorCol_Text2);
             ImGui::Text("Set on Boot:");
             theme.PopColor();

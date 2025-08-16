@@ -139,6 +139,9 @@ namespace Laura
 				const unsigned char* data = &assetPool->TextureBuffer[metadata->texStartIdx];
 				m_SkyboxTexture = ITexture2D::Create(data, metadata->width, metadata->height, SKYBOX_TEXTURE_UNIT);
 			}
+			else {
+				m_SkyboxTexture = nullptr;
+			}
 		}
 
 		// SSBOs - UPDATED EVERY FRAME 
