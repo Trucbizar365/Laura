@@ -22,36 +22,47 @@ namespace Laura
 
 	private:
 		struct ResolutionOption {
-			glm::vec2 resolution;      // {width, height}
-			const char* label;   // friendly name or description
+			glm::uvec2 resolution;
+			const char* label;
 		};
 
-        const std::array<ResolutionOption, 17> m_ResolutionOptions = {{
-            // 4:3
-            {{640, 480},    "VGA 640x480 (4:3)"},
-            {{800, 600},    "SVGA 800x600 (4:3)"},
-            {{1024, 768},   "XGA 1024x768 (4:3)"},
+		const std::array<ResolutionOption, 30> m_ResolutionOptions = {{
+			{{0, 0},       "Preview"},
+			{{320, 240},   "Preview 4:3"},
+			{{320, 180},   "Preview 16:9"},
+			{{320, 200},   "Preview 16:10"},
+			{{320, 137},   "Preview 21:9"},
+			{{180, 320},   "Preview 9:16"},
+			{{147, 320},   "Preview 9:19.5"},
+			{{108, 320},   "Preview 9:20"},
 
-            // 16:10
-            {{1280, 800},   "WXGA 1280x800 (16:10)"},
-            {{1440, 900},   "WXGA+ 1440x900 (16:10)"},
-            {{1680, 1050},  "WSXGA+ 1680x1050 (16:10)"},
-            {{1920, 1200},  "WUXGA 1920x1200 (16:10)"},
+			{{0, 0},       "4:3 Standard"},
+			{{640, 480},   "640x480 (4:3) VGA"},
+			{{800, 600},   "800x600 (4:3) SVGA"},
+			{{1024, 768},  "1024x768 (4:3) XGA"},
 
-            // 16:9
-            {{1280, 720},   "HD 1280x720 (16:9)"},
-            {{1920, 1080},  "Full HD 1920x1080 (16:9)"},
-            {{2560, 1440},  "QHD 2560x1440 (16:9)"},
-            {{3840, 2160},  "4K UHD 3840x2160 (16:9)"},
+			{{0, 0},       "16:10 Standard"},
+			{{1280, 800},  "1280x800 (16:10) WXGA"},
+			{{1440, 900},  "1440x900 (16:10) WXGA+"},
+			{{1680, 1050}, "1680x1050 (16:10) WSXGA+"},
+			{{1920, 1200}, "1920x1200 (16:10) WUXGA"},
 
-            // Vertical (9:16)
-            {{1080, 1920},  "Vertical Full HD 1080x1920 (9:16)"},
-            {{720, 1280},   "Vertical HD 720x1280 (9:16)"},
-            {{540, 960},    "Vertical qHD 540x960 (9:16)"},
-            {{480, 854},    "Vertical FWVGA 480x854 (9:16)"},
-            {{1080, 2340},  "Vertical FHD+ 1080x2340 (9:19.5)"},
-            {{1440, 3200},  "Vertical WQHD+ 1440x3200 (9:20)"}
-        }};
+			{{0, 0},       "16:9 Standard"},
+			{{1280, 720},  "1280x720 (16:9) HD"},
+			{{1920, 1080}, "1920x1080 (16:9) FHD"},
+			{{2560, 1440}, "2560x1440 (16:9) QHD"},
+			{{3840, 2160}, "3840x2160 (16:9) 4K"},
+
+			{{0, 0},       "21:9 Ultra-wide"},
+			{{3440, 1440}, "3440x1440 (21:9) UWQHD"},
+			{{5120, 2160}, "5120x2160 (21:9) 5K UW"},
+
+			{{0, 0},       "9:16+ Vertical"},
+			{{720, 1280},  "720x1280 (9:16) V-HD"},
+			{{1080, 1920}, "1080x1920 (9:16) V-FHD"},
+			{{1080, 2340}, "1080x2340 (9:19.5) V-FHD+"},
+			{{1440, 3200}, "1440x3200 (9:20) V-WQHD+"}
+		}};
 
 		std::shared_ptr<EditorState> m_EditorState;
         std::shared_ptr<IEventDispatcher> m_EventDispatcher;
