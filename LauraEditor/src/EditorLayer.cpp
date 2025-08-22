@@ -1,15 +1,14 @@
 #include <imgui.h>
 #include "EditorLayer.h"
-#include "EditorUI/UtilityUI.h"
-#include "EditorUI/MainMenuPanel/MainMenuPanel.h"
-#include "EditorUI/MainMenuPanel/ExportPanel.h"
-#include "EditorUI/ViewportPanel/ViewportPanel.h"
-#include "EditorUI/SceneHierarchyPanel/SceneHierarchyPanel.h"
-#include "EditorUI/InspectorPanel/InspectorPanel.h"
-#include "EditorUI/ProfilerPanel/ProfilerPanel.h"
-#include "EditorUI/RenderSettingsPanel/RenderSettingsPanel.h"
-#include "EditorUI/ThemePanel/ThemePanel.h"
-#include "EditorUI/AssetsPanel/AssetsPanel.h"
+#include "Panels/MainMenuPanel/MainMenuPanel.h"
+#include "Panels/ExportPanel/ExportPanel.h"
+#include "Panels/ViewportPanel/ViewportPanel.h"
+#include "Panels/SceneHierarchyPanel/SceneHierarchyPanel.h"
+#include "Panels/InspectorPanel/InspectorPanel.h"
+#include "Panels/ProfilerPanel/ProfilerPanel.h"
+#include "Panels/RenderSettingsPanel/RenderSettingsPanel.h"
+#include "Panels/ThemePanel/ThemePanel.h"
+#include "Panels/AssetsPanel/AssetsPanel.h"
 
 namespace Laura
 {

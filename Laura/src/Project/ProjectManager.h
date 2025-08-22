@@ -84,7 +84,7 @@ namespace Laura
 		/// Shuts down managers and clears project data without saving.
 		void CloseProject();
 
-		inline bool ProjectIsOpen() const { return !m_ProjectPath.empty(); }
+		inline bool ProjectIsOpen() const { return !m_ProjectFolder.empty(); }
 		inline std::shared_ptr<SceneManager> GetSceneManager() const { return m_SceneManager; }
 		inline std::shared_ptr<AssetManager> GetAssetManager() const { return m_AssetManager; }
 
@@ -92,10 +92,13 @@ namespace Laura
 		inline LR_GUID GetBootSceneGuid() const { return m_ProjectFile.bootSceneGuid; }
 		inline bool IsBootScene(LR_GUID guid) { return m_ProjectFile.bootSceneGuid == guid; }
 
+		inline std::string GetProjectName() { return m_ProjectFolder.filename().string(); }
+		inline std::filesystem::path GetProjectFolder() { return m_ProjectFolder; }
+
 		inline RenderSettings& GetMutableRuntimeRenderSettings() { return m_ProjectFile.runtimeRenderSettings; }
 	private:
 		/// Filesystem path to the current project folder (where .lrproj lives).
-		std::filesystem::path m_ProjectPath;
+		std::filesystem::path m_ProjectFolder;
 		ProjectFile m_ProjectFile;
 
 		std::shared_ptr<SceneManager> m_SceneManager = nullptr;

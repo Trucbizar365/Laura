@@ -134,6 +134,8 @@ namespace Laura
 		style.Colors[ImGuiCol_TabDimmedSelectedOverline] = m_ColorPallete[EditorCol_Accent2];
 		style.Colors[ImGuiCol_TabUnfocused]              = m_ColorPallete[EditorCol_Secondary2];
 		style.Colors[ImGuiCol_TabUnfocusedActive]        = m_ColorPallete[EditorCol_Secondary2];
+		style.Colors[ImGuiCol_TableRowBg]				 = m_ColorPallete[EditorCol_Background2];
+		style.Colors[ImGuiCol_TableRowBgAlt]			 = m_ColorPallete[EditorCol_Background1];
 		style.Colors[ImGuiCol_TitleBg]                   = m_ColorPallete[EditorCol_Background2];
 		style.Colors[ImGuiCol_TitleBgActive]             = m_ColorPallete[EditorCol_Background2];
 		style.Colors[ImGuiCol_TitleBgCollapsed]          = m_ColorPallete[EditorCol_Background2];

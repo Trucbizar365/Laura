@@ -28,12 +28,17 @@ namespace Laura
 	struct EditorState {
 		struct {
 			entt::entity selectedEntity = entt::null;
+			EditorTheme editorTheme;
+			bool isInRuntimeSimulation = false;
+
+			// panels
 			bool isViewportSettingsPanelOpen = false;
 			bool isThemePanelOpen = false;
 			bool isProfilerPanelOpen = true;
-			bool isExportPanelOpen = false;
-			EditorTheme editorTheme;
-			bool isInRuntimeSimulation = false;
+
+			// dialogs
+			bool isCreateProjectDialogOpen = false;
+			bool shouldOpenExportPanel = false;
 		} temp;
 
 		// TO ADD new persistent entries, add them here and update the SERIALIZE and DESERIALIZE functions 

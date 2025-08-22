@@ -3,8 +3,8 @@
 #include <Laura.h>
 #include "EditorState.h"
 #include "ImGuiContext.h"
-#include "EditorUI/IEditorPanel.h"
-#include "EditorUI/Launcher/Launcher.h"
+#include "Panels/IEditorPanel.h"
+#include "Panels/Launcher/Launcher.h"
 
 namespace Laura
 {
