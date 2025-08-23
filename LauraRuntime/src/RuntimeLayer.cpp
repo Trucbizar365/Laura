@@ -12,7 +12,7 @@ namespace Laura
 	{}
 
 	void RuntimeLayer::onAttach() {
-		m_ProjectManager->OpenProject(RUNTIME_PROJECTFILE_PATH);
+		m_ProjectManager->OpenProject("");
 		m_EventDispatcher->dispatchEvent(std::make_shared<UpdateRenderSettingsEvent>(m_ProjectManager->GetMutableRuntimeRenderSettings()));
 
 		// Create a framebuffer to bind the texture to

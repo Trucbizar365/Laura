@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.16)
+cmake_minimum_required(VERSION 3.26)
 set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 project(LauraEngine VERSION 1.1.0)
 
@@ -46,9 +46,9 @@ target_link_libraries(LauraEngine PUBLIC assimp glfw libglew_static stb_image st
 
 target_compile_definitions(LauraEngine PUBLIC
     $<$<CONFIG:Debug>:LR_RESOURCES_PATH="${CMAKE_CURRENT_SOURCE_DIR}/src/res/"> # use absolute path
-    $<$<CONFIG:RelWithDebInfo>:LR_RESOURCES_PATH="./res/"> # relative path
+    $<$<CONFIG:RelWithDebInfo>:LR_RESOURCES_PATH="${CMAKE_CURRENT_SOURCE_DIR}/src/res/"> # relative path
+    $<$<CONFIG:Release>:LR_RESOURCES_PATH="./engine_res/"> # relative
 )
-
 
 if(LR_PLATFORM_WINDOWS)
     target_compile_definitions(LauraEngine PUBLIC LR_PLATFORM_WINDOWS)
@@ -57,4 +57,3 @@ if(LR_PLATFORM_LINUX)
     message(WARNING "LR_PLATFORM_LINUX is currently unsupported.")
     # target_compile_definitions(LauraEngine PUBLIC LR_PLATFORM_LINUX)
 endif()
-
