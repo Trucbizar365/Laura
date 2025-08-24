@@ -7,6 +7,7 @@
 #include <GLFW\glfw3.h>
 #include <implot.h>
 #include "ImGuiContext.h"
+#include "EditorCfg.h"
 
 namespace Laura 
 {
@@ -28,19 +29,19 @@ namespace Laura
         ImPlot::CreateContext();
  
         ImGuiIO& io = ImGui::GetIO();
-        io.Fonts->AddFontFromFileTTF(EDITOR_RESOURCES_PATH "Fonts/Roboto/Roboto-Regular.ttf", 15.0f);
-        io.FontDefault = io.Fonts->AddFontFromFileTTF(EDITOR_RESOURCES_PATH "Fonts/Noto_Sans/NotoSans-Regular.ttf", 16.0f);
+        io.Fonts->AddFontFromFileTTF((EditorCfg::RESOURCES_PATH / "Fonts/Roboto/Roboto-Regular.ttf").string().c_str(), 15.0f);
+        io.FontDefault = io.Fonts->AddFontFromFileTTF((EditorCfg::RESOURCES_PATH / "Fonts/Noto_Sans/NotoSans-Regular.ttf").string().c_str(), 16.0f);
 
         ImFontConfig iconConfig;
         iconConfig.MergeMode = true;  // Merge Font Awesome with the default font
         static const ImWchar iconRanges[] = { ICON_MIN_FA, ICON_MAX_FA, 0 };
-        io.Fonts->AddFontFromFileTTF(EDITOR_RESOURCES_PATH "Fonts/fontawesome-free-6.6.0-desktop/Font Awesome 6 Free-Solid-900.otf", 13.0f, &iconConfig, iconRanges);
+        io.Fonts->AddFontFromFileTTF((EditorCfg::RESOURCES_PATH / "Fonts/fontawesome-free-6.6.0-desktop/Font Awesome 6 Free-Solid-900.otf").string().c_str(), 13.0f, &iconConfig, iconRanges);
 
         ImFontConfig highResIconConfig;
 		highResIconConfig.MergeMode = false; // dont merge to main font (separate)
 		highResIconConfig.PixelSnapH = true;
-		m_FontRegistry->HighResIcons = io.Fonts->AddFontFromFileTTF(
-			EDITOR_RESOURCES_PATH "Fonts/fontawesome-free-6.6.0-desktop/Font Awesome 6 Free-Solid-900.otf",
+		m_FontRegistry->HighResIcons = io.Fonts->AddFontFromFileTTF((
+			EditorCfg::RESOURCES_PATH / "Fonts/fontawesome-free-6.6.0-desktop/Font Awesome 6 Free-Solid-900.otf").string().c_str(),
 			40.0f,
 			&highResIconConfig,
 			iconRanges

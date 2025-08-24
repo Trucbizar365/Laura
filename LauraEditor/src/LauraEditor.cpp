@@ -2,6 +2,7 @@
 #include <LauraEntrypoint.h>
 #include "EditorLayer.h"
 #include "ImGuiContext.h"  
+#include "EditorCfg.h"
 
 namespace Laura
 {
@@ -28,7 +29,8 @@ namespace Laura
 		std::shared_ptr<ImGuiContext> m_ImGuiContext;
 	};
 
-	Application* CreateApplication() {
+	Application* CreateApplication(const std::filesystem::path& exeDir) {
+		EditorCfg::Init(exeDir); // init EditorCfg::EXECUTABLE_DIR, EditorCfg::RESOURCES_PATH
 		return new LauraEditor();
 	}
 }

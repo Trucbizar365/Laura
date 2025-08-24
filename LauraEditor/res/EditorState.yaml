@@ -1,0 +1,10 @@
+ViewportMode: FitToViewport
+EditorThemeFilepath: ""
+EditorRenderSettings:
+  showBvhHeatmap: false
+  bvhHeatmapColorCutoff: 308
+  resolution: [320, 180]
+  raysPerPixel: 1
+  bouncesPerRay: 5
+  accumulate: false
+  vSync: true

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "lrpch.h"
+#include <filesystem>
 #include "Core/IWindow.h"
 #include "Core/Layers/LayerStack.h"
 #include "Core/Layers/RenderLayer.h"
@@ -35,6 +36,6 @@ namespace Laura
         virtual void shutdown();
     };
 
-    Application* CreateApplication();
+    Application* CreateApplication(const std::filesystem::path& exeDir);
 }
 

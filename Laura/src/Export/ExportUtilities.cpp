@@ -1,5 +1,6 @@
 #include "Export/ExportUtilities.h"
 #include "Project/ProjectManager.h"
+#include "EngineCfg.h"
 
 namespace Laura
 {
@@ -78,14 +79,14 @@ namespace Laura
             // Serialize export settings (creates ExportSettings.yaml)
             SerializeExportSettingsYaml(exportProjectFolderPath, exportSettings);
 
-            // Copy runtime
-            std::filesystem::path runtimePath = LR_RESOURCES_PATH "/ExportRuntime";
+            // Copy runtime from a known location
+            std::filesystem::path runtimePath = EngineCfg::EXECUTABLE_DIR / "runtime";
             copyInto(exportProjectFolderPath, runtimePath);
 
             // Rename the runtime .exe file
-            std::filesystem::path runtimeExe = exportProjectFolderPath / "runtime.exe_test";
-            std::filesystem::path gameExe = exportProjectFolderPath / (projectName + ".exe_text");
-            std::filesystem::rename(runtimeExe, gameExe);
+            //std::filesystem::path runtimeExe = exportProjectFolderPath / "runtime.exe_test";
+            //std::filesystem::path gameExe = exportProjectFolderPath / (projectName + ".exe_text");
+            //std::filesystem::rename(runtimeExe, gameExe);
             return true;
         }
         catch (const std::exception& e) {

@@ -1,6 +1,8 @@
 #include <Laura.h>
 #include <LauraEntrypoint.h>
+#include <filesystem>
 #include "RuntimeLayer.h"
+#include "RuntimeCfg.h"
 
 namespace Laura
 {
@@ -23,7 +25,8 @@ namespace Laura
 
 	};
 
-	Application* CreateApplication() {
+	Application* CreateApplication(const std::filesystem::path& exeDir) {
+		RuntimeCfg::Init(exeDir); // init EXECUTABLE_DIR
 		return new LauraRuntime();
 	}
 }

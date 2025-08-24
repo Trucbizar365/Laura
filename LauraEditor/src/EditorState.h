@@ -6,7 +6,7 @@
 #include "Laura.h"
 #include "EditorTheme.h"
 
-#define EDITOR_STATE_FILE_PATH EDITOR_RESOURCES_PATH "EditorStatePersistent.yaml"
+#define EDITOR_STATE_FILENAME "EditorState.yaml" 
 
 namespace Laura
 {
