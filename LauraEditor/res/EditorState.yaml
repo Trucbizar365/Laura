@@ -1,9 +1,9 @@
-ViewportMode: FitToViewport
-EditorThemeFilepath: C:\Dev\template.lrtheme
+ViewportMode: MaxAspectFit
+EditorThemeFilepath: ""
 EditorRenderSettings:
   showBvhHeatmap: false
-  bvhHeatmapColorCutoff: 308
-  resolution: [320, 180]
+  bvhHeatmapColorCutoff: 500
+  resolution: [400, 300]
   raysPerPixel: 1
   bouncesPerRay: 5
   accumulate: false

@@ -4,19 +4,21 @@
 namespace Laura
 {
 
-    static const char* ScreenFitModeToString(ScreenFitMode mode) {
+    const char* ScreenFitModeToString(ScreenFitMode mode) {
         switch (mode) {
-        case ScreenFitMode::OriginalCentered: return "OriginalCentered";
-        case ScreenFitMode::StretchFill: return "StretchFill";
-        case ScreenFitMode::MaxAspectFit: return "MaxAspectFit";
-        default: return "MaxAspectFit";
+        case ScreenFitMode::OriginalCentered:   return "OriginalCentered";
+        case ScreenFitMode::StretchFill:        return "StretchFill";
+        case ScreenFitMode::MaxAspectFit:       return "MaxAspectFit";
+        default:                                return "MaxAspectFit";
         }
     }
 
-    static ScreenFitMode ScreenFitModeFromString(const std::string& str) {
-        if (str == "OriginalCentered") return ScreenFitMode::OriginalCentered;
-        if (str == "StretchFill") return ScreenFitMode::StretchFill;
-        return ScreenFitMode::MaxAspectFit;
+    std::optional<ScreenFitMode> ScreenFitModeFromString(const std::string& str) {
+        // compiler converts to std::optional<>
+        if (str == "OriginalCentered")  return { ScreenFitMode::OriginalCentered };
+        if (str == "StretchFill")       return { ScreenFitMode::StretchFill };
+        if (str == "MaxAspectFit")      return { ScreenFitMode::MaxAspectFit };
+        return std::nullopt;
     }
 
     bool SerializeExportSettingsYaml(const std::filesystem::path& folderpath, const ExportSettings& settings) {
@@ -26,7 +28,7 @@ namespace Laura
         }
 
         YAML::Node node;
-        node["inFullscreen"] = settings.inFullscreen;
+        node["fullscreen"] = settings.inFullscreen;
         node["vSync"] = settings.vSync;
         node["screenFitMode"] = ScreenFitModeToString(settings.screenFitMode);
         node["bootSceneGuid"] = (uint64_t)settings.bootSceneGuid;
@@ -54,9 +56,12 @@ namespace Laura
             YAML::Node node = YAML::LoadFile(filePath.string());
             ExportSettings settings;
 
-            settings.inFullscreen = node["inFullscreen"] ? node["inFullscreen"].as<bool>() : false;
+            settings.inFullscreen = node["fullscreen"] ? node["inFullscreen"].as<bool>() : false;
             settings.vSync = node["vSync"] ? node["vSync"].as<bool>() : true;
-            settings.screenFitMode = node["screenFitMode"] ? ScreenFitModeFromString(node["screenFitMode"].as<std::string>()) : ScreenFitMode::MaxAspectFit;
+            settings.screenFitMode = node["screenFitMode"] ? 
+                ScreenFitModeFromString(node["screenFitMode"].as<std::string>()).value_or(ScreenFitMode::MaxAspectFit) : 
+                ScreenFitMode::MaxAspectFit;
+
             settings.bootSceneGuid = node["bootSceneGuid"] ? static_cast<LR_GUID>(node["bootSceneGuid"].as<uint64_t>()) : LR_GUID::INVALID;
 
             LOG_ENGINE_INFO("DeserializeExportSettingsYaml: successfully loaded export settings from {}", filePath.string());

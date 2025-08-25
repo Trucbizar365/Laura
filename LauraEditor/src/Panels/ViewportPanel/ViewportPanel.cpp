@@ -3,6 +3,7 @@
 #include <imgui_internal.h>
 #include "Panels/DNDPayloads.h"
 #include "Project/Scene/SceneManager.h"
+#include "Export/ExportSettings.h"
 
 namespace Laura
 {
@@ -45,7 +46,7 @@ namespace Laura
 		ImGui::BeginChild("DropArea");
 	
 		ImGuiWindow* window = ImGui::GetCurrentWindow();
-		ForceUpdate = false;
+		forceUpdate = false;
 
 		DrawViewportSettingsPanel();
 
@@ -72,26 +73,26 @@ namespace Laura
 		bool DimensionsChanged = (ImageDimensions != m_PrevImageDimensions || WindowDimensions != m_PrevWindowDimensions);
 		bool PositionChanged = (TLWindowPosition != m_PrevWindowPosition);
 
-		if (m_EditorState->persistent.viewportMode == ViewportMode::CenterToViewport) {
-			if (DimensionsChanged || PositionChanged || ForceUpdate) {
+		if (m_EditorState->persistent.viewportMode == ScreenFitMode::OriginalCentered) {
+			if (DimensionsChanged || PositionChanged || forceUpdate) {
 				glm::ivec2 OffsetTopLeftCorner = (WindowDimensions - ImageDimensions) / 2;
 				m_TopLeftImageCoords = OffsetTopLeftCorner + TLWindowPosition;
 				m_BottomRightImageCoords = OffsetTopLeftCorner + TLWindowPosition + ImageDimensions;
 			}
 		}
 
-		if (m_EditorState->persistent.viewportMode == ViewportMode::StretchToViewport) {
-			if (DimensionsChanged || PositionChanged || ForceUpdate) {
+		if (m_EditorState->persistent.viewportMode == ScreenFitMode::StretchFill) {
+			if (DimensionsChanged || PositionChanged || forceUpdate) {
 				m_TopLeftImageCoords = TLWindowPosition;
 				m_BottomRightImageCoords = TLWindowPosition + WindowDimensions;
 			}
 		}
 
-		if (m_EditorState->persistent.viewportMode == ViewportMode::FitToViewport) {
+		if (m_EditorState->persistent.viewportMode == ScreenFitMode::MaxAspectFit) {
 			// if the ViewportPanel has been resized or the renderer output image size has been changed
 
-			if (DimensionsChanged || PositionChanged || ForceUpdate) {
-				if (DimensionsChanged || ForceUpdate) {
+			if (DimensionsChanged || PositionChanged || forceUpdate) {
+				if (DimensionsChanged || forceUpdate) {
 					m_PrevWindowDimensions = WindowDimensions;
 					m_PrevImageDimensions = ImageDimensions;
 
@@ -168,21 +169,29 @@ namespace Laura
 		theme.PushColor(ImGuiCol_WindowBg, EditorCol_Background3);
 		ImGui::SetNextWindowSizeConstraints({ 250.0f, 150.0f }, { FLT_MAX, FLT_MAX });
 		ImGui::Begin(ICON_FA_EYE " VIEWPORT OPTIONS", &m_EditorState->temp.isViewportSettingsPanelOpen, ViewportSettingsFlags);
-		
-		ViewportMode& mode = m_EditorState->persistent.viewportMode;
-		int currentMode = static_cast<int>(mode);
-		theme.PushColor(ImGuiCol_Text, EditorCol_Text2);
-		ImGui::Text("Display: ");
-		theme.PopColor();
-		ImGui::SameLine();
 
-		theme.PushColor(ImGuiCol_FrameBg, EditorCol_Background1);
-			if (ImGui::Combo("##Viewport Mode", &currentMode, ViewportModeStr, IM_ARRAYSIZE(ViewportModeStr))) {
-				mode = static_cast<ViewportMode>(currentMode);
-				ForceUpdate = true;
+		ScreenFitMode currentMode = m_EditorState->persistent.viewportMode;
+		const char* currentLabel = ScreenFitModeStr[static_cast<int>(currentMode)];
+		theme.PushColor(ImGuiCol_FrameBg, EditorCol_Secondary1);
+		theme.PushColor(ImGuiCol_HeaderHovered, EditorCol_Accent2);
+		ImGui::PushStyleVar(ImGuiStyleVar_PopupBorderSize, 0.0f);
+		ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
+		if (ImGui::BeginCombo("##Viewport Mode", currentLabel)) {
+			for (int i = 0; i < static_cast<int>(ScreenFitMode::_COUNT); ++i) {
+				if (i == static_cast<int>(currentMode)) {
+					continue; // skip currently selected
+				}
+				
+				if (ImGui::Selectable(ScreenFitModeStr[i], false)) {
+					m_EditorState->persistent.viewportMode = static_cast<ScreenFitMode>(i);
+					forceUpdate = true;
+				}
 			}
-		theme.PopColor();
-
+			ImGui::EndCombo();
+		}
+		theme.PopColor(2);
+		ImGui::PopStyleVar();
+		
 		ImGui::End();
 		theme.PopColor();
 		ImGui::PopStyleVar();

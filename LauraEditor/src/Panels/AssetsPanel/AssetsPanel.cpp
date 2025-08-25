@@ -4,6 +4,7 @@
 #include "Project/Scene/SceneManager.h"
 #include "Project/Assets/AssetManager.h"
 #include "Platform/Windows/Dialogs/FilePickerDialog.h"
+#include "Panels/DNDPayloads.h"
 #include <format>
 
 namespace Laura 
@@ -331,25 +332,26 @@ namespace Laura
             }
 
 
-            theme.PushColor(ImGuiCol_Text, EditorCol_Text2);
-            ImGui::AlignTextToFramePadding();
-			ImGui::Text("Skybox:");
-			theme.PopColor();
-			ImGui::SameLine();
-			theme.PushColor(ImGuiCol_Header, EditorCol_Secondary2);
             float clearSkyboxBtnWidth = ImGui::CalcTextSize(ICON_FA_TRASH).x + ImGui::GetStyle().FramePadding.x * 2.0f + ImGui::GetStyle().ItemSpacing.x;
-            ImGui::Selectable((scene->skyboxName + "##SkyboxDNDTarget").c_str(), true, 
-                ImGuiSelectableFlags_None, { ImGui::GetContentRegionAvail().x - clearSkyboxBtnWidth, 0 });
-			theme.PopColor();
-			if (ImGui::BeginDragDropTarget()) {
-				if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(DNDPayloadTypes::TEXTURE)) {
-					IM_ASSERT(payload->DataSize == sizeof(DNDPayload));
-					auto& texPayload = *static_cast<DNDPayload*>(payload->Data);
-					scene->skyboxName = texPayload.title; // copy char title[256] into std::string
-					scene->skyboxGuid = texPayload.guid;
-				}
-				ImGui::EndDragDropTarget();
-			}
+            std::string skyboxDisplayName = scene->skyboxName.empty() ? "No skybox selected" : scene->skyboxName;
+
+            // Calculate total available space for the widget (excluding the clear button)
+            float totalWidgetWidth = ImGui::GetContentRegionAvail().x - clearSkyboxBtnWidth;
+
+            DragDropWidget(
+                "Skybox:",
+                DNDPayloadTypes::TEXTURE,
+                skyboxDisplayName,
+                [&](const DNDPayload& payload) {
+                    scene->skyboxName = payload.title;
+                    scene->skyboxGuid = payload.guid;
+                },
+                theme,
+                "Drag a texture asset here to set as skybox",
+                { totalWidgetWidth, 0 },
+                !scene->skyboxName.empty()
+            );
+
             ImGui::SameLine();
             if (ImGui::Button(ICON_FA_TRASH "##ClearSkyboxBtn")) {
                 scene->skyboxName = "";
@@ -357,7 +359,7 @@ namespace Laura
             }
 
             theme.PushColor(ImGuiCol_Text, EditorCol_Text2);
-            ImGui::Text("Set on Boot:");
+            ImGui::Text("Open on Boot:");
             theme.PopColor();
             ImGui::SameLine();
             bool isBoot = m_ProjectManager->IsBootScene(scene->guid);

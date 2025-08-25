@@ -9,6 +9,7 @@ endif()
 # and propagates the macro to Runtime & Editor
 option(BUILD_INSTALL "Use installed paths instead of source-tree paths" ON)
 
+
 # Console option for applications
 option(ENABLE_CONSOLE "Enable console window for applications" ON)
 

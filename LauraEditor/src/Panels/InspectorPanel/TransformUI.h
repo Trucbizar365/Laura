@@ -12,7 +12,8 @@ namespace Laura
 	void TransformVec3Slider(std::shared_ptr<EditorState> editorState, 
 							 const char* label, 
 							 glm::vec3 vector, 
-							 const T& setVector) {
+							 const T& setVector,
+							 float resetVal = 0.0f) {
 
 		EditorTheme& theme = editorState->temp.editorTheme;
 
@@ -33,54 +34,60 @@ namespace Laura
 		ImGui::PushID(label);
 		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{ 0, 0 });
 
+		theme.PushColor(ImGuiCol_ButtonActive, EditorCol_Secondary2);
 		{
-			ImGui::SetNextItemWidth(lineheight);
-			theme.PushColor(ImGuiCol_Button, EditorCol_Secondary2);
-			theme.PushColor(ImGuiCol_ButtonHovered, EditorCol_Secondary2);
-			theme.PushColor(ImGuiCol_ButtonActive, EditorCol_X);
-
-			theme.PushColor(ImGuiCol_Text, EditorCol_Text2);
-				if (ImGui::Button("X", btnSize)) {
-					setVector(glm::vec3(0.0f, vector.y, vector.z));
-				}
-			theme.PopColor();
-				ImGui::SameLine();
-				if (ImGui::DragFloat("##X", &vector.x, 0.1f)) {
-					setVector(vector);
-				}
-				ImGui::SameLine();
-			theme.PopColor(); // ButtonActive
-				ImGui::PopItemWidth();
-
+			theme.PushColor(ImGuiCol_Button, EditorCol_X);
+			theme.PushColor(ImGuiCol_ButtonHovered, EditorCol_X);
+			{
 				ImGui::SetNextItemWidth(lineheight);
-			theme.PushColor(ImGuiCol_ButtonActive, EditorCol_Y);
-			theme.PushColor(ImGuiCol_Text, EditorCol_Text2);
-				if (ImGui::Button("Y", btnSize)) {
-					setVector(glm::vec3(vector.x, 0.0f, vector.z));
+				theme.PushColor(ImGuiCol_Text, EditorCol_Secondary2);
+				if (ImGui::Button(ICON_FA_X, btnSize)) {
+					setVector(glm::vec3(resetVal, vector.y, vector.z));
 				}
-			theme.PopColor();
+				theme.PopColor();
 				ImGui::SameLine();
-				if (ImGui::DragFloat("##Y", &vector.y, 0.1f)) {
+				if (ImGui::DragFloat("##X", &vector.x, 0.5f)) {
 					setVector(vector);
 				}
 				ImGui::SameLine();
-			theme.PopColor(); // ButtonActive
 				ImGui::PopItemWidth();
-
+			}
+			theme.PopColor(2); // Button, ButtonHovered
+			theme.PushColor(ImGuiCol_Button, EditorCol_Y);
+			theme.PushColor(ImGuiCol_ButtonHovered, EditorCol_Y);
+			{
 				ImGui::SetNextItemWidth(lineheight);
-			theme.PushColor(ImGuiCol_ButtonActive, EditorCol_Z);
-			theme.PushColor(ImGuiCol_Text, EditorCol_Text2);
-				if (ImGui::Button("Z", btnSize)) {
-					setVector(glm::vec3(vector.x, vector.y, 0.0f));
+				theme.PushColor(ImGuiCol_Text, EditorCol_Secondary2);
+				if (ImGui::Button(ICON_FA_Y, btnSize)) {
+					setVector(glm::vec3(vector.x, resetVal, vector.z));
 				}
-			theme.PopColor();
+				theme.PopColor();
 				ImGui::SameLine();
-				if (ImGui::DragFloat("##Z", &vector.z, 0.1f)) {
+				if (ImGui::DragFloat("##Y", &vector.y, 0.5f)) {
+					setVector(vector);
+				}
+				ImGui::SameLine();
+				ImGui::PopItemWidth();
+			}
+			theme.PopColor(2); // Button, ButtonHovered
+			theme.PushColor(ImGuiCol_Button, EditorCol_Z);
+			theme.PushColor(ImGuiCol_ButtonHovered, EditorCol_Z);
+			{
+				ImGui::SetNextItemWidth(lineheight);
+				theme.PushColor(ImGuiCol_Text, EditorCol_Secondary2);
+				if (ImGui::Button(ICON_FA_Z, btnSize)) {
+					setVector(glm::vec3(vector.x, vector.y, resetVal));
+				}
+				theme.PopColor();
+				ImGui::SameLine();
+				if (ImGui::DragFloat("##Z", &vector.z, 0.5f)) {
 					setVector(vector);
 				}
 				ImGui::PopItemWidth();
-			theme.PopColor(3);
+			}
+			theme.PopColor(2); // Button, ButtonHovered
 		}
+		theme.PopColor(); // ButtonActive
 
 		ImGui::PopStyleVar();
 		ImGui::PopID();
@@ -88,6 +95,7 @@ namespace Laura
 	}
 
 	inline void DrawTransformSliders(std::shared_ptr<EditorState> editorState, EntityHandle entity) {
+		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{ 5, 2 });
 		auto& transform = entity.GetComponent<TransformComponent>();
 		TransformVec3Slider(editorState, "Position", transform.GetTranslation(), [&transform](glm::vec3 vector) {
 				transform.SetTranslation(vector); 
@@ -101,7 +109,9 @@ namespace Laura
 
 		TransformVec3Slider(editorState, "Scale", transform.GetScale(), [&transform](glm::vec3 vector) {
 				transform.SetScale(vector);
-			}
+			}, 
+			1.0f
 		);
+		ImGui::PopStyleVar();
 	}
 }

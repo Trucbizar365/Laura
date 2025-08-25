@@ -8,7 +8,7 @@ namespace Laura
 		std::string editorStateFilePath = (EditorCfg::RESOURCES_PATH / EDITOR_STATE_FILENAME).string();
 		try {
 			YAML::Node node;
-			node["ViewportMode"]        = state->persistent.viewportMode;
+			node["ViewportMode"]        = ScreenFitModeToString(state->persistent.viewportMode);
 			node["EditorThemeFilepath"] = state->persistent.editorThemeFilepath.string();
 			YAML::Node rsNode = node["EditorRenderSettings"];
 			state->persistent.editorRenderSettings.SerializeToYamlNode(rsNode);
@@ -42,9 +42,15 @@ namespace Laura
         std::string filepath = (EditorCfg::RESOURCES_PATH / EDITOR_STATE_FILENAME).string();
 
         try {
-			YAML::Node node = YAML::LoadFile(filepath);
-			state->persistent.viewportMode          = node["ViewportMode"].as<ViewportMode>();
-            state->persistent.editorThemeFilepath   = std::filesystem::path{ node["EditorThemeFilepath"].as<std::string>() };
+			YAML::Node node = YAML::LoadFile(filepath); 
+            state->persistent.viewportMode = node["ViewportMode"] ? 
+                ScreenFitModeFromString(node["ViewportMode"].as<std::string>()).value_or(ScreenFitMode::MaxAspectFit) : 
+                ScreenFitMode::MaxAspectFit;
+
+            state->persistent.editorThemeFilepath = node["EditorThemeFilepath"] ? 
+				std::filesystem::path{node["EditorThemeFilepath"].as<std::string>()} : 
+				"";
+
 			YAML::Node rsNode = node["EditorRenderSettings"];
 			state->persistent.editorRenderSettings.DeserializeFromYamlNode(rsNode);
 		}

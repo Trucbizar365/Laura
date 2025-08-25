@@ -1,6 +1,7 @@
 #include "Panels/InspectorPanel/InspectorPanel.h"
 #include "Project/Scene/SceneManager.h"
 #include "Panels/InspectorPanel/TransformUI.h"
+#include "Panels/DNDPayloads.h"
 
 namespace Laura
 {
@@ -59,18 +60,18 @@ namespace Laura
 			}
 		}
 
+		// ID COMPONENT
 		if (entity.HasComponent<IDComponent>()) {
 			LR_GUID guid = entity.GetComponent<IDComponent>().guid;
 
 			theme.PushColor(ImGuiCol_Text, EditorCol_Text2);
 			ImGui::AlignTextToFramePadding();
 			ImGui::Text("Guid:"); ImGui::SameLine();
+			theme.PopColor();
 			ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
 			ImGui::Text(guid.string().c_str());
-			theme.PopColor();
 		}
 
-		ImGui::Dummy({ 0.0f, 10.0f });
 
 		// TRANSFORM COMPONENT
 		DrawComponent<TransformComponent>(std::string(ICON_FA_ARROWS_UP_DOWN_LEFT_RIGHT " Transform"), entity, [&](EntityHandle& _entity) {
@@ -82,11 +83,15 @@ namespace Laura
 		DrawComponent<CameraComponent>(std::string(ICON_FA_VIDEO " Camera Component"), entity, [&](EntityHandle& entity) {
 				auto& cameraComponent = entity.GetComponent<CameraComponent>();
 
+
 				theme.PushColor(ImGuiCol_Text, EditorCol_Text2);
+				ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(4, 1));  // thinner widgets
+				ImGui::AlignTextToFramePadding();
 				ImGui::Text("Main Camera:");
 				theme.PopColor();
 				ImGui::SameLine();
 				theme.PushColor(ImGuiCol_CheckMark, EditorCol_Text1);
+				theme.PushColor(ImGuiCol_FrameBg, EditorCol_Primary1);
 				if (ImGui::Checkbox("##MainCameraCheckbox", &cameraComponent.isMain)) {
 					for (auto e : scene->GetRegistry()->view<CameraComponent>()) {
 						EntityHandle otherEntity(e, scene->GetRegistry());
@@ -95,14 +100,16 @@ namespace Laura
 						}
 					}
 				}
-				theme.PopColor();
+				theme.PopColor(2);
 
 				theme.PushColor(ImGuiCol_Text, EditorCol_Text2);
+				ImGui::AlignTextToFramePadding();
 				ImGui::Text("FOV");
 				theme.PopColor();
 				ImGui::SameLine();
 				ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
 				ImGui::DragFloat("##fovDragInt", &cameraComponent.fov, 0.1f, 10.0f, 130.0f, "%.1f");
+				ImGui::PopStyleVar();
 			}
 		);
 
@@ -110,24 +117,21 @@ namespace Laura
 		DrawComponent<MeshComponent>(std::string(ICON_FA_CUBE " Mesh"), entity, [&theme](EntityHandle& entity) {
 				std::string& sourceName = entity.GetComponent<MeshComponent>().sourceName;
 				ImGui::Dummy({ 0.0f, 5.0f });
-				ImGui::AlignTextToFramePadding();
-				theme.PushColor(ImGuiCol_Text, EditorCol_Text2);
-				ImGui::Text("Mesh:");
-				theme.PopColor();
 
-				ImGui::SameLine();
-				theme.PushColor(ImGuiCol_Header, EditorCol_Secondary2);
-				ImGui::Selectable((sourceName + "##MeshSelectable").c_str(), true);
-				theme.PopColor();
-                if (ImGui::BeginDragDropTarget()) {
-                    if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(DNDPayloadTypes::MESH)) {
-						IM_ASSERT(payload->DataSize == sizeof(DNDPayload));
-						auto& meshPayload = *static_cast<DNDPayload*>(payload->Data);
-						sourceName = meshPayload.title; // copy char title[256] into std::string
-						entity.GetComponent<MeshComponent>().guid = meshPayload.guid;
-                    }
-                    ImGui::EndDragDropTarget();
-                }
+				std::string displayName = sourceName.empty() ? "No mesh selected" : sourceName;
+				DragDropWidget(
+					"Mesh:",
+					DNDPayloadTypes::MESH,
+					displayName,
+					[&](const DNDPayload& payload) {
+						sourceName = payload.title;
+						entity.GetComponent<MeshComponent>().guid = payload.guid;
+					},
+					theme,
+					"Drag a mesh asset here from the Assets panel",
+					{0, 0},
+					!sourceName.empty()
+				);
 			}
 		);
 
@@ -140,7 +144,9 @@ namespace Laura
 				theme.PopColor();
 				ImGui::SameLine(150.0f);
 				ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
+				theme.PushColor(ImGuiCol_FrameBg, EditorCol_Primary1);
 				ImGui::SliderFloat("##emission strength", &materialComponent.emission.w, 0.0f, 100.0f, "%.2f", ImGuiSliderFlags_Logarithmic);
+				theme.PopColor();
 
 				theme.PushColor(ImGuiCol_Text, EditorCol_Text2);
 				ImGui::Text("Emission Color:");
@@ -157,16 +163,15 @@ namespace Laura
 				ImGui::ColorEdit3("##color", glm::value_ptr(materialComponent.color), ImGuiColorEditFlags_NoBorder | ImGuiColorEditFlags_NoInputs);
 			}
 		);
+		ImGui::Dummy(ImVec2(0.0f, 10.0f));
 
 		// ADD COMPONENT BUTTON
-		ImGui::Dummy(ImVec2(0.0f, 5.0f));
-		ImGui::Separator();
 		ImVec2 panelDims = ImGui::GetContentRegionAvail();
 		float lineHeight = ImGui::GetFont()->FontSize + ImGui::GetStyle().FramePadding.y * 2.0f;
-		ImGui::Dummy(ImVec2(0.0f, 5.0f));
 		ImGui::SetCursorPosX(panelDims.x / 6);
 		bool popupOpened = false;
-		
+		float borderSz = ImGui::GetStyle().PopupBorderSize;
+		ImGui::GetStyle().PopupBorderSize = 0.0f;
 		theme.PushColor(ImGuiCol_Button, EditorCol_Secondary2);
 		float buttonWidth = panelDims.x * (2.0f / 3.0f);
 		if (ImGui::Button("Add Component", { buttonWidth, lineHeight })) {
@@ -193,6 +198,7 @@ namespace Laura
 			GiveEntityComponentButton<MaterialComponent>	(entity, "Material", ICON_FA_LAYER_GROUP);
 			ImGui::EndPopup();
 		}
+		ImGui::GetStyle().PopupBorderSize = borderSz;
 
 		// ensure that there is always some space under the Add Component button when scrolling to display the popup
 		ImGui::Dummy(ImVec2(0.0f, 100.0f)); 

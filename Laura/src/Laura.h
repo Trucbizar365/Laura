@@ -25,6 +25,8 @@
 #include "Project/Scene/Components.h"
 
 #include "Project/ProjectManager.h"
+#include "Project/Scene/SceneManager.h"
+#include "Project/Assets/AssetManager.h"
 
 #include "lrpch.h"
 

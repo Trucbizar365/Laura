@@ -29,6 +29,7 @@ namespace Laura
 			theme.PushColor(ImGuiCol_PopupBg, EditorCol_Background3);
 			ImGui::SetNextWindowSizeConstraints(ImVec2(150, 0), ImVec2(FLT_MAX, FLT_MAX));
 			if (ImGui::BeginMenu("File")) {
+				theme.PushColor(ImGuiCol_HeaderHovered, EditorCol_Accent2);
 				if (ImGui::MenuItem(ItemLabel(ICON_FA_FILE_CIRCLE_PLUS, "New").c_str(), "Ctrl+N")) { m_EditorState->temp.isCreateProjectDialogOpen = true; }
 				if (ImGui::MenuItem(ItemLabel(ICON_FA_FOLDER_CLOSED, "Open...").c_str(), "Ctrl+O")) { m_ShouldOpenProject = true; }
 				ImGui::Separator();
@@ -38,11 +39,13 @@ namespace Laura
 				if (ImGui::MenuItem(ItemLabel(ICON_FA_ARROW_UP_FROM_BRACKET, "Export...").c_str())) { m_EditorState->temp.shouldOpenExportPanel = true; }
 				ImGui::Separator();
 				if (ImGui::MenuItem(ItemLabel("", "Close").c_str())) { m_ShouldCloseProject = true; }
+				theme.PopColor();
 				ImGui::EndMenu();
 			}
 
 			ImGui::SetNextWindowSizeConstraints(ImVec2(150, 0), ImVec2(FLT_MAX, FLT_MAX));
 			if (ImGui::BeginMenu("View")) {
+				theme.PushColor(ImGuiCol_HeaderHovered, EditorCol_Accent2);
 				if (ImGui::MenuItem(ItemLabel(ICON_FA_STOPWATCH, "Profiler").c_str(), NULL, false, !m_EditorState->temp.isProfilerPanelOpen)) {
 					m_EditorState->temp.isProfilerPanelOpen = true; 
 				}
@@ -50,6 +53,7 @@ namespace Laura
 				if (ImGui::MenuItem(ItemLabel("", "Themes").c_str(), NULL, false, !m_EditorState->temp.isThemePanelOpen)) {
 					m_EditorState->temp.isThemePanelOpen = true; 
 				}
+				theme.PopColor();
 				ImGui::EndMenu();
 			}
 

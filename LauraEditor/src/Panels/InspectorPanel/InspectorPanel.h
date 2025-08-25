@@ -1,7 +1,7 @@
 #pragma once 
 
 #include <IconsFontAwesome6.h>
-#include <imgui_internal.h>
+#include <imgui.h>
 #include "Laura.h"
 #include "Panels/IEditorPanel.h"
 #include "EditorState.h"
@@ -29,17 +29,18 @@ namespace Laura
 													| ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_FramePadding;
 			static bool deleteComponent = false;
 			if (entity.HasComponent<T>()) {
-				ImVec2 panelDims = ImGui::GetContentRegionAvail();
-				float lineHeight = GImGui->Font->FontSize + GImGui->Style.FramePadding.y * 2.0f;
-
-				// unique id for each component (entity id + component type)
 				std::string idStr = std::to_string((uint64_t)entity.GetEnttID()) + TreenodeTitle;
-
 				ImGui::PushID(idStr.c_str());
 				ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(3, 3));
+				theme.PushColor(ImGuiCol_FrameBg, EditorCol_Primary3);
+				ImGui::BeginChild((idStr + "ChildWindow").c_str(), ImVec2(-FLT_MIN, 0.0f), ImGuiChildFlags_AutoResizeY | ImGuiChildFlags_FrameStyle);
+
+				ImVec2 windowWidth = ImGui::GetContentRegionAvail();
+				float delBtnWidth = ImGui::CalcTextSize(ICON_FA_TRASH).x + ImGui::GetStyle().FramePadding.x * 2.0f;
+				float optionsBtnWidth = ImGui::CalcTextSize(ICON_FA_GEARS).x + ImGui::GetStyle().FramePadding.x * 2.0f;
 
 				bool componentTreeNodeOpen = ImGui::TreeNodeEx(TreenodeTitle.c_str(), treenodeFlags);
-				ImGui::SameLine(panelDims.x - 1.5 * lineHeight - 0.2);
+				ImGui::SameLine(windowWidth.x - delBtnWidth - optionsBtnWidth);
 				theme.PushColor(ImGuiCol_Button, EditorCol_Transparent, 0.0f);
 				if (removable) {
 					if (ImGui::Button(ICON_FA_TRASH)) {
@@ -52,7 +53,7 @@ namespace Laura
 					}, m_EditorState);
 				}
 
-				ImGui::SameLine(panelDims.x - lineHeight * 0.5);
+				ImGui::SameLine(windowWidth.x - optionsBtnWidth);
 				if (ImGui::Button(ICON_FA_GEARS)) {
 					ImGui::OpenPopup("ComponentSettings");
 				}
@@ -79,6 +80,8 @@ namespace Laura
 					ImGui::TreePop();
 					ImGui::Spacing();
 				}
+				ImGui::EndChild();
+				theme.PopColor();
 				ImGui::PopID();
 			}
 		}

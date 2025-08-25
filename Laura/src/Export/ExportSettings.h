@@ -21,6 +21,9 @@ namespace Laura
 		"MaxAspectFit" 
 	};
 
+    const char* ScreenFitModeToString(ScreenFitMode mode);
+    std::optional<ScreenFitMode> ScreenFitModeFromString(const std::string& str);
+
     struct ExportSettings {
         bool inFullscreen = false;
         bool vSync = true;

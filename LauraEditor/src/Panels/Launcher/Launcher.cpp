@@ -41,7 +41,7 @@ namespace Laura
 		// center horizontal
 		float centerX = (windowSize.x - buttonWidth) / 2.0f;
 		ImGui::SetCursorPosX(centerX);
-		theme.PushColor(ImGuiCol_Text, EditorCol_Accent1);
+		theme.PushColor(ImGuiCol_Button, EditorCol_Accent1);
 		if (ImGui::Button("New Project " ICON_FA_DIAGRAM_PROJECT, ImVec2(buttonWidth, buttonHeight))) {
 			m_CreateProjectWindowOpen = true;
 		}

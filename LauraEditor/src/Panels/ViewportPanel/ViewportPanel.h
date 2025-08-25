@@ -29,6 +29,6 @@ namespace Laura
 		glm::ivec2 m_TargetImageDimensions, m_PrevImageDimensions, m_PrevWindowDimensions;
 		glm::ivec2 m_PrevWindowPosition, m_TopLeftImageCoords, m_BottomRightImageCoords;
 		glm::ivec2 ImageDimensions, WindowDimensions, TLWindowPosition;
-		bool ForceUpdate;
+		bool forceUpdate;
 	};
 }
