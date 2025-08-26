@@ -5,6 +5,7 @@
 #include "Dialogs/ConfirmationDialog.h"
 #include "Project/Scene/SceneManager.h"
 #include "Dialogs/ProjectDialogs/ProjectDialogs.h"
+#include "ImGuiContextFontRegistry.h"
 
 namespace Laura
 {
@@ -19,6 +20,8 @@ namespace Laura
 
 		auto& theme = m_EditorState->temp.editorTheme;
 		if (ImGui::BeginMainMenuBar()) {
+			float menuWidth = ImGui::GetContentRegionAvail().x;
+
 			if (m_EditorState->temp.isInRuntimeSimulation) {
 				ImGui::BeginDisabled();
 			}
@@ -84,6 +87,44 @@ namespace Laura
 					}
 				}
 				theme.PopColor(2);
+			}
+			
+			// project & scene display
+			if (m_ProjectManager->ProjectIsOpen()) {
+				std::string project = m_ProjectManager->GetProjectName();
+				std::string scene;
+				bool hasScene = false;
+
+				if (auto sceneMgr = m_ProjectManager->GetSceneManager()) {
+					if (auto sc = sceneMgr->GetOpenScene()) { scene = sc->name; hasScene = true; }
+				}
+
+				ImGui::PushFont(Fonts()->notoSansBold);
+				float projectWidth = ImGui::CalcTextSize(project.c_str()).x;
+				float iconWidth = hasScene ? ImGui::CalcTextSize(ICON_FA_CARET_RIGHT).x : 0;
+				float sceneWidth = hasScene ? ImGui::CalcTextSize(scene.c_str()).x : 0;
+				float totalWidth = projectWidth + iconWidth + sceneWidth + (hasScene ? 4.0f : 0);
+
+				ImGui::SetCursorPosX(menuWidth - totalWidth);
+
+				theme.PushColor(ImGuiCol_Text, EditorCol_Text2);
+				ImGui::TextUnformatted(project.c_str());
+
+				if (hasScene) {
+					ImGui::SameLine(0, 2.0f);
+
+					// Icon 1px lower
+					ImVec2 pos = ImGui::GetCursorPos();
+					ImGui::SetCursorPosY(pos.y + 1.0f);
+					ImGui::TextUnformatted(ICON_FA_CARET_RIGHT);
+					ImGui::SetCursorPosY(pos.y);
+
+					ImGui::SameLine(0, 2.0f);
+					ImGui::TextUnformatted(scene.c_str());
+				}
+
+				theme.PopColor();
+				ImGui::PopFont();
 			}
 
 			ImGui::EndMainMenuBar();

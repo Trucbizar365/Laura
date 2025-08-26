@@ -3,6 +3,7 @@
 #include "Platform/Windows/Dialogs/FolderPickerDialog.h"
 #include "Platform/Windows/Dialogs/FilePickerDialog.h"
 #include "Project/ProjectManager.h"  // For PROJECT_FILE_EXTENSION
+#include "ImGuiContextFontRegistry.h"
 
 
 namespace Laura
@@ -30,6 +31,8 @@ namespace Laura
 		theme.PushColor(ImGuiCol_WindowBg, EditorCol_Background1);
 		theme.PushColor(ImGuiCol_Button, EditorCol_Secondary2);
 		ImGui::Begin("##Launcher", nullptr, flags);
+
+		ImGui::PushFont(Fonts()->notoSansBold);
 
 		ImVec2 windowSize = ImGui::GetContentRegionAvail();
 		float buttonWidth = windowSize.x / 8.0f;
@@ -61,6 +64,7 @@ namespace Laura
 			}
 		}
 
+		ImGui::PopFont();
 		ImGui::End();
 		theme.PopColor(2);
 		ImGui::PopStyleVar(2);
@@ -70,6 +74,7 @@ namespace Laura
 		auto& theme = m_EditorState->temp.editorTheme;
 		theme.PushColor(ImGuiCol_WindowBg, EditorCol_Background3);
 		ImGui::SetNextWindowSizeConstraints(ImVec2(400, 170), ImVec2(FLT_MAX, FLT_MAX));
+
 		ImGui::Begin("New Project " ICON_FA_DIAGRAM_PROJECT , &m_CreateProjectWindowOpen);
 
 		float margin = 3.0f;

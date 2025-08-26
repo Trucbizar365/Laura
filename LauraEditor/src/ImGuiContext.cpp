@@ -30,23 +30,42 @@ namespace Laura
         ImPlot::CreateContext();
  
         ImGuiIO& io = ImGui::GetIO();
-        io.Fonts->AddFontFromFileTTF((EditorCfg::RESOURCES_PATH / "Fonts/Roboto/Roboto-Regular.ttf").string().c_str(), 15.0f);
-        io.FontDefault = io.Fonts->AddFontFromFileTTF((EditorCfg::RESOURCES_PATH / "Fonts/Noto_Sans/NotoSans-Regular.ttf").string().c_str(), 16.0f);
+		static const ImWchar iconRanges[] = { ICON_MIN_FA, ICON_MAX_FA, 0 };
 
-        ImFontConfig iconConfig;
-        iconConfig.MergeMode = true;  // Merge Font Awesome with the default font
-        static const ImWchar iconRanges[] = { ICON_MIN_FA, ICON_MAX_FA, 0 };
-        io.Fonts->AddFontFromFileTTF((EditorCfg::RESOURCES_PATH / "Fonts/fontawesome-free-6.6.0-desktop/Font Awesome 6 Free-Solid-900.otf").string().c_str(), 13.0f, &iconConfig, iconRanges);
-
-        ImFontConfig highResIconConfig;
-		highResIconConfig.MergeMode = false; // dont merge to main font (separate)
-		highResIconConfig.PixelSnapH = true;
-		m_FontRegistry->HighResIcons = io.Fonts->AddFontFromFileTTF((
-			EditorCfg::RESOURCES_PATH / "Fonts/fontawesome-free-6.6.0-desktop/Font Awesome 6 Free-Solid-900.otf").string().c_str(),
-			40.0f,
-			&highResIconConfig,
-			iconRanges
+		// DEFAULT FONT
+		ImFontConfig cfg;
+		cfg.PixelSnapH = true;
+		cfg.MergeMode = false;
+		m_FontRegistry->notoSansRegular = io.Fonts->AddFontFromFileTTF(
+			(EditorCfg::RESOURCES_PATH / "Fonts/Noto_Sans/NotoSans-Regular.ttf").string().c_str(),
+			16.0f, &cfg
 		);
+		cfg.MergeMode = true; // merge icons
+		io.Fonts->AddFontFromFileTTF(
+			(EditorCfg::RESOURCES_PATH / "Fonts/fontawesome-free-6.6.0-desktop/Font Awesome 6 Free-Solid-900.otf").string().c_str(),
+			13.0f, &cfg, iconRanges
+		);
+        io.FontDefault = m_FontRegistry->notoSansRegular;
+
+		// HIGH RES ICONS (standalone, not merged)
+		cfg.MergeMode = false;
+		m_FontRegistry->highResIcons = io.Fonts->AddFontFromFileTTF(
+			(EditorCfg::RESOURCES_PATH / "Fonts/fontawesome-free-6.6.0-desktop/Font Awesome 6 Free-Solid-900.otf").string().c_str(),
+			40.0f, &cfg, iconRanges
+		);
+
+		// NOTOSANS BOLD
+		cfg.MergeMode = false;
+		m_FontRegistry->notoSansBold = io.Fonts->AddFontFromFileTTF(
+			(EditorCfg::RESOURCES_PATH / "Fonts/Noto_Sans/NotoSans-SemiBold.ttf").string().c_str(),
+			16.0f, &cfg
+		);
+		cfg.MergeMode = true; // merge icons into bold
+		io.Fonts->AddFontFromFileTTF(
+			(EditorCfg::RESOURCES_PATH / "Fonts/fontawesome-free-6.6.0-desktop/Font Awesome 6 Free-Solid-900.otf").string().c_str(),
+			13.0f, &cfg, iconRanges
+		);
+
         ImGui::GetIO().UserData = m_FontRegistry.get();
 
         (void)io;

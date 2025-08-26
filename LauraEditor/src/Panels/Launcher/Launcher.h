@@ -2,7 +2,6 @@
 
 #include <Laura.h>
 #include "EditorState.h"
-
 #include <filesystem>
 #include <optional>
 

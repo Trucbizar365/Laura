@@ -1,13 +1,10 @@
 #pragma once
 
 #include "Laura.h"
+#include "ImGuiContextFontRegistry.h"
 
 namespace Laura 
 {
-	struct ImGuiContextFontRegistry {
-		ImFont* HighResIcons = nullptr;
-	};
-
 	class ImGuiContext {
 	public:
 		ImGuiContext(std::shared_ptr<IWindow> window);

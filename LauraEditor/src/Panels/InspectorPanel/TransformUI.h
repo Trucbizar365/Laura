@@ -3,6 +3,7 @@
 #include "Laura.h"
 #include "EditorState.h"
 #include <imgui_internal.h>
+#include "ImGuiContextFontRegistry.h"
 
 namespace Laura
 {
@@ -41,9 +42,11 @@ namespace Laura
 			{
 				ImGui::SetNextItemWidth(lineheight);
 				theme.PushColor(ImGuiCol_Text, EditorCol_Secondary2);
-				if (ImGui::Button(ICON_FA_X, btnSize)) {
+				ImGui::PushFont(Fonts()->notoSansBold);
+				if (ImGui::Button("X", btnSize)) {
 					setVector(glm::vec3(resetVal, vector.y, vector.z));
 				}
+				ImGui::PopFont();
 				theme.PopColor();
 				ImGui::SameLine();
 				if (ImGui::DragFloat("##X", &vector.x, 0.5f)) {
@@ -58,9 +61,11 @@ namespace Laura
 			{
 				ImGui::SetNextItemWidth(lineheight);
 				theme.PushColor(ImGuiCol_Text, EditorCol_Secondary2);
-				if (ImGui::Button(ICON_FA_Y, btnSize)) {
+				ImGui::PushFont(Fonts()->notoSansBold);
+				if (ImGui::Button("Y", btnSize)) {
 					setVector(glm::vec3(vector.x, resetVal, vector.z));
 				}
+				ImGui::PopFont();
 				theme.PopColor();
 				ImGui::SameLine();
 				if (ImGui::DragFloat("##Y", &vector.y, 0.5f)) {
@@ -75,9 +80,11 @@ namespace Laura
 			{
 				ImGui::SetNextItemWidth(lineheight);
 				theme.PushColor(ImGuiCol_Text, EditorCol_Secondary2);
-				if (ImGui::Button(ICON_FA_Z, btnSize)) {
+				ImGui::PushFont(Fonts()->notoSansBold);
+				if (ImGui::Button("Z", btnSize)) {
 					setVector(glm::vec3(vector.x, vector.y, resetVal));
 				}
+				ImGui::PopFont();
 				theme.PopColor();
 				ImGui::SameLine();
 				if (ImGui::DragFloat("##Z", &vector.z, 0.5f)) {

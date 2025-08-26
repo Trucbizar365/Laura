@@ -1,10 +1,10 @@
 #include "Panels/AssetsPanel/AssetsPanel.h"
 #include "Dialogs/ConfirmationDialog.h"
-#include "ImGuiContext.h"
 #include "Project/Scene/SceneManager.h"
 #include "Project/Assets/AssetManager.h"
 #include "Platform/Windows/Dialogs/FilePickerDialog.h"
 #include "Panels/DNDPayloads.h"
+#include "ImGuiContextFontRegistry.h"
 #include <format>
 
 namespace Laura 
@@ -194,23 +194,20 @@ namespace Laura
         }
 
         // Render Icon
-        auto* fontRegistry = static_cast<ImGuiContextFontRegistry*>(ImGui::GetIO().UserData);
-		if (fontRegistry && fontRegistry->HighResIcons) {
-            ImFont* font = fontRegistry->HighResIcons;
-			float fontSize = floor(BASE_TILE_ICON_FONT_SIZE * m_TileScalar);
-			ImVec2 iconDims = font->CalcTextSizeA(fontSize, FLT_MAX, 0.0f, icon);
-			ImVec2 iconPos = {
-				tileCoordsTopLeft.x + (tileDims.x - iconDims.x) * 0.5f,
-				tileCoordsTopLeft.y + (tileDims.x - iconDims.y) * 0.5f
-			};
-            drawlist->AddText(
-                font, 
-                fontSize, 
-                iconPos, 
-                ImGui::GetColorU32(theme[tileFgCol]), 
-                icon
-            );
-		}
+		ImFont* font = Fonts()->highResIcons;
+		float fontSize = floor(BASE_TILE_ICON_FONT_SIZE * m_TileScalar);
+		ImVec2 iconDims = font->CalcTextSizeA(fontSize, FLT_MAX, 0.0f, icon);
+		ImVec2 iconPos = {
+			tileCoordsTopLeft.x + (tileDims.x - iconDims.x) * 0.5f,
+			tileCoordsTopLeft.y + (tileDims.x - iconDims.y) * 0.5f
+		};
+		drawlist->AddText(
+			font, 
+			fontSize, 
+			iconPos, 
+			ImGui::GetColorU32(theme[tileFgCol]), 
+			icon
+		);
         
         float margin = 5.0f;
         // Render Title with wrapping

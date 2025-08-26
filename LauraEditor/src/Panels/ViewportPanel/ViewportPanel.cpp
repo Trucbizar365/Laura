@@ -173,23 +173,22 @@ namespace Laura
 		ScreenFitMode currentMode = m_EditorState->persistent.viewportMode;
 		const char* currentLabel = ScreenFitModeStr[static_cast<int>(currentMode)];
 		theme.PushColor(ImGuiCol_FrameBg, EditorCol_Secondary1);
-		theme.PushColor(ImGuiCol_HeaderHovered, EditorCol_Accent2);
 		ImGui::PushStyleVar(ImGuiStyleVar_PopupBorderSize, 0.0f);
 		ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
 		if (ImGui::BeginCombo("##Viewport Mode", currentLabel)) {
 			for (int i = 0; i < static_cast<int>(ScreenFitMode::_COUNT); ++i) {
-				if (i == static_cast<int>(currentMode)) {
-					continue; // skip currently selected
-				}
-				
-				if (ImGui::Selectable(ScreenFitModeStr[i], false)) {
+				bool selected = (i == static_cast<int>(currentMode));
+
+				if (selected) { theme.PushColor(ImGuiCol_Header, EditorCol_Accent2); }
+				if (ImGui::Selectable(ScreenFitModeStr[i], selected)) {
 					m_EditorState->persistent.viewportMode = static_cast<ScreenFitMode>(i);
 					forceUpdate = true;
 				}
+				if (selected) { theme.PopColor(); }
 			}
 			ImGui::EndCombo();
 		}
-		theme.PopColor(2);
+		theme.PopColor();
 		ImGui::PopStyleVar();
 		
 		ImGui::End();

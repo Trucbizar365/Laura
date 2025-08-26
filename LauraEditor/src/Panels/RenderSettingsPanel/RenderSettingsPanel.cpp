@@ -88,12 +88,13 @@ namespace Laura
 							continue;
 						}
 						bool selected = (current_idx == n);
+						if (selected) { theme.PushColor(ImGuiCol_Header, EditorCol_Accent2); }
 						if (ImGui::Selectable(label, selected)) {
 							current_idx = n;
 							editor.resolution = m_ResolutionOptions[n].resolution;
 							m_EventDispatcher->dispatchEvent(std::make_shared<UpdateRenderSettingsEvent>(editor));
 						}
-						if (selected) { ImGui::SetItemDefaultFocus(); }
+						if (selected) { theme.PopColor(); ImGui::SetItemDefaultFocus(); }
 					}
 					ImGui::EndCombo();
 				}
@@ -116,11 +117,12 @@ namespace Laura
 							continue;
 						}
 						bool selected = (current_idx == n);
+						if (selected) { theme.PushColor(ImGuiCol_Header, EditorCol_Accent2); }
 						if (ImGui::Selectable(m_ResolutionOptions[n].label, selected)) {
 							current_idx = n;
 							runtime.resolution = m_ResolutionOptions[n].resolution;
 						}
-						if (selected) { ImGui::SetItemDefaultFocus(); }
+						if (selected) { theme.PopColor(); ImGui::SetItemDefaultFocus(); }
 					}
 					ImGui::EndCombo();
 				}
