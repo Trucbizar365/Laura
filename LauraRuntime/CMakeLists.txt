@@ -11,7 +11,7 @@ target_link_libraries(LauraRuntime PUBLIC LauraEngine)
 # compile into the same config folder as the editor
 set_target_properties(LauraRuntime PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/$<CONFIG>/runtime
-    #RUNTIME_OUTPUT_DIRECTORY C:/Dev/LauraExports/SampleProjectMyExport1final
+    #RUNTIME_OUTPUT_DIRECTORY C:/Dev/LauraExports/tst123
 )
 
 install(TARGETS LauraRuntime # executable

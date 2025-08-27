@@ -7,10 +7,10 @@ namespace Laura
 {
 
 	struct WindowResizeEvent: public IEvent {
-		glm::vec2 windowDims;
+		glm::ivec2 windowSize;
 
-		WindowResizeEvent(glm::vec2 windowDims) 
-			: windowDims(std::move(windowDims)) {}
+		WindowResizeEvent(int width, int height) 
+			: windowSize(glm::ivec2{width, height}) {}
 
 		inline EventType GetType() const override { return EventType::WINDOW_RESIZE_EVENT; }
 	};

@@ -34,10 +34,7 @@ namespace Laura
 
 		// Viewport scaling variables
 		glm::ivec4 m_ViewportCoords; // x, y, width, height for glBlitFramebuffer
-		glm::ivec2 m_CurrentWindowDimensions;
-		glm::ivec2 m_PrevWindowDimensions;
-		glm::ivec2 m_PrevImageDimensions;
-		bool m_ForceUpdate;
-		bool m_NeedsDimensionUpdate;
+		glm::ivec2 m_WindowSize;
+		bool m_UpdateViewportCoordinates;
 	};
 }

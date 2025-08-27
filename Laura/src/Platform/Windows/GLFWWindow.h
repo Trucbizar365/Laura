@@ -18,15 +18,15 @@ namespace Laura
 
 		void setTitle(const std::string& title) override;
 
-		int getWidth() const override;
-		int getHeight() const override;
-		bool isVSync() const override;
+		glm::ivec2 getFrameBufferSize() const override;
 
+		bool isVSync() const override;
 		void setVSync(bool enabled) override;
+
 		void* getNativeWindow() const override;
 
-		void setFullscreen(bool enabled) override;
 		bool isFullscreen() const override;
+		void setFullscreen(bool enabled) override;
 
 		///  input polling
 		bool isKeyPressed(KeyCode key) override;
@@ -39,10 +39,10 @@ namespace Laura
 	private:
 		GLFWwindow* m_NativeWindow;
 		OpenGLContext* m_Context;
-		WindowProps m_WindowProps;
+
 		std::function<void(std::shared_ptr<IEvent>)> dispatchEvent;
 
-		bool m_Fullscreen = false;
+		bool m_Fullscreen = false, m_VSync = false;
 		int m_WindowedPosX, m_WindowedPosY, m_WindowedWidth, m_WindowedHeight; // cache windowed position (during fullscreen)
 
 		/// These are callback methods called by GLFW when an event occurs.

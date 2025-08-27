@@ -106,12 +106,10 @@ namespace Laura
     }
 
     void ImGuiContext::EndFrame() {
-        ImGuiIO& io = ImGui::GetIO();
-        io.DisplaySize = ImVec2((float)m_Window->getWidth(), (float)m_Window->getHeight());
-
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
+        ImGuiIO& io = ImGui::GetIO();
         if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
             GLFWwindow* backup_current_context = glfwGetCurrentContext();
             ImGui::UpdatePlatformWindows();

@@ -18,22 +18,14 @@ namespace Laura
 		, m_ProjectManager(projectManager)
 		, m_Framebuffer(0)
 		, m_ViewportCoords(0, 0, 0, 0)
-		, m_CurrentWindowDimensions(0, 0)
-		, m_PrevWindowDimensions(0, 0)
-		, m_PrevImageDimensions(0, 0)
-		, m_ForceUpdate(true)
-		, m_NeedsDimensionUpdate(false)
+		, m_WindowSize(0, 0)
+		, m_UpdateViewportCoordinates(false)
 	{}
 
 	void RuntimeLayer::onAttach() {
 		m_ExportSettings = DeserializeExportSettingsYaml(RuntimeCfg::EXECUTABLE_DIR).value_or(ExportSettings{});
 		m_Window->setVSync(m_ExportSettings.vSync);
 		m_Window->setFullscreen(m_ExportSettings.fullscreen);
-
-		// Mark that we need to update dimensions after fullscreen change
-		// The actual dimension update will happen in CalculateViewportCoordinates
-		m_NeedsDimensionUpdate = true;
-		m_CurrentWindowDimensions = glm::ivec2{ m_Window->getWidth(), m_Window->getHeight() };
 
 		std::filesystem::path projectFilePath = "";
 		for (const auto& entry : std::filesystem::directory_iterator(RuntimeCfg::EXECUTABLE_DIR)) {
@@ -79,42 +71,27 @@ namespace Laura
 		if (event->GetType() == EventType::KEY_PRESS_EVENT) {
 			if (std::dynamic_pointer_cast<KeyPressEvent>(event)->key == Key::F11) {
 				m_Window->setFullscreen(!m_Window->isFullscreen());
-				// Mark that dimensions need to be updated after fullscreen toggle
-				m_NeedsDimensionUpdate = true;
 			}
 		}
 		if (event->GetType() == EventType::WINDOW_RESIZE_EVENT) {
-			glm::vec2 dims = std::dynamic_pointer_cast<WindowResizeEvent>(event)->windowDims;
-			m_CurrentWindowDimensions = glm::ivec2{ dims.x, dims.y };
-			m_ForceUpdate = true;
+			m_WindowSize = std::dynamic_pointer_cast<WindowResizeEvent>(event)->windowSize;
+			m_UpdateViewportCoordinates = true;
 		}
 	}
 
 	void RuntimeLayer::CalculateViewportCoordinates() {
-		if (!m_CurrentFrame) { return; }
-
-		// Update window dimensions if needed (e.g., after fullscreen changes)
-		if (m_NeedsDimensionUpdate) {
-			m_CurrentWindowDimensions = glm::ivec2{ m_Window->getWidth(), m_Window->getHeight() };
-			m_NeedsDimensionUpdate = false;
+		if (!m_CurrentFrame || !m_UpdateViewportCoordinates) { 
+			return; 
 		}
+		m_UpdateViewportCoordinates = false;
 
-		glm::ivec2 windowSize = m_CurrentWindowDimensions;
 		glm::ivec2 imageSize = m_CurrentFrame->GetDimensions();
-
-		// Check if recalculation needed
-		bool dimensionsChanged = (windowSize != m_PrevWindowDimensions || imageSize != m_PrevImageDimensions);
-		if (!dimensionsChanged && !m_ForceUpdate) {
-			return; // No changes, use existing coordinates
-		}
-		m_PrevWindowDimensions = windowSize;
-		m_PrevImageDimensions = imageSize;
-		m_ForceUpdate = false;
+		// m_WindowSize set on WINDOW_RESIZE_EVENT
 
 		switch (m_ExportSettings.screenFitMode) {
 			case ScreenFitMode::OriginalCentered: {
-				int offsetX = (windowSize.x - imageSize.x) / 2;
-				int offsetY = (windowSize.y - imageSize.y) / 2;
+				int offsetX = (m_WindowSize.x - imageSize.x) / 2;
+				int offsetY = (m_WindowSize.y - imageSize.y) / 2;
 
 				// Ensure positive (in case image is larger than window)
 				offsetX = std::max(0, offsetX);
@@ -133,30 +110,30 @@ namespace Laura
 				m_ViewportCoords = glm::ivec4(
 					0,              // x
 					0,              // y
-					windowSize.x,   // width
-					windowSize.y    // height
+					m_WindowSize.x,   // width
+					m_WindowSize.y    // height
 				);
 				break;
 			}
 
 			case ScreenFitMode::MaxAspectFit: {
-				float windowAspectRatio = static_cast<float>(windowSize.x) / static_cast<float>(windowSize.y);
+				float windowAspectRatio = static_cast<float>(m_WindowSize.x) / static_cast<float>(m_WindowSize.y);
 				float imageAspectRatio = static_cast<float>(imageSize.x) / static_cast<float>(imageSize.y);
 
 				int targetWidth, targetHeight;
 				if (windowAspectRatio <= imageAspectRatio) {
 					// Width is the limiting factor
-					targetWidth = windowSize.x;
-					targetHeight = static_cast<int>(std::ceil(windowSize.x / imageAspectRatio));
+					targetWidth = m_WindowSize.x;
+					targetHeight = static_cast<int>(std::ceil(m_WindowSize.x / imageAspectRatio));
 				} else {
 					// Height is the limiting factor
-					targetWidth = static_cast<int>(std::ceil(windowSize.y * imageAspectRatio));
-					targetHeight = windowSize.y;
+					targetWidth = static_cast<int>(std::ceil(m_WindowSize.y * imageAspectRatio));
+					targetHeight = m_WindowSize.y;
 				}
 
 				// Center the scaled image
-				int offsetX = (windowSize.x - targetWidth) / 2;
-				int offsetY = (windowSize.y - targetHeight) / 2;
+				int offsetX = (m_WindowSize.x - targetWidth) / 2;
+				int offsetY = (m_WindowSize.y - targetHeight) / 2;
 
 				m_ViewportCoords = glm::ivec4(
 					offsetX,                // x
@@ -166,7 +143,6 @@ namespace Laura
 				);
 				break;
 			}
-
 			default:
 				// Fallback to MaxAspectFit
 				m_ExportSettings.screenFitMode = ScreenFitMode::MaxAspectFit;

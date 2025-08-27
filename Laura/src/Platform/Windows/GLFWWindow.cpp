@@ -9,16 +9,14 @@
 namespace Laura 
 {
 
-	GLFWWindowIMPL::GLFWWindowIMPL(const WindowProps& windowProps)
-		: m_WindowProps(windowProps) {
-
+	GLFWWindowIMPL::GLFWWindowIMPL(const WindowProps& windowProps) {
 		if (!glfwInit()){
 			LOG_ENGINE_CRITICAL("Failed to initialize GLFW!");
 		}
 
 		OpenGLContext::setWindowHints();
 
-		m_NativeWindow = glfwCreateWindow(m_WindowProps.width, m_WindowProps.height, (m_WindowProps.title).c_str(), NULL, NULL);
+		m_NativeWindow = glfwCreateWindow(windowProps.width, windowProps.height, (windowProps.title).c_str(), NULL, NULL);
 		if (!m_NativeWindow) {
 			LOG_ENGINE_CRITICAL("Failed to generate GLFW window!");
 		}
@@ -26,7 +24,7 @@ namespace Laura
 		m_Context = new OpenGLContext(m_NativeWindow);
 		m_Context->init();
 
-		glfwSwapInterval(m_WindowProps.VSync);
+		setVSync(windowProps.VSync);
 
 		glfwSetWindowUserPointer(m_NativeWindow, this);
 		glfwSetKeyCallback(m_NativeWindow, GLFWKeyCallback);
@@ -46,31 +44,27 @@ namespace Laura
 	}
 
 	void GLFWWindowIMPL::setTitle(const std::string& title) {
-		m_WindowProps.title = title;
 		glfwSetWindowTitle(m_NativeWindow, title.c_str());
 	}
 
-	int GLFWWindowIMPL::getWidth() const {
-		return m_WindowProps.width;
-	}
-
-	int GLFWWindowIMPL::getHeight() const {
-		return m_WindowProps.height;
+	glm::ivec2 GLFWWindowIMPL::getFrameBufferSize() const {
+	    int width, height;
+		glfwGetFramebufferSize(m_NativeWindow, &width, &height);
+		return glm::ivec2(width, height);	
 	}
 
 	bool GLFWWindowIMPL::isVSync() const {
-		return m_WindowProps.VSync;
+		return m_VSync;
 	}
 
 	void GLFWWindowIMPL::setVSync(bool enabled) {
-		m_WindowProps.VSync = enabled;
-		glfwSwapInterval(m_WindowProps.VSync);
+		m_VSync = enabled;
+		glfwSwapInterval(enabled);
 	}
 
 	void* GLFWWindowIMPL::getNativeWindow() const {
 		return m_NativeWindow;
 	}
-
 
 	void GLFWWindowIMPL::setFullscreen(bool enabled) {
 		if (enabled == m_Fullscreen) {
@@ -154,7 +148,7 @@ namespace Laura
 	}
 
 	void GLFWWindowIMPL::GLFWWindowResizeCallback(GLFWwindow* window, int width, int height) {
-		thisWindow->dispatchEvent(std::make_shared<WindowResizeEvent>(glm::vec2{ width, height }));
+		thisWindow->dispatchEvent(std::make_shared<WindowResizeEvent>(width, height));
 	}
 
 	bool GLFWWindowIMPL::isKeyPressed(KeyCode key) {
