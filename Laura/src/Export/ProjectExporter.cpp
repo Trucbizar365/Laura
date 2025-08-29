@@ -1,4 +1,4 @@
-#include "Export/ExportUtilities.h"
+#include "Export/ProjectExporter.h"
 #include "Project/ProjectManager.h"
 #include "Project/Assets/AssetManager.h"
 #include "EngineCfg.h"
@@ -41,6 +41,16 @@ namespace Laura
 		std::filesystem::path exportProjectFolderPath = dstfolderpath / projectName;
 		if (std::filesystem::exists(exportProjectFolderPath)) {
 			LOG_ENGINE_WARN("ExportProject: export folder already exists {0}", exportProjectFolderPath.string());
+			return false;
+		}
+
+		auto absProjectPath = std::filesystem::weakly_canonical(projectFolderPath);
+		auto absExportPath  = std::filesystem::weakly_canonical(exportProjectFolderPath);
+
+		if (std::mismatch(absProjectPath.begin(), absProjectPath.end(),
+						  absExportPath.begin()).first == absProjectPath.end()) {
+			LOG_ENGINE_ERROR("Export folder cannot be inside the project folder!\nProject: {0}\nExport: {1}",
+							 absProjectPath.string(), absExportPath.string());
 			return false;
 		}
 
