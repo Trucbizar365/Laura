@@ -73,19 +73,42 @@ namespace Laura
 		float cost = leftCount * leftBox.area() + rightCount * rightBox.area();
 		return (cost > 0) ? cost : FLT_MAX;
 	}
+	
+	float BVHAccel::FindBestSplitPlane(Node& node, int& splitAxis, float& splitPos) {
+		int bestAxis = -1;
+		float bestPos = 0, bestCost = FLT_MAX;
+		for (int axis = 0; axis < 3; axis++) {
+
+			float aabbMin = FLT_MAX;
+			float aabbMax = -FLT_MAX;
+			for (int i = 0; i < node.triCount; i++) {
+				glm::vec3& centroid = m_Centroids[m_IdxBuff[node.leftChild_Or_FirstTri + i]];
+				aabbMin = glm::min(aabbMin, centroid[axis]);
+				aabbMax = glm::max(aabbMax, centroid[axis]);
+			}
+
+			if (aabbMin == aabbMax) { 
+				continue; 
+			}
+			float scale = (aabbMax - aabbMin) / 64;
+			for (int i = 0; i < 64; i++) {
+				float candidatePos = aabbMin + i * scale;
+				float cost = EvaluateSAH(node, axis, candidatePos);
+				if (cost < bestCost) {
+					splitAxis = axis;
+					splitPos = candidatePos;
+					bestCost = cost;
+				}
+			}
+		}
+		return bestCost;
+	}
 
 	void BVHAccel::SubDivide(Node& node) {
 		int bestAxis = -1;
-		float bestPos = 0, bestCost = FLT_MAX;
-		for (int axis = 0; axis < 3; axis++) for (int i = 0; i < node.triCount; i++) {
-			float candidatePos = m_Centroids[m_IdxBuff[node.leftChild_Or_FirstTri + i]][axis];
-			float cost = EvaluateSAH(node, axis, candidatePos);
-			if (cost < bestCost) {
-				bestAxis = axis;
-				bestPos	 = candidatePos;
-				bestCost = cost;
-			}
-		}
+		float bestPos = 0;
+		float bestCost = FindBestSplitPlane(node, bestAxis, bestPos);
+
 		Aabb parentAabb{ node.min, node.max };
 		float parentCost = node.triCount * parentAabb.area();
 		if (bestCost >= parentCost) {

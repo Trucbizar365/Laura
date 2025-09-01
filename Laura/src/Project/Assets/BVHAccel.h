@@ -44,6 +44,8 @@ namespace Laura
 		void Build(std::vector<Node>& nodeBuffer, std::vector<uint32_t>& indexBuffer, uint32_t& firstNodeIdx, uint32_t& nodeCount);
 
 	private:
+		float FindBestSplitPlane(Node& node, int& axis, float& splitPos);
+
 		float EvaluateSAH(Node& node, int axis, float candidatePos);
 		// Computes the Axis Aligned Bounding Box for a Node passed in using its triangles
 		void UpdateAABB(Node& node);

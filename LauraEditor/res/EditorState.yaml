@@ -5,7 +5,7 @@ EditorRenderSettings:
   aabbHeatmapCutoff: 5000
   triangleHeatmapCutoff: 100
   resolution: [1920, 1200]
-  raysPerPixel: 20
-  bouncesPerRay: 100
+  raysPerPixel: 1 
+  bouncesPerRay: 1
   accumulate: false
   vSync: true
