@@ -52,17 +52,11 @@ struct Material {
 /* Shader specific structs (don't have CPU counterpart) */
 struct Ray {
     vec3 origin;
+    float t; 
     vec3 dir;
-};
-
-struct HitInfo {
-    bool didCollide;
-    float dst;
-    vec3 hitPoint;
+    uint materialIdx;
     vec3 normal;
-    Material material;
 };
-
 
 layout (rgba32f, binding = 0) uniform image2D rayTracingTexture;
 
@@ -233,54 +227,39 @@ vec3 complexityToRGB(uint complexity)
 
 // Slab method Ray-AABB intersection algorithm
 // Thanks to: https://tavianator.com/fast-branchless-raybounding-box-intersections/ and https://tavianator.com/2022/ray_box_boundary.html
-bool RayAABBIntersection(Ray ray, const vec3 minVec, const vec3 maxVec, inout float largest_tMin){
-    const vec3 t1 = (minVec - ray.origin) / ray.dir;
-    const vec3 t2 = (maxVec - ray.origin) / ray.dir;
-    const vec3 tMin = min(t1, t2);
-    const vec3 tMax = max(t1, t2);
-    largest_tMin = max(max(tMin.x, tMin.y), tMin.z);
-    const float smallest_tMax = min(min(tMax.x, tMax.y), tMax.z);
-    return smallest_tMax >= largest_tMin && smallest_tMax >= 0.0;
+float IntersectAABB(const Ray ray, const vec3 bmin, const vec3 bmax) {
+    vec3 t1 = (bmin - ray.origin) / ray.dir;
+    vec3 t2 = (bmax - ray.origin) / ray.dir;
+    vec3 tMin = min(t1, t2);
+    vec3 tMax = max(t1, t2);
+    float tNear = max(max(tMin.x, tMin.y), tMin.z);
+    float tFar  = min(min(tMax.x, tMax.y), tMax.z);
+    return (tFar >= tNear && tNear < ray.t && tFar > 0.0) ? tNear : 1e30f;
 }
 
 // Moller Trumbore Ray-Triangle intersection algorithm
-// Thanks to: https://stackoverflow.com/questions/42740765/intersection-between-line-and-triangle-in-3d/42752998#42752998
-HitInfo RayTriangleIntersection(const Ray ray, const Triangle tri) {
-    // E1, E2 are triangle edge direction vectors
+bool IntersectTri(inout Ray r, const Triangle tri) {
     const vec3 E1 = tri.v1.xyz - tri.v0.xyz;
     const vec3 E2 = tri.v2.xyz - tri.v0.xyz;
-    vec3 triNormal = cross(E1, E2);
-    const float determinant = -dot(ray.dir, triNormal);
-    // Early exit if the ray and triangle are nearly parallel
-    if (determinant < 1E-6) {
-        HitInfo hitInfo;
-        hitInfo.didCollide = false;
-        return hitInfo;
-    }
-    const float invdet = 1.0 / determinant;
-    const vec3 AO = ray.origin - tri.v0.xyz;
-    const vec3 DAO = cross(AO, ray.dir);
-    const float t = dot(AO, triNormal) * invdet;
-    const float u = dot(E2, DAO) * invdet;
-    const float v = -dot(E1, DAO) * invdet;
-    const float w = 1 - u - v;
-    // Back-face culling (assuming triangles are consistently oriented)
-    if (t < 0 || u < 0 || v < 0 || w < 0) {
-        HitInfo hitInfo;
-        hitInfo.didCollide = false;
-        return hitInfo;
-    }
-    HitInfo hitInfo;
-    hitInfo.didCollide = true;
-    hitInfo.hitPoint = ray.origin + ray.dir * t;
-    hitInfo.normal = triNormal;
-    hitInfo.dst = t;
-    return hitInfo;
+    vec3 Ng = cross(E1, E2);
+    float det = -dot(r.dir, Ng);
+    if (det < 1e-6) return false;
+
+    float invdet = 1.0 / det;
+    vec3 AO  = r.origin - tri.v0.xyz;
+    vec3 DAO = cross(AO, r.dir);
+    float t = dot(AO, Ng) * invdet;
+    float u = dot(E2, DAO) * invdet;
+    float v = -dot(E1, DAO) * invdet;
+    if (t < 0.0 || u < 0.0 || v < 0.0 || (u + v) > 1.0) return false;
+    if (t >= r.t) return false;
+
+    r.t = t;
+    r.normal = normalize(Ng);
+    return true;
 }
 
-// NOTE(Jacob): Update ray aabb intersection to return distance, 1e30f meaning miss
-// NOTE(Jacob): potentially storing ray and hitinfo together and avoid copy using inout
-void BVH_traverse(Ray ray, inout EntityHandle entityHandle, inout HitInfo closestHit, inout uint AABB_intersect_count, inout uint TRI_intersect_count) {
+void TraverseBVH(inout Ray ray, inout EntityHandle entityHandle, inout uint AABB_intersect_count, inout uint TRI_intersect_count) {
     uint nodeOffset = entityHandle.rootNodeIdx; // caused by consecutive BVHs in one buffer
     uint nodeIdx = 0;
     uint stack[64]; // Array of indices pointing to BVHNodes
@@ -288,104 +267,99 @@ void BVH_traverse(Ray ray, inout EntityHandle entityHandle, inout HitInfo closes
 
     while (true) {
         if (NodeBuffer[nodeOffset + nodeIdx].triCount != 0) { // is leaf
-            for (uint i = 0; i < NodeBuffer[nodeOffset + nodeIdx].triCount; i++) {
-                const HitInfo triHitInfo = RayTriangleIntersection(ray, 
-                    MeshBuffer[entityHandle.rootTriIdx + IndexBuffer[entityHandle.rootTriIdx + NodeBuffer[nodeOffset + nodeIdx].leftChild_Or_FirstTri + i]]
-                );
-                if (triHitInfo.didCollide) {
-                    TRI_intersect_count += 1;
-                    if (triHitInfo.dst < closestHit.dst) {
-                        closestHit = triHitInfo;
-                        closestHit.material = MaterialBuffer[entityHandle.materialIdx];
-                    }
-                }
+        for (uint i = 0; i < NodeBuffer[nodeOffset + nodeIdx].triCount; i++) {
+            const Triangle tri = MeshBuffer[
+                entityHandle.rootTriIdx +
+                IndexBuffer[entityHandle.rootTriIdx + NodeBuffer[nodeOffset + nodeIdx].leftChild_Or_FirstTri + i]
+            ];
+            if (IntersectTri(ray, tri)) {
+                TRI_intersect_count += 1;
+                ray.materialIdx = entityHandle.materialIdx;
             }
+        }
+
             if (stackPtr == 0) { break; }
             else { nodeIdx = stack[--stackPtr]; }
             continue;
         }
 
-        float dist1 = 1e30f;
-        float dist2 = 1e30f;
         uint child1Idx = NodeBuffer[nodeOffset + nodeIdx].leftChild_Or_FirstTri;
         uint child2Idx = NodeBuffer[nodeOffset + nodeIdx].leftChild_Or_FirstTri + 1;
 
-        bool hit1 = RayAABBIntersection(ray, 
-            NodeBuffer[nodeOffset + child1Idx].min, 
-            NodeBuffer[nodeOffset + child1Idx].max, 
-            dist1);
+        float dist1 = IntersectAABB(ray,
+            NodeBuffer[nodeOffset + child1Idx].min,
+            NodeBuffer[nodeOffset + child1Idx].max);
+        float dist2 = IntersectAABB(ray,
+            NodeBuffer[nodeOffset + child2Idx].min,
+            NodeBuffer[nodeOffset + child2Idx].max);
 
-        bool hit2 = RayAABBIntersection(ray, 
-            NodeBuffer[nodeOffset + child2Idx].min, 
-            NodeBuffer[nodeOffset + child2Idx].max, 
-            dist2);
-
-        AABB_intersect_count += uint(hit1) + uint(hit2);
-
-        if (!hit1) dist1 = 1e30f;
-        if (!hit2) dist2 = 1e30f;
+        if (dist1 < 1e30f) { AABB_intersect_count++; }
+        if (dist2 < 1e30f) { AABB_intersect_count++; }
 
         if (dist1 > dist2) {
             float tmpDist = dist1; dist1 = dist2; dist2 = tmpDist;              // swap(dist1, dist2)
             uint tmpIdx = child1Idx; child1Idx = child2Idx; child2Idx = tmpIdx;  // swap(child1Idx, child2Idx)
         }
 
-        if (dist1 == 1e30f) {
+        if (dist1 >= 1e30f) {
             if (stackPtr == 0) { break; }
             else { nodeIdx = stack[--stackPtr]; }
         } else {
             nodeIdx = child1Idx;
-            if (dist2 != 1e30f) { stack[stackPtr++] = child2Idx; }
+            if (dist2 < 1e30f) { stack[stackPtr++] = child2Idx; }
         }
     }
 }
 
-HitInfo CheckRayCollision(Ray ray, inout HitInfo closestHit, inout uint AABB_intersect_count, inout uint TRI_intersect_count) {
-    closestHit.didCollide = false;
-    closestHit.dst = INF;
-
+void CheckRayCollision(inout Ray ray, inout uint AABB_intersect_count, inout uint TRI_intersect_count) {
+    ray.t = 1e30f;
     mat4 closestHitTransform = mat4(1.0);
     for (int i = 0; i < u_EntityCount; i++) {
         // Transform ray to the local space of the tested entity 
         EntityHandle entityHandle = EntityLookupTable[i];
-        mat4 invTransform = inverse(TransformBuffer[entityHandle.transformIdx]);
+        mat4 model = TransformBuffer[entityHandle.transformIdx];
+        mat4 invTransform = inverse(model);
 
         Ray rayLocal;
+        rayLocal.t = 1e30f; 
         rayLocal.origin = (invTransform * vec4(ray.origin, 1.0)).xyz;
         rayLocal.dir = (invTransform * vec4(ray.dir, 0.0)).xyz;
 		
-        HitInfo hitInfo;
-        hitInfo.didCollide = false;
-        hitInfo.dst = INF;
+        TraverseBVH(rayLocal, entityHandle, AABB_intersect_count, TRI_intersect_count);
 
-        BVH_traverse(rayLocal, entityHandle, hitInfo, AABB_intersect_count, TRI_intersect_count);
-       
-        if (hitInfo.didCollide && hitInfo.dst < closestHit.dst){
-            closestHit = hitInfo;
-            closestHitTransform = TransformBuffer[entityHandle.transformIdx];
+        if (rayLocal.t < ray.t){
+            // compute world-space hit point and normal, and world-space distance
+            vec3 localHit = rayLocal.origin + rayLocal.dir * rayLocal.t;
+            vec3 worldHit = (model * vec4(localHit, 1.0)).xyz;
+            mat3 normalMatrix = mat3(transpose(inverse(model)));
+            vec3 worldNormal = normalize(normalMatrix * rayLocal.normal);
+            float worldT = length(worldHit - ray.origin);
+
+            ray.t = worldT;
+            ray.normal = faceforward(worldNormal, ray.dir, worldNormal);
+            ray.materialIdx = rayLocal.materialIdx;
+            closestHitTransform = model;
         }
     }
-    if (closestHit.didCollide) {
-        closestHit.hitPoint = (closestHitTransform * vec4(closestHit.hitPoint, 1.0)).xyz;
-        closestHit.normal = normalize((closestHitTransform * vec4(closestHit.normal, 0.0)).xyz);
-    }
-    return closestHit;
 }
 
-vec3 TraceRay(Ray ray, inout uint state, inout uint AABB_intersect_count, inout uint TRI_intersect_count) {
+vec3 TraceRay(inout Ray ray, inout uint state, inout uint AABB_intersect_count, inout uint TRI_intersect_count) {
     vec3 rayColor = vec3(1.0);
     vec3 brightness_score = vec3(0.0);
-    HitInfo current_collision;
     
-    for (int i = 0; i <= u_BouncesPerRay; i++) {
-        CheckRayCollision(ray, current_collision, AABB_intersect_count, TRI_intersect_count);
+    for (int i = 0; i < int(u_BouncesPerRay); i++) {
+        CheckRayCollision(ray, AABB_intersect_count, TRI_intersect_count);
 
-        if (current_collision.didCollide) {
-            ray.origin = current_collision.hitPoint;
-            ray.dir = normalize(current_collision.normal + RandomDirection(state));
-            vec3 emittedLight = current_collision.material.emission.xyz * current_collision.material.emission.w; // Color * Strength
+        if (ray.t < 1e30f) { // did collide
+            // advance origin to hit point with small bias along normal to avoid self-intersection
+            ray.origin = ray.origin + ray.dir * ray.t + ray.normal * 1e-4;
+            // cosine-weighted hemisphere sampling around the surface normal
+            ray.dir = normalize(ray.normal + RandomDirection(state));
+            vec3 emittedLight = MaterialBuffer[ray.materialIdx].emission.xyz * 
+                                MaterialBuffer[ray.materialIdx].emission.w;
+
+            rayColor *= MaterialBuffer[ray.materialIdx].color.xyz;
             brightness_score += emittedLight * rayColor;
-            rayColor *= current_collision.material.color.xyz;
         }
         else {
             brightness_score += GainSkyboxLight(ray) * rayColor;
@@ -405,21 +379,22 @@ void main() {
     float y = (float(texelCoords.y * 2 - dims.y) / dims.x); // divide by x to keep ratio
     
     Ray ray;
-
     // Transform Ray origin from local to WORLD space using Camera's Transform
     vec4 rayOriginHomogeneous = vec4(0.0f, 0.0f, 0.0f, 1.0f);
     rayOriginHomogeneous = u_CameraTransform * rayOriginHomogeneous;
-    ray.origin = rayOriginHomogeneous.xyz / rayOriginHomogeneous.w;
+    vec3 rayOrigin = rayOriginHomogeneous.xyz / rayOriginHomogeneous.w;
 
     // Same with Ray direction (no translation needed <=> no homogeneous coordinates)
     vec3 rayDirectionLocal = vec3(x, y, u_FocalLength); // focalLengh = distance between origin & screen plane
-    ray.dir = normalize(mat3(u_CameraTransform) * rayDirectionLocal);
+    vec3 rayDir = normalize(mat3(u_CameraTransform) * rayDirectionLocal);
 
     uint AABB_intersect_count = 0; 
     uint TRI_intersect_count = 0;
     vec3 pixelColor = vec3(0.0);
     uint state = getCurrentState(texelCoords, dims.x);
     for (int i = 0; i < u_RaysPerPixel; i++) {
+        ray.origin = rayOrigin;
+        ray.dir = rayDir;
         pixelColor += TraceRay(ray, state, AABB_intersect_count, TRI_intersect_count);
     }
 
