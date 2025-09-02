@@ -1,4 +1,5 @@
 #include "BVHAccel.h"
+#include <algorithm> // std::min
 
 namespace Laura
 {
@@ -51,34 +52,12 @@ namespace Laura
 		node.max = aabb.boxMax;
 	}
 
-	float BVHAccel::EvaluateSAH(Node& node, int axis, float candidatePos) {
-		Aabb leftBox, rightBox;
-		int leftCount = 0, rightCount = 0;
-		for(uint32_t i = 0; i < node.triCount; i++ ) {
-			uint32_t triIdx = m_IdxBuff[node.leftChild_Or_FirstTri + i]; // relative index [0..m_TriCount)
-			const Triangle& tri = m_TriBuff[m_FirstTriIdx + triIdx];
-			if (m_Centroids[triIdx][axis] < candidatePos) {
-				leftCount++;
-				leftBox.grow( tri.v0 );
-				leftBox.grow( tri.v1 );
-				leftBox.grow( tri.v2 );
-			}
-			else {
-				rightCount++;
-				rightBox.grow( tri.v0 );
-				rightBox.grow( tri.v1 );
-				rightBox.grow( tri.v2 );
-			}
-		}
-		float cost = leftCount * leftBox.area() + rightCount * rightBox.area();
-		return (cost > 0) ? cost : FLT_MAX;
-	}
-	
+	// SAH Heuristic in O(n) time
 	float BVHAccel::FindBestSplitPlane(Node& node, int& splitAxis, float& splitPos) {
-		int bestAxis = -1;
+		const size_t BINS = 8;
 		float bestPos = 0, bestCost = FLT_MAX;
 		for (int axis = 0; axis < 3; axis++) {
-
+			// finding the bounds of the triangle centroids
 			float aabbMin = FLT_MAX;
 			float aabbMax = -FLT_MAX;
 			for (int i = 0; i < node.triCount; i++) {
@@ -90,13 +69,44 @@ namespace Laura
 			if (aabbMin == aabbMax) { 
 				continue; 
 			}
-			float scale = (aabbMax - aabbMin) / 64;
-			for (int i = 0; i < 64; i++) {
-				float candidatePos = aabbMin + i * scale;
-				float cost = EvaluateSAH(node, axis, candidatePos);
+
+			// splitting the bounds into bins (allows merging intervals quickly)
+			Bin bin[BINS];
+			float scale = BINS / (aabbMax - aabbMin);
+			for (uint32_t i = 0; i < node.triCount; i++) {
+				size_t triIdx = m_IdxBuff[node.leftChild_Or_FirstTri + i];
+				const Triangle& tri = m_TriBuff[m_FirstTriIdx + triIdx];
+				size_t binIdx = std::min(BINS - 1, (size_t)((m_Centroids[triIdx][axis] - aabbMin) * scale));
+				bin[binIdx].triCount++;
+				bin[binIdx].aabb.grow(tri.v0);
+				bin[binIdx].aabb.grow(tri.v1);
+				bin[binIdx].aabb.grow(tri.v2);
+			}
+
+			float leftArea[BINS - 1], rightArea[BINS - 1];
+			int leftCount[BINS - 1], rightCount[BINS - 1];
+			// both directions simultaneously 
+			size_t currLeftCount = 0, currRightCount = 0;
+			Aabb currLeftAabb, currRightAabb;
+			for (uint32_t i = 0; i < BINS-1; i++) {
+				currLeftCount += bin[i].triCount;
+				currLeftAabb.grow(bin[i].aabb);
+				leftArea[i] = currLeftAabb.area();
+				leftCount[i] = currLeftCount;
+
+				currRightCount += bin[BINS - 1 - i].triCount;
+				currRightAabb.grow(bin[BINS - 1 - i].aabb);
+				// -2 because left/rightArea have size = BINS - 1
+				rightArea[BINS - 2 - i] = currRightAabb.area();
+				rightCount[BINS - 2 - i] = currRightCount;
+			}
+
+			scale = (aabbMax - aabbMin) / BINS;
+			for (int i = 0; i < BINS - 1; i++) {
+				float cost = leftCount[i] * leftArea[i] + rightCount[i] * rightArea[i];
 				if (cost < bestCost) {
 					splitAxis = axis;
-					splitPos = candidatePos;
+					splitPos = aabbMin + scale * (i + 1);
 					bestCost = cost;
 				}
 			}

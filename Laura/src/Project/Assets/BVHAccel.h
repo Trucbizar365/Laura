@@ -31,10 +31,20 @@ namespace Laura
 				boxMax = glm::max(boxMax, p);
 			}
 
+			void grow(const Aabb& aabb) {
+				boxMin = glm::min(boxMin, aabb.boxMin);
+				boxMax = glm::max(boxMax, aabb.boxMax);
+			}
+
 			float area() { 
 				glm::vec3 s = boxMax - boxMin; // box size
 				return s.x * s.y + s.y * s.z + s.z * s.x; // no * 2 as constants don't matter
 			}
+		};
+
+		struct Bin {
+			Aabb aabb;
+			int triCount = 0;
 		};
 
 		BVHAccel(const std::vector<Triangle>& meshBuffer, const uint32_t firstTriIdx, const uint32_t triCount);
