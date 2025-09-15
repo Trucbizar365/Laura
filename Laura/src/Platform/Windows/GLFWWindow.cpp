@@ -1,4 +1,5 @@
 #include "lrpch.h"
+#include <stdexcept>
 
 #include "GLFWWindow.h"
 #include "Core/Events/KeyEvents.h"
@@ -10,6 +11,7 @@ namespace Laura
 {
 
 	GLFWWindowIMPL::GLFWWindowIMPL(const WindowProps& windowProps) {
+		glfwSetErrorCallback([](int code, const char* desc){ LOG_ENGINE_ERROR("GLFW Error ({}): {}", code, desc); });
 		if (!glfwInit()){
 			LOG_ENGINE_CRITICAL("Failed to initialize GLFW!");
 		}
@@ -22,7 +24,41 @@ namespace Laura
 
 		m_NativeWindow = glfwCreateWindow(windowProps.width, windowProps.height, (windowProps.title).c_str(), NULL, NULL);
 		if (!m_NativeWindow) {
-			LOG_ENGINE_CRITICAL("Failed to generate GLFW window!");
+			LOG_ENGINE_WARN("Primary GLFW window creation failed with default hints (likely unsupported GL version). Attempting fallbacks...");
+
+			glfwDefaultWindowHints();
+			struct GLVersionAttempt { int major; int minor; int profile; const char* description; };
+			const GLVersionAttempt attempts[] = {
+				{4, 5, GLFW_OPENGL_CORE_PROFILE, "OpenGL 4.5 core"},
+				{4, 3, GLFW_OPENGL_CORE_PROFILE, "OpenGL 4.3 core"},
+				{4, 1, GLFW_OPENGL_CORE_PROFILE, "OpenGL 4.1 core"},
+				{3, 3, GLFW_OPENGL_CORE_PROFILE, "OpenGL 3.3 core"},
+				{3, 3, GLFW_OPENGL_COMPAT_PROFILE, "OpenGL 3.3 compat"}
+			};
+
+			for (const auto& a : attempts) {
+				glfwDefaultWindowHints();
+				glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, a.major);
+				glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, a.minor);
+				glfwWindowHint(GLFW_OPENGL_PROFILE, a.profile);
+				if (windowProps.CustomTitlebar) {
+					glfwWindowHint(GLFW_TITLEBAR, GLFW_FALSE);
+				}
+
+				m_NativeWindow = glfwCreateWindow(windowProps.width, windowProps.height, (windowProps.title).c_str(), NULL, NULL);
+				if (m_NativeWindow) {
+					LOG_ENGINE_INFO("GLFW window created with {}", a.description);
+					break;
+				} else {
+					LOG_ENGINE_WARN("GLFW window creation failed for {}", a.description);
+				}
+			}
+
+			if (!m_NativeWindow) {
+				LOG_ENGINE_CRITICAL("Failed to create GLFW window with any supported OpenGL version. Terminating.");
+				glfwTerminate();
+				throw std::runtime_error("GLFW window creation failed for all attempted OpenGL versions");
+			}
 		}
 
 		m_Context = new OpenGLContext(m_NativeWindow);

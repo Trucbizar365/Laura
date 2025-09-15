@@ -125,8 +125,8 @@ namespace Laura
 			return;
 		}
 
-		uint32_t leftPtr = node.leftChild_Or_FirstTri; // points to the firstTri in node's triangles
-		uint32_t rightPtr = node.leftChild_Or_FirstTri + node.triCount - 1; // points to the lastTri
+		int leftPtr = static_cast<int>(node.leftChild_Or_FirstTri); // points to the firstTri in node's triangles
+		int rightPtr = static_cast<int>(node.leftChild_Or_FirstTri + node.triCount - 1); // points to the lastTri
 
 		// partition/sort the triangles (quicksort partition)
 		while (leftPtr <= rightPtr) {
@@ -134,7 +134,8 @@ namespace Laura
 				leftPtr++;
 			}
 			else {
-				Swap(leftPtr, rightPtr--); // swap and decrement right
+				Swap(leftPtr, rightPtr); // swap and then safely decrement right
+				--rightPtr;
 			}
 		}
 

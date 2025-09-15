@@ -7,7 +7,7 @@
 #include "Project/Assets/AssetTypes.h"
 #include "Project/Assets/BVHAccel.h"
 
-constexpr const char* SUPPORTED_MESH_FILE_FORMATS[]		= { ".fbx", ".obj" ,".gltf", ".glb" };
+constexpr const char* SUPPORTED_MESH_FILE_FORMATS[]		= { ".fbx", ".obj" ,".gltf", ".glb", ".ply"};
 constexpr const char* SUPPORTED_TEXTURE_FILE_FORMATS[]	= { ".png", ".jpg", ".jpeg", ".tga", ".bmp", ".hdr" };
 
 namespace Laura

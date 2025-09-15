@@ -19,6 +19,7 @@ namespace Laura
 	void OpenGLContext::init() {
 		glfwMakeContextCurrent(m_NativeWindow);
 
+		glewExperimental = GL_TRUE;
 		if (glewInit() != GLEW_OK) {
 			LOG_ENGINE_CRITICAL("[ERROR] Failed to initialize GLEW!");
 		}

@@ -187,7 +187,7 @@ namespace Laura
 		}
 
 		Assimp::Importer importer;
-		const aiScene* scene = importer.ReadFile(assetpath.string(), aiProcessPreset_TargetRealtime_MaxQuality);
+		const aiScene* scene = importer.ReadFile(assetpath.string(), aiProcessPreset_TargetRealtime_MaxQuality | aiProcess_Triangulate);
 		if (!scene) {
 			LOG_ENGINE_CRITICAL("LoadMesh: failed to load assimp scene from {0} (GUID {1})", assetpath.string(), (uint64_t)guid);
 			return false;
@@ -215,7 +215,11 @@ namespace Laura
 
 			for (unsigned int j = 0; j < subMesh->mNumFaces; ++j) {
 				const aiFace& face = subMesh->mFaces[j];
-				if (face.mNumIndices != 3) continue;
+				if (face.mNumIndices != 3) {
+					metadata->TriCount--; // not emplacing so reduce triCount
+					continue;
+				}
+
 
 				const auto& idx = face.mIndices;
 				meshBuffer.emplace_back(Triangle({

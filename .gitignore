@@ -10,3 +10,13 @@ CMakeSettings.json
 imgui.ini
 EditorState.yaml
 enc_temp_folder/
+
+/SampleModels/**
+!/SampleModels/model-credits.txt
+!/SampleModels/stanford_bunny_pbr.glb
+!/SampleModels/stanford_dragon_pbr.glb
+
+/SampleSkyboxes/**
+!/SampleSkyboxes/skybox-credits.txt
+!/SampleSkyboxes/kloofendal_48d_partly_cloudy_puresky_4k.hdr
+!/SampleSkyboxes/metro_noord_4k.hdr
