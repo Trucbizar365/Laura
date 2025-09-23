@@ -24,6 +24,7 @@ namespace Laura
 		bool LoadLogoFromDisk(GLuint* out_texture, int* out_width, int* out_height);
 
 	private:
+		bool SaveCurrentFrameToGallery();
 		void CalculateViewportCoordinates();
 		bool InitLogoResources();
 		void DestroyLogoResources();

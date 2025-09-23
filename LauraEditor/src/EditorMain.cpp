@@ -6,9 +6,9 @@
 namespace Laura
 {
 
-	class LauraEditor : public Application {
+	class Editor : public Application {
 	public:
-		LauraEditor()
+		Editor()
 			: Application() {
 
 			m_ImGuiContext = std::make_shared<ImGuiContext>(_Window);
@@ -22,7 +22,7 @@ namespace Laura
 			Application::Shutdown();
 		}
 		
-		~LauraEditor() {
+		~Editor() {
 		}
 
 	private:
@@ -31,6 +31,6 @@ namespace Laura
 
 	Application* CreateApplication(const std::filesystem::path& exeDir) {
 		EditorCfg::Init(exeDir); // init EditorCfg::EXECUTABLE_DIR, EditorCfg::RESOURCES_PATH
-		return new LauraEditor();
+		return new Editor();
 	}
 }

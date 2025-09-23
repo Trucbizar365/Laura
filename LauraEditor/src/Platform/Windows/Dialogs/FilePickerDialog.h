@@ -13,7 +13,8 @@ namespace Laura
 
         std::string filter = std::format("{} Files", ext);
 		filter.push_back('\0');
-		filter += std::format(" * {}", ext);
+		// Make sure pattern is like *.ext (without spaces)
+		filter += std::format("*{}", ext);
 		filter.push_back('\0');
 		filter.push_back('\0');
 

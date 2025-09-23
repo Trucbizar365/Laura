@@ -17,7 +17,6 @@ namespace Laura
 							 float resetVal = 0.0f) {
 
 		EditorTheme& theme = editorState->temp.editorTheme;
-
 		ImGui::AlignTextToFramePadding();
 		ImGui::Columns(2);
 		// width of the 1st column (labels)

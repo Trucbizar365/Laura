@@ -4,6 +4,7 @@
 #include <algorithm>
 #include "Core/Events/WindowEvents.h"
 #include <stb_image/stb_image.h>
+#include <stb_image/stb_image_write.h>
 
 
 namespace Laura
@@ -164,8 +165,12 @@ namespace Laura
 			m_CurrentFrame = std::dynamic_pointer_cast<NewFrameRenderedEvent>(event)->frame;
 		}
 		if (event->GetType() == EventType::KEY_PRESS_EVENT) {
-			if (std::dynamic_pointer_cast<KeyPressEvent>(event)->key == Key::F11) {
+			auto e = std::dynamic_pointer_cast<KeyPressEvent>(event);
+			if (e->key == Key::F11) {
 				m_Window->setFullscreen(!m_Window->isFullscreen());
+			}
+			if (e->key == Key::E) {
+				SaveCurrentFrameToGallery();
 			}
 		}
 		if (event->GetType() == EventType::WINDOW_RESIZE_EVENT) {
@@ -176,6 +181,85 @@ namespace Laura
 			if (m_ShowLogoScreen) {
 			}
 		}
+	}
+
+	bool RuntimeLayer::SaveCurrentFrameToGallery() {
+		if (!m_CurrentFrame) {
+			LOG_ENGINE_WARN("SaveCurrentFrameToGallery: no frame available");
+			return false;
+		}
+
+		glm::ivec2 size = m_CurrentFrame->GetDimensions();
+		if (size.x <= 0 || size.y <= 0) {
+			LOG_ENGINE_WARN("SaveCurrentFrameToGallery: invalid frame size {0}x{1}", size.x, size.y);
+			return false;
+		}
+
+		std::vector<unsigned char> pixels;
+		pixels.resize(static_cast<size_t>(size.x) * static_cast<size_t>(size.y) * 4u);
+
+		// Attach the current frame texture to a temporary FBO and read back
+		GLuint fbo = 0;
+		glGenFramebuffers(1, &fbo);
+		glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_CurrentFrame->GetID(), 0);
+		GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+		if (status != GL_FRAMEBUFFER_COMPLETE) {
+			LOG_ENGINE_ERROR("SaveCurrentFrameToGallery: framebuffer incomplete (status=0x{0:X})", (unsigned int)status);
+			glBindFramebuffer(GL_FRAMEBUFFER, 0);
+			glDeleteFramebuffers(1, &fbo);
+			return false;
+		}
+
+		glReadBuffer(GL_COLOR_ATTACHMENT0);
+		glPixelStorei(GL_PACK_ALIGNMENT, 1);
+		glReadPixels(0, 0, size.x, size.y, GL_RGBA, GL_UNSIGNED_BYTE, pixels.data());
+
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		glDeleteFramebuffers(1, &fbo);
+
+		// Flip vertically because OpenGL origin is bottom-left and PNG expects top-left
+		const int rowStride = size.x * 4;
+		std::vector<unsigned char> flipped;
+		flipped.resize(pixels.size());
+		for (int y = 0; y < size.y; ++y) {
+			std::memcpy(
+				flipped.data() + static_cast<size_t>(y) * rowStride,
+				pixels.data() + static_cast<size_t>(size.y - 1 - y) * rowStride,
+				rowStride);
+		}
+
+		// Ensure gallery directory exists
+		auto galleryDir = RuntimeCfg::EXECUTABLE_DIR / "gallery";
+		std::error_code ec;
+		std::filesystem::create_directories(galleryDir, ec);
+		if (ec) {
+			LOG_ENGINE_ERROR("SaveCurrentFrameToGallery: failed to create gallery directory '{0}' - {1}", galleryDir.string(), ec.message());
+			return false;
+		}
+
+		// Compose filename with timestamp
+		auto now = std::chrono::system_clock::now();
+		auto t = std::chrono::system_clock::to_time_t(now);
+		std::tm tm;
+#ifdef _WIN32
+		localtime_s(&tm, &t);
+#else
+		localtime_r(&t, &tm);
+#endif
+		char buf[64];
+		std::snprintf(buf, sizeof(buf), "%04d-%02d-%02d_%02d-%02d-%02d.png",
+			1900 + tm.tm_year, 1 + tm.tm_mon, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec);
+		auto outPath = galleryDir / buf;
+
+		int ok = stbi_write_png(outPath.string().c_str(), size.x, size.y, 4, flipped.data(), rowStride);
+		if (!ok) {
+			LOG_ENGINE_ERROR("SaveCurrentFrameToGallery: failed to write '{0}'", outPath.string());
+			return false;
+		}
+
+		LOG_ENGINE_INFO("Saved frame to {0}", outPath.string());
+		return true;
 	}
 
 	bool RuntimeLayer::InitLogoResources() {
