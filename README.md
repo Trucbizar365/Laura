@@ -61,6 +61,16 @@ Laura currently targets **Windows (x64)** and builds with the MSVC toolchain.
 > [!IMPORTANT]
 > Note: The root `CMakeLists.txt` enforces Windows-only for now and enables multi-threaded compilation under MSVC.
 
+Experimental Linux support:
+```bash
+# Compile with g++ (GCC)
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DBUILD_INSTALL=ON -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++
+cmake --build build --target install -j$(nproc)
+
+# Run
+./build/install/LauraEditor
+```
+
 ## Getting Started
 
 
